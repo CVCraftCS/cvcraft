@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 
 const STORAGE_KEY = "cvcraft:lastResult";
@@ -384,10 +384,10 @@ export default function CVBuilderPage() {
   }, [employmentHistory]);
 
   // Apply region defaults (references behaviour) light-touch
-  const applyRegionDefaults = (nextRegion) => {
-    const def = regionDefaults(nextRegion);
-    setSectionConfig((prev) => ({ ...prev, references: def.referencesEnabled }));
-    setReferencesText(def.referencesText);
+  const applyRegionDefaults = useCallback((nextRegion) => {
+  const def = regionDefaults(nextRegion);
+  setSectionConfig((prev) => ({ ...prev, references: def.referencesEnabled }));
+  setReferencesText(def.referencesText);
   };
 
   // ✅ Teacher lock helper (students locked; teachers can unlock with PIN)
@@ -408,7 +408,8 @@ export default function CVBuilderPage() {
   };
 
   // ---- Teacher Mode actions ----
-  const applyTeacherPreset = (cfgOverride) => {
+  const applyTeacherPreset = useCallback(
+  (cfgOverride) => {
     const next = { ...teacherConfig, ...(cfgOverride || {}) };
 
     // Teacher Mode forces Student Safe Mode ON
@@ -430,6 +431,18 @@ export default function CVBuilderPage() {
       skills: true,
       employment: !!next.enableEmployment,
       references: !!next.enableReferences,
+    }));
+
+    // Ordering: standard safe order
+    setSectionOrder(DEFAULT_SECTION_ORDER);
+
+    // References text follows region defaults
+    const def = regionDefaults(next.region);
+    setReferencesText(def.referencesText);
+  },
+  [teacherConfig, applyRegionDefaults]
+);
+
     }));
 
     // Ordering: standard safe order
@@ -635,7 +648,7 @@ export default function CVBuilderPage() {
         }))
       );
     }
-  }, []);
+  }, [applyTeacherPreset, applyRegionDefaults]);
 
   // ---- clear helpers ----
   const clearForm = () => {
