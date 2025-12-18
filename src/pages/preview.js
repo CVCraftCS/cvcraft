@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import PaywallModal from "../components/PaywallModal";
+import { isProUnlocked, setProUnlocked } from "../lib/proUnlock";
 
 const STORAGE_KEY = "cvcraft:lastResult";
 
@@ -15,6 +17,13 @@ const DEFAULT_SECTION_CONFIG = {
   qualifications: true,
   skills: true,
   references: false,
+};
+
+// Pro template meta (must match cv.js)
+const TEMPLATE_META = {
+  classic: { premium: false, name: "Classic" },
+  modern: { premium: true, name: "Modern" },
+  compact: { premium: true, name: "Compact" },
 };
 
 function safeParse(jsonString) {
@@ -271,8 +280,22 @@ export default function PreviewPage() {
   // Track when we should clear after print (reliable via afterprint)
   const [pendingClearAfterPrint, setPendingClearAfterPrint] = useState(false);
 
+  // Pro unlock + paywall state (hard gate export)
+  const [proUnlocked, setProUnlockedState] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    // Pro unlock (and Stripe return support here too)
+    setProUnlockedState(isProUnlocked());
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("unlocked") === "true") {
+      setProUnlocked(true);
+      setProUnlockedState(true);
+      url.searchParams.delete("unlocked");
+      window.history.replaceState({}, "", url.toString());
+    }
 
     const tm = sessionStorage.getItem(TEACHER_MODE_SESSION_KEY) === "1";
     setTeacherMode(tm);
@@ -338,6 +361,21 @@ export default function PreviewPage() {
   const skillsForDisplay =
     Array.isArray(sections.skills) && sections.skills.length ? sections.skills : fallbackSkills;
 
+  // ---- Pro gating helpers (hard gate export on premium templates) ----
+  const templateIsPremium = !!(TEMPLATE_META[template]?.premium);
+  const exportLocked = !teacherMode && templateIsPremium && !proUnlocked;
+
+  const requestExportUnlock = () => {
+    // Teacher Mode never paywalls (classroom safe)
+    if (teacherMode) return false;
+
+    if (exportLocked) {
+      setPaywallOpen(true);
+      return true; // blocked
+    }
+    return false; // allowed
+  };
+
   // Clear storage (and teacher flag), show notice first
   const clearStoredDataAndShowNotice = () => {
     if (typeof window === "undefined") return;
@@ -374,11 +412,17 @@ export default function PreviewPage() {
   }, [pendingClearAfterPrint, safeModeActive]);
 
   const onPrint = () => {
+    // Hard gate print export when template is premium and Pro not unlocked
+    if (requestExportUnlock()) return;
+
     if (safeModeActive) setPendingClearAfterPrint(true);
     window.print();
   };
 
   const downloadPdf = async () => {
+    // Hard gate download export when template is premium and Pro not unlocked
+    if (requestExportUnlock()) return;
+
     if (!saved) {
       alert(`No ${labelDoc} data found yet. Go back and generate one.`);
       return;
@@ -666,18 +710,22 @@ export default function PreviewPage() {
           <div className="flex gap-2">
             <button
               onClick={downloadPdf}
-              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500"
+              className={`rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition ${
+                exportLocked ? "opacity-60 cursor-not-allowed" : "hover:bg-emerald-500"
+              }`}
               title="Downloads a clean PDF (recommended)"
             >
-              Download PDF
+              Download PDF{exportLocked ? " 🔒" : ""}
             </button>
 
             <button
               onClick={onPrint}
-              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+              className={`rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition ${
+                exportLocked ? "opacity-60 cursor-not-allowed" : "hover:bg-slate-800"
+              }`}
               title="Uses browser print dialog"
             >
-              Print / Save PDF
+              Print / Save PDF{exportLocked ? " 🔒" : ""}
             </button>
           </div>
         </div>
@@ -718,6 +766,12 @@ export default function PreviewPage() {
                   : "Student Safe Mode is enabled — data will be cleared after download/print."}
               </div>
             ) : null}
+
+            {exportLocked ? (
+              <div className="mt-2 rounded-xl bg-slate-100 px-3 py-2 text-slate-800 ring-1 ring-slate-200">
+                Export is locked for <b>{templateLabel(template)}</b>. Unlock Pro to download/print.
+              </div>
+            ) : null}
           </div>
 
           <hr className="my-6 border-slate-200" />
@@ -751,6 +805,31 @@ export default function PreviewPage() {
           )}
         </div>
       </div>
+
+      {/* Hard-gate paywall modal for export */}
+      <PaywallModal
+        open={paywallOpen}
+        reason="export"
+        onClose={() => setPaywallOpen(false)}
+        onPreviewAnyway={() => {
+          // Not used for export, but modal component expects it
+          setPaywallOpen(false);
+        }}
+        onUnlockClick={() => {
+          const link = process.env.NEXT_PUBLIC_STRIPE_CV_PRO_LINK;
+
+          // Dev fallback: simulate unlock (same pattern as cv.js recommended)
+          if (!link) {
+            console.warn("Stripe link missing — simulating unlock");
+            setProUnlocked(true);
+            setProUnlockedState(true);
+            setPaywallOpen(false);
+            return;
+          }
+
+          window.location.href = link;
+        }}
+      />
 
       <style jsx global>{`
         @media print {

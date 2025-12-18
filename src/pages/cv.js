@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
+import PaywallModal from "../components/PaywallModal";
+import { isProUnlocked, setProUnlocked } from "../lib/proUnlock";
 
 const STORAGE_KEY = "cvcraft:lastResult";
 
@@ -23,6 +25,13 @@ const TEACHER_MODE_DEFAULTS = {
   // Teacher-configurable (panel)
   enableEmployment: true,
   enableReferences: false,
+};
+
+// ---- Pro template meta (monetisation v1) ----
+const TEMPLATE_META = {
+  classic: { name: "Classic", premium: false },
+  modern: { name: "Modern", premium: true },
+  compact: { name: "Compact", premium: true },
 };
 
 // ---- helpers ----
@@ -312,6 +321,12 @@ function getPresetConfig(presetName, region) {
 export default function CVBuilderPage() {
   const router = useRouter();
 
+  // ---- Pro unlock + Paywall state ----
+  const [proUnlocked, setProUnlockedState] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const [paywallReason, setPaywallReason] = useState("template"); // "template" | "export"
+  const [pendingTemplate, setPendingTemplate] = useState(null);
+
   // Region
   const [region, setRegion] = useState("UK"); // UK | US | AU
 
@@ -376,6 +391,22 @@ export default function CVBuilderPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
+  // Load pro unlock + handle Stripe return (?unlocked=true)
+  useEffect(() => {
+    setProUnlockedState(isProUnlocked());
+
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get("unlocked") === "true") {
+        setProUnlocked(true);
+        setProUnlockedState(true);
+
+        url.searchParams.delete("unlocked");
+        window.history.replaceState({}, "", url.toString());
+      }
+    }
+  }, []);
+
   const cleanedQualifications = useMemo(() => {
     return (qualifications || [])
       .map((q) => ({
@@ -433,6 +464,32 @@ export default function CVBuilderPage() {
     if (key === "region") return !!teacherConfig.lockRegion;
     if (key === "studentSafeMode") return !!teacherConfig.lockStudentSafeMode;
     return false;
+  };
+
+  // ---- Pro gating helpers ----
+  const openPaywall = (reason) => {
+    setPaywallReason(reason);
+    setPaywallOpen(true);
+  };
+
+  const requestTemplateChange = (nextTemplate) => {
+    // Respect Teacher Mode locks exactly as before
+    if (teacherMode && isTeacherLocked("template")) return;
+
+    // In Teacher Mode we never show paywalls (classroom-safe)
+    if (teacherMode) {
+      setTemplate(nextTemplate);
+      return;
+    }
+
+    const meta = TEMPLATE_META[nextTemplate] || { premium: false };
+    if (meta.premium && !proUnlocked) {
+      setPendingTemplate(nextTemplate);
+      openPaywall("template");
+      return;
+    }
+
+    setTemplate(nextTemplate);
   };
 
   // ---- Teacher Mode actions ----
@@ -559,7 +616,18 @@ export default function CVBuilderPage() {
     const cfg = getPresetConfig(presetName, region);
     if (!cfg) return;
 
-    setTemplate(cfg.template);
+    // If preset picks a premium template, respect paywall in normal mode
+    if (!teacherMode) {
+      const meta = TEMPLATE_META[cfg.template] || { premium: false };
+      if (meta.premium && !proUnlocked) {
+        setPendingTemplate(cfg.template);
+        openPaywall("template");
+      } else {
+        setTemplate(cfg.template);
+      }
+    } else {
+      setTemplate(cfg.template);
+    }
 
     setSectionConfig({ ...DEFAULT_SECTION_CONFIG, ...cfg.sectionConfig });
 
@@ -869,6 +937,9 @@ export default function CVBuilderPage() {
       return next;
     });
   };
+
+  const modernLocked = !teacherMode && TEMPLATE_META.modern.premium && !proUnlocked;
+  const compactLocked = !teacherMode && TEMPLATE_META.compact.premium && !proUnlocked;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white px-6 py-12">
@@ -1193,10 +1264,7 @@ export default function CVBuilderPage() {
             <div className="grid gap-3 sm:grid-cols-3">
               <button
                 type="button"
-                onClick={() => {
-                  if (teacherMode && isTeacherLocked("template")) return;
-                  setTemplate("classic");
-                }}
+                onClick={() => requestTemplateChange("classic")}
                 disabled={teacherMode && isTeacherLocked("template")}
                 className={`rounded-2xl p-4 text-left ring-1 transition ${
                   template === "classic"
@@ -1220,10 +1288,7 @@ export default function CVBuilderPage() {
 
               <button
                 type="button"
-                onClick={() => {
-                  if (teacherMode && isTeacherLocked("template")) return;
-                  setTemplate("modern");
-                }}
+                onClick={() => requestTemplateChange("modern")}
                 disabled={teacherMode && isTeacherLocked("template")}
                 className={`rounded-2xl p-4 text-left ring-1 transition ${
                   template === "modern"
@@ -1235,7 +1300,9 @@ export default function CVBuilderPage() {
                     : ""
                 }`}
               >
-                <div className="font-semibold">Modern</div>
+                <div className="font-semibold">
+                  Modern{modernLocked ? <span className="ml-1">🔒</span> : null}
+                </div>
                 <div
                   className={`${
                     template === "modern" ? "text-slate-700" : "text-slate-300"
@@ -1247,10 +1314,7 @@ export default function CVBuilderPage() {
 
               <button
                 type="button"
-                onClick={() => {
-                  if (teacherMode && isTeacherLocked("template")) return;
-                  setTemplate("compact");
-                }}
+                onClick={() => requestTemplateChange("compact")}
                 disabled={teacherMode && isTeacherLocked("template")}
                 className={`rounded-2xl p-4 text-left ring-1 transition ${
                   template === "compact"
@@ -1262,7 +1326,9 @@ export default function CVBuilderPage() {
                     : ""
                 }`}
               >
-                <div className="font-semibold">Compact</div>
+                <div className="font-semibold">
+                  Compact{compactLocked ? <span className="ml-1">🔒</span> : null}
+                </div>
                 <div
                   className={`${
                     template === "compact" ? "text-slate-700" : "text-slate-300"
@@ -1824,6 +1890,32 @@ Timekeeping`}
             {isLoading ? "Generating..." : `Generate ${labelDoc}`}
           </button>
         </form>
+
+        {/* Paywall modal (soft gate for template selection on this page) */}
+        <PaywallModal
+          open={paywallOpen}
+          reason={paywallReason}
+          onClose={() => {
+            setPaywallOpen(false);
+            setPendingTemplate(null);
+          }}
+          onPreviewAnyway={() => {
+            if (pendingTemplate) {
+              setTemplate(pendingTemplate);
+            }
+            setPendingTemplate(null);
+            setPaywallOpen(false);
+          }}
+          onUnlockClick={() => {
+            const link = process.env.NEXT_PUBLIC_STRIPE_CV_PRO_LINK;
+            if (!link) {
+              window.alert("Missing env var: NEXT_PUBLIC_STRIPE_CV_PRO_LINK");
+              return;
+            }
+            // Configure Stripe Payment Link success URL to return to /cv?unlocked=true
+            window.location.href = link;
+          }}
+        />
       </div>
     </div>
   );
