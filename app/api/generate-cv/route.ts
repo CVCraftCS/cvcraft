@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 type Body = {
-  // Keep flexible: your frontend may send slightly different names
+  // Flexible field names (your UI may send different ones)
   targetRoleTitle?: string;
   role?: string;
 
@@ -15,25 +15,51 @@ type Body = {
   skillsText?: string | string[];
   skills?: string | string[];
 
-  // Optional extras you might already send
+  // Optional extras
   region?: string;
   template?: string;
   tone?: string;
 
-  // If you send the whole form as one object
+  // If the frontend posts everything inside one object
   form?: Record<string, any>;
 };
 
 function normalizeSkills(v: unknown): string[] {
   if (!v) return [];
-  if (Array.isArray(v)) return v.map(String).map(s => s.trim()).filter(Boolean);
+  if (Array.isArray(v)) return v.map(String).map((s) => s.trim()).filter(Boolean);
   if (typeof v === "string") {
     return v
       .split("\n")
-      .map(s => s.trim())
+      .map((s) => s.trim())
       .filter(Boolean);
   }
   return [];
+}
+
+function extractResponseText(d: any): string {
+  // Most common convenience property
+  if (typeof d?.output_text === "string" && d.output_text.trim()) {
+    return d.output_text.trim();
+  }
+
+  // Fallback: walk output -> content -> text
+  const out = d?.output;
+  if (Array.isArray(out)) {
+    const parts: string[] = [];
+    for (const item of out) {
+      const content = item?.content;
+      if (!Array.isArray(content)) continue;
+
+      for (const c of content) {
+        if (typeof c?.text === "string" && c.text.trim()) parts.push(c.text.trim());
+        if (typeof c?.output_text === "string" && c.output_text.trim())
+          parts.push(c.output_text.trim());
+      }
+    }
+    return parts.join("\n\n").trim();
+  }
+
+  return "";
 }
 
 export async function POST(req: NextRequest) {
@@ -62,7 +88,6 @@ export async function POST(req: NextRequest) {
     const template = (body.template ?? body.form?.template ?? "classic").toString();
     const tone = (body.tone ?? body.form?.tone ?? "professional").toString();
 
-    // If you want to allow “blank” generation, remove this check.
     if (!role) {
       return NextResponse.json(
         { ok: false, error: "Missing target role title." },
@@ -78,23 +103,33 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Keep your default model here. You can override via Vercel env var OPENAI_MODEL.
     const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
 
     const prompt = [
-      `You are CVCraft, a CV writer.`,
-      `Write in ${tone} tone for region ${region}.`,
+      `You are CVCraft, an expert CV writer.`,
+      `Write in a ${tone} tone.`,
+      `Region: ${region}.`,
       `Template hint: ${template}.`,
       ``,
       `Target role: ${role}`,
-      experience ? `Experience/context:\n${experience}` : `Experience/context: (none provided)`,
-      skills.length ? `Skills:\n${skills.map(s => `- ${s}`).join("\n")}` : `Skills: (none provided)`,
       ``,
-      `Return ONLY the finished CV text (no JSON).`,
-      `Use clean section headings and bullet points where appropriate.`,
+      experience
+        ? `Experience/context (may be incomplete):\n${experience}`
+        : `Experience/context: (none provided)`,
+      ``,
+      skills.length
+        ? `Skills:\n${skills.map((s) => `- ${s}`).join("\n")}`
+        : `Skills: (none provided)`,
+      ``,
+      `Task: Generate a strong, ATS-friendly CV tailored to the target role.`,
+      `Rules:`,
+      `- Return ONLY the CV text (no JSON, no code, no markdown fences).`,
+      `- Use clear section headings.`,
+      `- Use bullet points where appropriate.`,
+      `- Do not invent employers or qualifications; if something is missing, write generally without adding fake facts.`,
     ].join("\n");
 
-    // OpenAI Responses API (recommended). If you’re using a different client elsewhere,
-    // this still works as a standalone route.
     const r = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
@@ -110,27 +145,34 @@ export async function POST(req: NextRequest) {
     if (!r.ok) {
       const errText = await r.text().catch(() => "");
       return NextResponse.json(
-        { ok: false, error: `OpenAI error: ${r.status} ${r.statusText}`, details: errText },
+        {
+          ok: false,
+          error: `OpenAI error: ${r.status} ${r.statusText}`,
+          details: errText,
+        },
         { status: 500 }
       );
     }
 
     const data: any = await r.json();
+    const outputText = extractResponseText(data);
 
-    // Responses API usually provides output_text
-    const outputText =
-      (typeof data?.output_text === "string" && data.output_text) ||
-      "";
-
-    if (!outputText.trim()) {
+    if (!outputText) {
       return NextResponse.json(
-        { ok: false, error: "OpenAI returned empty output." },
+        {
+          ok: false,
+          error: "OpenAI returned empty output.",
+          debug: {
+            hasOutputText: typeof data?.output_text === "string",
+            hasOutputArray: Array.isArray(data?.output),
+          },
+        },
         { status: 500 }
       );
     }
 
-    // IMPORTANT: always return a STRING in result
-    return NextResponse.json({ ok: true, result: outputText.trim() });
+    // ✅ Frontend expects: { ok: true, result: string }
+    return NextResponse.json({ ok: true, result: outputText });
   } catch (e: any) {
     return NextResponse.json(
       { ok: false, error: e?.message || "Unknown server error." },
