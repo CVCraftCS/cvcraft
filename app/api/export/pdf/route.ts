@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       // Local dev: use full puppeteer (bundled Chromium)
       const puppeteer = await import("puppeteer");
       browser = await puppeteer.launch({
-        headless: "new",
+        headless: true,
       });
     }
 
