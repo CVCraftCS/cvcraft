@@ -24,6 +24,7 @@ function devErrorPayload(err: unknown) {
 }
 
 function pickFirstExisting(paths: string[]) {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const fs = require("fs");
   for (const p of paths) {
     try {
@@ -90,13 +91,11 @@ async function getBrowser() {
 
   // --- Local dev path: prefer full puppeteer if installed, else puppeteer-core + local Chrome path
   try {
-    // If you install "puppeteer", this is the smoothest local experience
     const puppeteer = await import("puppeteer");
     return puppeteer.launch({
       headless: true,
     });
   } catch {
-    // Fallback: puppeteer-core, you must point to Chrome/Edge
     const puppeteer = await import("puppeteer-core");
     const executablePath = guessChromePath();
 
@@ -109,55 +108,48 @@ async function getBrowser() {
     return puppeteer.launch({
       headless: true,
       executablePath,
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-gpu",
-      ],
+      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-gpu"],
     });
   }
 }
 
 export async function POST(req: NextRequest) {
+  let browser: any = null;
+
   try {
     const body = (await req.json()) as Body;
     const html = (body.html || "").trim();
     const filename = (body.filename || "CVCraft-CV.pdf").trim();
 
     if (!html) {
-      return NextResponse.json(
-        { ok: false, error: "Missing html in request body." },
-        { status: 400 }
-      );
+      return NextResponse.json({ ok: false, error: "Missing html in request body." }, { status: 400 });
     }
 
-    const browser = await getBrowser();
-    try {
-      const page = await browser.newPage();
+    browser = await getBrowser();
 
-      // Important for consistent rendering
-      await page.setContent(html, { waitUntil: "networkidle0" });
+    const page = await browser.newPage();
 
-      const pdfBuffer = await page.pdf({
-        format: "A4",
-        printBackground: true,
-        preferCSSPageSize: true,
-      });
+    // Important for consistent rendering
+    await page.setContent(html, { waitUntil: "networkidle0" });
 
-      return new NextResponse(pdfBuffer, {
-        status: 200,
-        headers: {
-          "Content-Type": "application/pdf",
-          "Content-Disposition": `attachment; filename="${filename.replace(/"/g, "")}"`,
-          "Cache-Control": "no-store",
-        },
-      });
-    } finally {
-      await browser.close();
-    }
+    // Puppeteer returns a Uint8Array in newer versions (good for Web Response)
+    const pdfUint8 = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      preferCSSPageSize: true,
+    });
+
+    // ✅ CRITICAL FIX:
+    // Use Web Response (NOT NextResponse) so Vercel/Next build typings accept the body.
+    return new Response(pdfUint8, {
+      status: 200,
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="${filename.replace(/"/g, "")}"`,
+        "Cache-Control": "no-store",
+      },
+    });
   } catch (err) {
-    // This is the key: surface the real cause so we can fix it fast
     const isProd = process.env.NODE_ENV === "production";
     return NextResponse.json(
       {
@@ -167,5 +159,9 @@ export async function POST(req: NextRequest) {
       },
       { status: 500 }
     );
+  } finally {
+    try {
+      if (browser) await browser.close();
+    } catch {}
   }
 }
