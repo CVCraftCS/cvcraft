@@ -11,8 +11,8 @@ type Body = {
 };
 
 function isVercel(): boolean {
-  // Vercel sets VERCEL=1 in runtime env
-  return process.env.VERCEL === "1";
+  // More robust than === "1"
+  return !!process.env.VERCEL;
 }
 
 function pickFirstExisting(paths: string[]): string | null {
@@ -69,18 +69,27 @@ async function getBrowser() {
     const executablePath = await chromium.executablePath();
 
     return puppeteer.launch({
-      args: chromium.args,
+      args: [
+        ...chromium.args,
+        // extra hardening for serverless sandboxes
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--single-process",
+      ],
       defaultViewport: chromium.defaultViewport,
       executablePath,
-      headless: chromium.headless,
+      headless: true,
     });
   }
 
-  // ✅ Local dev: try puppeteer first (uses installed Chrome), fallback to puppeteer-core with chrome path
+  // ✅ Local dev: try puppeteer first (uses installed Chrome)
   try {
     const puppeteer = await import("puppeteer");
     return puppeteer.launch({ headless: true });
   } catch {
+    // Fallback: puppeteer-core with explicit Chrome/Edge path
     const puppeteer = await import("puppeteer-core");
     const executablePath = guessChromePath();
 
@@ -99,7 +108,6 @@ async function getBrowser() {
 }
 
 function safeFilename(name: string) {
-  // strip quotes and newlines etc.
   return name.replace(/["\r\n]/g, "").trim() || "CVCraft-CV.pdf";
 }
 
@@ -118,16 +126,18 @@ export async function POST(req: NextRequest) {
 
     try {
       const page = await browser.newPage();
+
+      // Consistent rendering
       await page.setContent(html, { waitUntil: "networkidle0" });
 
-      // Puppeteer returns a Buffer (Node), but TS can show Uint8Array — force Buffer for NextResponse
       const pdf = await page.pdf({
         format: "A4",
         printBackground: true,
         preferCSSPageSize: true,
       });
 
-      const pdfBuffer = Buffer.from(pdf);
+      // Ensure Buffer for NextResponse / Node runtime
+      const pdfBuffer = Buffer.isBuffer(pdf) ? pdf : Buffer.from(pdf);
 
       return new NextResponse(pdfBuffer, {
         status: 200,
@@ -141,10 +151,9 @@ export async function POST(req: NextRequest) {
       await browser.close();
     }
   } catch (err: any) {
-    // ✅ Always log on Vercel so you can see the real error in project Logs
+    // ✅ shows up in Vercel → Logs
     console.error("PDF export failed:", err);
 
-    // Return a small debug payload (safe)
     return NextResponse.json(
       {
         ok: false,
