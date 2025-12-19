@@ -11,35 +11,23 @@ type Body = {
 };
 
 function isVercel(): boolean {
-  return process.env.VERCEL === "1" || !!process.env.VERCEL;
+  // Vercel sets VERCEL=1 in runtime env
+  return process.env.VERCEL === "1";
 }
 
-function devErrorPayload(err: unknown) {
-  const e = err as any;
-  return {
-    message: e?.message || String(err),
-    name: e?.name,
-    stack: e?.stack,
-  };
-}
-
-function pickFirstExisting(paths: string[]) {
+function pickFirstExisting(paths: string[]): string | null {
   for (const p of paths) {
     try {
       if (p && fs.existsSync(p)) return p;
-    } catch {
-      // ignore
-    }
+    } catch {}
   }
   return null;
 }
 
 function guessChromePath(): string | null {
-  // Manual override (best for local)
   const envPath = process.env.CHROME_PATH;
   if (envPath) return envPath;
 
-  // Windows common installs
   if (process.platform === "win32") {
     const programFiles = process.env["PROGRAMFILES"] || "C:\\Program Files";
     const programFilesX86 = process.env["PROGRAMFILES(X86)"] || "C:\\Program Files (x86)";
@@ -54,7 +42,6 @@ function guessChromePath(): string | null {
     ]);
   }
 
-  // macOS
   if (process.platform === "darwin") {
     return pickFirstExisting([
       "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
@@ -63,7 +50,6 @@ function guessChromePath(): string | null {
     ]);
   }
 
-  // Linux
   return pickFirstExisting([
     "/usr/bin/google-chrome",
     "/usr/bin/google-chrome-stable",
@@ -74,7 +60,7 @@ function guessChromePath(): string | null {
 }
 
 async function getBrowser() {
-  // On Vercel: puppeteer-core + @sparticuz/chromium (serverless-safe)
+  // ✅ Vercel (Linux serverless): puppeteer-core + @sparticuz/chromium
   if (isVercel()) {
     const chromiumMod = await import("@sparticuz/chromium");
     const chromium = chromiumMod.default;
@@ -90,37 +76,37 @@ async function getBrowser() {
     });
   }
 
-  // Local: prefer full puppeteer if present (uses bundled Chromium)
+  // ✅ Local dev: try puppeteer first (uses installed Chrome), fallback to puppeteer-core with chrome path
   try {
     const puppeteer = await import("puppeteer");
     return puppeteer.launch({ headless: true });
   } catch {
-    // Local fallback: puppeteer-core + system Chrome/Edge
     const puppeteer = await import("puppeteer-core");
     const executablePath = guessChromePath();
 
     if (!executablePath) {
       throw new Error(
-        "Could not find a local Chrome/Edge executable. Install Google Chrome OR set CHROME_PATH env var to your chrome.exe path."
+        "Could not find local Chrome/Edge. Install Chrome or set CHROME_PATH to your chrome.exe path."
       );
     }
 
     return puppeteer.launch({
       headless: true,
       executablePath,
-      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-gpu"],
     });
   }
 }
 
 function safeFilename(name: string) {
-  // remove quotes and path separators
-  return name.replace(/["']/g, "").replace(/[\\\/]/g, "-").trim() || "CVCraft-CV.pdf";
+  // strip quotes and newlines etc.
+  return name.replace(/["\r\n]/g, "").trim() || "CVCraft-CV.pdf";
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as Body;
+
     const html = (body.html || "").trim();
     const filename = safeFilename(body.filename || "CVCraft-CV.pdf");
 
@@ -132,20 +118,18 @@ export async function POST(req: NextRequest) {
 
     try {
       const page = await browser.newPage();
-
-      // Render HTML
       await page.setContent(html, { waitUntil: "networkidle0" });
 
+      // Puppeteer returns a Buffer (Node), but TS can show Uint8Array — force Buffer for NextResponse
       const pdf = await page.pdf({
         format: "A4",
         printBackground: true,
         preferCSSPageSize: true,
       });
 
-      // Important: NextResponse body wants a BodyInit – Uint8Array is safe
-      const pdfBytes = pdf instanceof Uint8Array ? pdf : new Uint8Array(pdf as any);
+      const pdfBuffer = Buffer.from(pdf);
 
-      return new NextResponse(pdfBytes, {
+      return new NextResponse(pdfBuffer, {
         status: 200,
         headers: {
           "Content-Type": "application/pdf",
@@ -156,15 +140,16 @@ export async function POST(req: NextRequest) {
     } finally {
       await browser.close();
     }
-  } catch (err) {
-    const isProd = process.env.NODE_ENV === "production";
+  } catch (err: any) {
+    // ✅ Always log on Vercel so you can see the real error in project Logs
+    console.error("PDF export failed:", err);
 
-    // Return JSON so DevTools "Response" should show something
+    // Return a small debug payload (safe)
     return NextResponse.json(
       {
         ok: false,
         error: "PDF export failed.",
-        ...(isProd ? {} : { debug: devErrorPayload(err) }),
+        message: err?.message || String(err),
       },
       { status: 500 }
     );
