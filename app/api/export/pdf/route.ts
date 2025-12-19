@@ -1,5 +1,6 @@
 // app/api/export/pdf/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import fs from "node:fs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -9,18 +10,8 @@ type Body = {
   filename?: string;
 };
 
-function isServerlessLinux(): boolean {
-  const isLinux = process.platform === "linux";
-  // Vercel usually sets one or more of these
-  const onVercel =
-    process.env.VERCEL === "1" ||
-    !!process.env.VERCEL_ENV ||
-    !!process.env.VERCEL_REGION;
-
-  // Some other serverless envs set this too
-  const onLambda = !!process.env.AWS_LAMBDA_FUNCTION_VERSION;
-
-  return isLinux && (onVercel || onLambda);
+function isVercel(): boolean {
+  return process.env.VERCEL === "1" || !!process.env.VERCEL;
 }
 
 function devErrorPayload(err: unknown) {
@@ -28,36 +19,30 @@ function devErrorPayload(err: unknown) {
   return {
     message: e?.message || String(err),
     name: e?.name,
-    // stack only in dev below
     stack: e?.stack,
   };
 }
 
-async function pathExists(p: string): Promise<boolean> {
-  try {
-    const fs = await import("fs/promises");
-    await fs.access(p);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function pickFirstExisting(paths: string[]) {
+function pickFirstExisting(paths: string[]) {
   for (const p of paths) {
-    if (p && (await pathExists(p))) return p;
+    try {
+      if (p && fs.existsSync(p)) return p;
+    } catch {
+      // ignore
+    }
   }
   return null;
 }
 
-async function guessChromePath(): Promise<string | null> {
+function guessChromePath(): string | null {
+  // Manual override (best for local)
   const envPath = process.env.CHROME_PATH;
   if (envPath) return envPath;
 
+  // Windows common installs
   if (process.platform === "win32") {
     const programFiles = process.env["PROGRAMFILES"] || "C:\\Program Files";
-    const programFilesX86 =
-      process.env["PROGRAMFILES(X86)"] || "C:\\Program Files (x86)";
+    const programFilesX86 = process.env["PROGRAMFILES(X86)"] || "C:\\Program Files (x86)";
     const localAppData = process.env["LOCALAPPDATA"] || "";
 
     return pickFirstExisting([
@@ -69,6 +54,7 @@ async function guessChromePath(): Promise<string | null> {
     ]);
   }
 
+  // macOS
   if (process.platform === "darwin") {
     return pickFirstExisting([
       "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
@@ -77,6 +63,7 @@ async function guessChromePath(): Promise<string | null> {
     ]);
   }
 
+  // Linux
   return pickFirstExisting([
     "/usr/bin/google-chrome",
     "/usr/bin/google-chrome-stable",
@@ -87,108 +74,99 @@ async function guessChromePath(): Promise<string | null> {
 }
 
 async function getBrowser() {
-  // ✅ Serverless Linux (Vercel): puppeteer-core + @sparticuz/chromium
-  if (isServerlessLinux()) {
-    // Handle both default and named exports safely
-    const chromiumMod: any = await import("@sparticuz/chromium");
-    const chromium = chromiumMod.default ?? chromiumMod;
-
+  // On Vercel: puppeteer-core + @sparticuz/chromium (serverless-safe)
+  if (isVercel()) {
+    const chromiumMod = await import("@sparticuz/chromium");
+    const chromium = chromiumMod.default;
     const puppeteer = await import("puppeteer-core");
 
-    const executablePath =
-      typeof chromium.executablePath === "function"
-        ? await chromium.executablePath()
-        : undefined;
-
-    if (!executablePath) {
-      throw new Error("Chromium executablePath() was empty on serverless.");
-    }
+    const executablePath = await chromium.executablePath();
 
     return puppeteer.launch({
-      args: chromium.args ?? [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-      ],
-      defaultViewport: chromium.defaultViewport ?? { width: 1280, height: 720 },
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
       executablePath,
-      headless: chromium.headless ?? true,
+      headless: chromium.headless,
     });
   }
 
-  // ✅ Local dev: prefer full puppeteer if installed
+  // Local: prefer full puppeteer if present (uses bundled Chromium)
   try {
     const puppeteer = await import("puppeteer");
     return puppeteer.launch({ headless: true });
   } catch {
+    // Local fallback: puppeteer-core + system Chrome/Edge
     const puppeteer = await import("puppeteer-core");
-    const executablePath = await guessChromePath();
+    const executablePath = guessChromePath();
+
     if (!executablePath) {
       throw new Error(
-        "Local Chrome not found. Install Chrome/Edge or set CHROME_PATH."
+        "Could not find a local Chrome/Edge executable. Install Google Chrome OR set CHROME_PATH env var to your chrome.exe path."
       );
     }
+
     return puppeteer.launch({
       headless: true,
       executablePath,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
     });
   }
 }
 
-export async function POST(req: NextRequest) {
-  let browser: any;
+function safeFilename(name: string) {
+  // remove quotes and path separators
+  return name.replace(/["']/g, "").replace(/[\\\/]/g, "-").trim() || "CVCraft-CV.pdf";
+}
 
+export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as Body;
     const html = (body.html || "").trim();
-    const filename = (body.filename || "CVCraft-CV.pdf").trim();
+    const filename = safeFilename(body.filename || "CVCraft-CV.pdf");
 
     if (!html) {
-      return NextResponse.json(
-        { ok: false, error: "Missing html in request body." },
-        { status: 400 }
-      );
+      return NextResponse.json({ ok: false, error: "Missing html in request body." }, { status: 400 });
     }
 
-    browser = await getBrowser();
-    const page = await browser.newPage();
+    const browser = await getBrowser();
 
-    await page.setContent(html, { waitUntil: "networkidle0" });
+    try {
+      const page = await browser.newPage();
 
-    const pdf = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      preferCSSPageSize: true,
-    });
+      // Render HTML
+      await page.setContent(html, { waitUntil: "networkidle0" });
 
-    // ✅ Use native Response for binary output
-    return new Response(pdf, {
-      status: 200,
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${filename.replace(/"/g, "")}"`,
-        "Cache-Control": "no-store",
-      },
-    });
+      const pdf = await page.pdf({
+        format: "A4",
+        printBackground: true,
+        preferCSSPageSize: true,
+      });
+
+      // Important: NextResponse body wants a BodyInit – Uint8Array is safe
+      const pdfBytes = pdf instanceof Uint8Array ? pdf : new Uint8Array(pdf as any);
+
+      return new NextResponse(pdfBytes, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `attachment; filename="${filename}"`,
+          "Cache-Control": "no-store",
+        },
+      });
+    } finally {
+      await browser.close();
+    }
   } catch (err) {
     const isProd = process.env.NODE_ENV === "production";
-    const payload = devErrorPayload(err);
 
-    // ✅ Always return the message (helps you fix fast)
-    // ✅ Only include stack in dev
+    // Return JSON so DevTools "Response" should show something
     return NextResponse.json(
       {
         ok: false,
-        error: payload.message || "PDF export failed.",
-        name: payload.name,
-        ...(isProd ? {} : { stack: payload.stack }),
+        error: "PDF export failed.",
+        ...(isProd ? {} : { debug: devErrorPayload(err) }),
       },
       { status: 500 }
     );
-  } finally {
-    try {
-      if (browser) await browser.close();
-    } catch {}
   }
 }
