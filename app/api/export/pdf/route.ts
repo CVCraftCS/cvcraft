@@ -10,7 +10,6 @@ type Body = {
 };
 
 function isProbablyVercel(): boolean {
-  // Vercel sets VERCEL=1 in runtime env
   return !!process.env.VERCEL;
 }
 
@@ -23,26 +22,31 @@ function devErrorPayload(err: unknown) {
   };
 }
 
-function pickFirstExisting(paths: string[]) {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const fs = require("fs");
+async function pathExists(p: string): Promise<boolean> {
+  try {
+    const fs = await import("fs/promises");
+    await fs.access(p);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function pickFirstExisting(paths: string[]) {
   for (const p of paths) {
-    try {
-      if (p && fs.existsSync(p)) return p;
-    } catch {}
+    if (p && (await pathExists(p))) return p;
   }
   return null;
 }
 
-function guessChromePath(): string | null {
-  // Allow manual override (best for local dev)
+async function guessChromePath(): Promise<string | null> {
   const envPath = process.env.CHROME_PATH;
   if (envPath) return envPath;
 
-  // Common Chrome installs on Windows
   if (process.platform === "win32") {
     const programFiles = process.env["PROGRAMFILES"] || "C:\\Program Files";
-    const programFilesX86 = process.env["PROGRAMFILES(X86)"] || "C:\\Program Files (x86)";
+    const programFilesX86 =
+      process.env["PROGRAMFILES(X86)"] || "C:\\Program Files (x86)";
     const localAppData = process.env["LOCALAPPDATA"] || "";
 
     return pickFirstExisting([
@@ -54,7 +58,6 @@ function guessChromePath(): string | null {
     ]);
   }
 
-  // macOS
   if (process.platform === "darwin") {
     return pickFirstExisting([
       "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
@@ -63,7 +66,6 @@ function guessChromePath(): string | null {
     ]);
   }
 
-  // Linux (common)
   return pickFirstExisting([
     "/usr/bin/google-chrome",
     "/usr/bin/google-chrome-stable",
@@ -74,47 +76,43 @@ function guessChromePath(): string | null {
 }
 
 async function getBrowser() {
-  // --- Vercel path (serverless Linux): puppeteer-core + @sparticuz/chromium
+  // ✅ Vercel (serverless)
   if (isProbablyVercel()) {
     const chromium = (await import("@sparticuz/chromium")).default;
     const puppeteer = await import("puppeteer-core");
 
-    const executablePath = await chromium.executablePath();
-
     return puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
-      executablePath,
+      executablePath: await chromium.executablePath(),
       headless: chromium.headless,
     });
   }
 
-  // --- Local dev path: prefer full puppeteer if installed, else puppeteer-core + local Chrome path
+  // ✅ Local dev (prefer full puppeteer)
   try {
     const puppeteer = await import("puppeteer");
-    return puppeteer.launch({
-      headless: true,
-    });
+    return puppeteer.launch({ headless: true });
   } catch {
     const puppeteer = await import("puppeteer-core");
-    const executablePath = guessChromePath();
+    const executablePath = await guessChromePath();
 
     if (!executablePath) {
       throw new Error(
-        "Could not find a local Chrome/Edge executable. Install Google Chrome OR set CHROME_PATH env var to your chrome.exe path."
+        "Chrome not found. Install Chrome or set CHROME_PATH env variable."
       );
     }
 
     return puppeteer.launch({
       headless: true,
       executablePath,
-      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-gpu"],
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
   }
 }
 
 export async function POST(req: NextRequest) {
-  let browser: any = null;
+  let browser: any;
 
   try {
     const body = (await req.json()) as Body;
@@ -122,26 +120,25 @@ export async function POST(req: NextRequest) {
     const filename = (body.filename || "CVCraft-CV.pdf").trim();
 
     if (!html) {
-      return NextResponse.json({ ok: false, error: "Missing html in request body." }, { status: 400 });
+      return NextResponse.json(
+        { ok: false, error: "Missing html in request body." },
+        { status: 400 }
+      );
     }
 
     browser = await getBrowser();
-
     const page = await browser.newPage();
 
-    // Important for consistent rendering
     await page.setContent(html, { waitUntil: "networkidle0" });
 
-    // Puppeteer returns a Uint8Array in newer versions (good for Web Response)
-    const pdfUint8 = await page.pdf({
+    const pdf = await page.pdf({
       format: "A4",
       printBackground: true,
       preferCSSPageSize: true,
     });
 
-    // ✅ CRITICAL FIX:
-    // Use Web Response (NOT NextResponse) so Vercel/Next build typings accept the body.
-    return new Response(pdfUint8, {
+    // ✅ MUST use Web Response (not NextResponse) for binary body
+    return new Response(pdf, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
