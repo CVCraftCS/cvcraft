@@ -9,8 +9,18 @@ type Body = {
   filename?: string;
 };
 
-function isProbablyVercel(): boolean {
-  return !!process.env.VERCEL;
+function isServerlessLinux(): boolean {
+  const isLinux = process.platform === "linux";
+  // Vercel usually sets one or more of these
+  const onVercel =
+    process.env.VERCEL === "1" ||
+    !!process.env.VERCEL_ENV ||
+    !!process.env.VERCEL_REGION;
+
+  // Some other serverless envs set this too
+  const onLambda = !!process.env.AWS_LAMBDA_FUNCTION_VERSION;
+
+  return isLinux && (onVercel || onLambda);
 }
 
 function devErrorPayload(err: unknown) {
@@ -18,6 +28,7 @@ function devErrorPayload(err: unknown) {
   return {
     message: e?.message || String(err),
     name: e?.name,
+    // stack only in dev below
     stack: e?.stack,
   };
 }
@@ -76,33 +87,47 @@ async function guessChromePath(): Promise<string | null> {
 }
 
 async function getBrowser() {
-  // ✅ Vercel (serverless)
-  if (isProbablyVercel()) {
-    const chromium = (await import("@sparticuz/chromium")).default;
+  // ✅ Serverless Linux (Vercel): puppeteer-core + @sparticuz/chromium
+  if (isServerlessLinux()) {
+    // Handle both default and named exports safely
+    const chromiumMod: any = await import("@sparticuz/chromium");
+    const chromium = chromiumMod.default ?? chromiumMod;
+
     const puppeteer = await import("puppeteer-core");
 
+    const executablePath =
+      typeof chromium.executablePath === "function"
+        ? await chromium.executablePath()
+        : undefined;
+
+    if (!executablePath) {
+      throw new Error("Chromium executablePath() was empty on serverless.");
+    }
+
     return puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
+      args: chromium.args ?? [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+      ],
+      defaultViewport: chromium.defaultViewport ?? { width: 1280, height: 720 },
+      executablePath,
+      headless: chromium.headless ?? true,
     });
   }
 
-  // ✅ Local dev (prefer full puppeteer)
+  // ✅ Local dev: prefer full puppeteer if installed
   try {
     const puppeteer = await import("puppeteer");
     return puppeteer.launch({ headless: true });
   } catch {
     const puppeteer = await import("puppeteer-core");
     const executablePath = await guessChromePath();
-
     if (!executablePath) {
       throw new Error(
-        "Chrome not found. Install Chrome or set CHROME_PATH env variable."
+        "Local Chrome not found. Install Chrome/Edge or set CHROME_PATH."
       );
     }
-
     return puppeteer.launch({
       headless: true,
       executablePath,
@@ -137,7 +162,7 @@ export async function POST(req: NextRequest) {
       preferCSSPageSize: true,
     });
 
-    // ✅ MUST use Web Response (not NextResponse) for binary body
+    // ✅ Use native Response for binary output
     return new Response(pdf, {
       status: 200,
       headers: {
@@ -148,11 +173,16 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     const isProd = process.env.NODE_ENV === "production";
+    const payload = devErrorPayload(err);
+
+    // ✅ Always return the message (helps you fix fast)
+    // ✅ Only include stack in dev
     return NextResponse.json(
       {
         ok: false,
-        error: "PDF export failed.",
-        ...(isProd ? {} : { debug: devErrorPayload(err) }),
+        error: payload.message || "PDF export failed.",
+        name: payload.name,
+        ...(isProd ? {} : { stack: payload.stack }),
       },
       { status: 500 }
     );
