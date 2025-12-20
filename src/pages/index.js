@@ -13,6 +13,7 @@ export default function Home() {
         </p>
 
         <div className="flex flex-col items-center gap-4">
+          {/* Normal user flow */}
           <Link
             href="/cv"
             className="inline-block px-8 py-4 bg-white text-slate-900 rounded-xl font-semibold hover:bg-slate-200 transition"
@@ -20,8 +21,9 @@ export default function Home() {
             Build my CV
           </Link>
 
+          {/* Schools / Teacher flow */}
           <Link
-            href="/schools"
+            href="/cv?teacher=1"
             className="text-slate-300 hover:text-white underline underline-offset-4 text-sm"
           >
             For Schools & Educators
