@@ -8,12 +8,24 @@ export default function SchoolsPage() {
           <Link href="/" className="text-slate-300 hover:text-white">
             ← Back
           </Link>
-          <Link
-            href="/cv"
-            className="rounded-xl bg-white text-black px-4 py-2 text-sm font-semibold hover:bg-slate-100"
-          >
-            Open CV Builder
-          </Link>
+
+          <div className="flex items-center gap-3">
+            <Link
+              href="/cv?teacher=1"
+              className="rounded-xl bg-white text-black px-4 py-2 text-sm font-semibold hover:bg-slate-100"
+              title="Opens classroom-safe Teacher Mode"
+            >
+              Classroom mode
+            </Link>
+
+            <Link
+              href="/cv"
+              className="rounded-xl bg-white/10 text-white ring-1 ring-white/15 px-4 py-2 text-sm font-semibold hover:bg-white/15"
+              title="Standard individual builder"
+            >
+              Individual builder
+            </Link>
+          </div>
         </div>
 
         <h1 className="text-4xl font-extrabold tracking-tight">
@@ -23,6 +35,31 @@ export default function SchoolsPage() {
           Help ensure every student leaves school with a professional, interview-ready CV — built in
           minutes.
         </p>
+
+        {/* Teacher Mode highlight */}
+        <div className="mt-8 rounded-2xl bg-emerald-950/35 border border-emerald-400/25 px-6 py-5">
+          <div className="text-emerald-200 font-semibold mb-1">
+            Classroom-safe mode is available (Teacher Mode)
+          </div>
+          <p className="text-emerald-100/90">
+            Teacher Mode is built for shared school devices: Student Safe Mode is locked ON, and
+            you can PIN-protect teacher controls.
+          </p>
+
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Link
+              href="/cv?teacher=1"
+              className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-100 text-center"
+            >
+              Launch classroom mode
+            </Link>
+
+            <div className="text-xs text-emerald-100/80">
+              Tip: Classroom mode works via{" "}
+              <code className="rounded bg-white/10 px-1.5 py-0.5">/cv?teacher=1</code>
+            </div>
+          </div>
+        </div>
 
         <div className="mt-10 grid gap-6 md:grid-cols-2">
           <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10">
@@ -36,13 +73,17 @@ export default function SchoolsPage() {
           </div>
 
           <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10">
-            <h2 className="text-xl font-bold">GDPR & shared-device safe</h2>
+            <h2 className="text-xl font-bold">Shared-device + privacy safe</h2>
             <ul className="mt-4 space-y-2 text-slate-200">
-              <li>• Student info is saved locally in the browser (not uploaded)</li>
-              <li>• No student accounts or logins required</li>
-              <li>• “Clear saved data” button removes all saved information from that device</li>
-              <li>• Suitable for shared PCs in schools, libraries, and job centres</li>
+              <li>• Teacher Mode locks Student Safe Mode ON</li>
+              <li>• Prevents personal info being left behind on school PCs</li>
+              <li>• No student accounts/logins needed</li>
+              <li>• Export-first workflow (download/print) then clear</li>
             </ul>
+
+            <div className="mt-4 rounded-xl bg-amber-950/30 border border-amber-400/30 px-4 py-3 text-amber-100 text-sm">
+              Student Safe Mode is designed for classrooms, libraries and shared devices.
+            </div>
           </div>
         </div>
 
@@ -64,7 +105,7 @@ export default function SchoolsPage() {
             <div>
               <div className="font-semibold">3) Improve</div>
               <p className="mt-2 text-sm text-slate-300">
-                Teachers can run a second session focused on refinements and feedback.
+                Teachers run a follow-up session focused on feedback and refinements.
               </p>
             </div>
           </div>
@@ -87,10 +128,10 @@ export default function SchoolsPage() {
             </a>
 
             <Link
-              href="/cv"
+              href="/cv?teacher=1"
               className="rounded-xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-200 text-center"
             >
-              Try the builder
+              Start a classroom session
             </Link>
           </div>
 
