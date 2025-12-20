@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     try {
       const page = await browser.newPage();
 
-      // networkidle0 can hang on serverless; "load" is safer on Vercel
+      // "load" is safer than networkidle0 on serverless
       await page.setContent(html, { waitUntil: "load" });
 
       const pdfUint8 = await page.pdf({
@@ -48,8 +48,13 @@ export async function POST(req: NextRequest) {
         printBackground: true,
       });
 
-      // ✅ Make BodyInit unambiguous for TypeScript/Vercel: Blob is always accepted
-      const pdfBlob = new Blob([pdfUint8], { type: "application/pdf" });
+      // ✅ FIX: create a real ArrayBuffer slice (TS accepts this as BlobPart)
+      const pdfArrayBuffer = pdfUint8.buffer.slice(
+        pdfUint8.byteOffset,
+        pdfUint8.byteOffset + pdfUint8.byteLength
+      );
+
+      const pdfBlob = new Blob([pdfArrayBuffer], { type: "application/pdf" });
 
       return new Response(pdfBlob, {
         status: 200,
@@ -64,7 +69,6 @@ export async function POST(req: NextRequest) {
     }
   } catch (err) {
     console.error("PDF export failed:", err);
-
     return Response.json(
       {
         ok: false,
