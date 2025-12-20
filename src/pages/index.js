@@ -2,15 +2,6 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-slate-900 text-white flex items-center justify-center px-6">
-      <div className="text-center max-w-2xl">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">
-          CVCraft
-        </h1>
-import Link from "next/link";
-
-export default function Home() {
-  return (
     <main className="min-h-screen bg-slate-900 text-white flex items-center justify-center px-6 py-16">
       <div className="text-center max-w-3xl w-full">
         <h1 className="text-4xl md:text-5xl font-bold mb-4">CVCraft</h1>
@@ -27,7 +18,7 @@ export default function Home() {
             Build my CV
           </Link>
 
-          {/* ✅ IMPORTANT: this must be /schools (NOT /cv) */}
+          {/* Schools should go to /schools first (then that page goes to /cv?teacher=1) */}
           <Link
             href="/schools"
             className="text-slate-300 hover:text-white underline underline-offset-4 text-sm"
@@ -52,53 +43,6 @@ export default function Home() {
               confident sending out.”
             </p>
             <p className="mt-4 text-sm text-slate-300">— Recent jobseeker</p>
-          </div>
-        </div>
-      </div>
-    </main>
-  );
-}
-
-        <p className="text-slate-300 text-lg mb-8">
-          AI-powered CVs, built fast, built properly.
-        </p>
-
-        <div className="flex flex-col items-center gap-4 mb-10">
-          <Link
-            href="/cv"
-            className="inline-block px-8 py-4 bg-white text-slate-900 rounded-xl font-semibold hover:bg-slate-200 transition"
-          >
-            Build my CV
-          </Link>
-
-          <Link
-            href="/cv?teacher=1"
-            className="text-slate-300 hover:text-white underline underline-offset-4 text-sm"
-          >
-            For Schools & Educators
-          </Link>
-        </div>
-
-        {/* Testimonials */}
-        <div className="mt-8 grid gap-6 md:grid-cols-2 text-left">
-          <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-6">
-            <p className="text-slate-100">
-              “This is great — so efficient and easy to use. It saved me hours.
-              Worth the money for the convenience alone.”
-            </p>
-            <p className="mt-3 text-sm text-slate-400">
-              — Daniel
-            </p>
-          </div>
-
-          <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-6">
-            <p className="text-slate-100">
-              “I hate writing CVs. This made it simple and actually gave me
-              something I felt confident sending out.”
-            </p>
-            <p className="mt-3 text-sm text-slate-400">
-              — Gail 
-            </p>
           </div>
         </div>
       </div>
