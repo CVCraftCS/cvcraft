@@ -10,22 +10,13 @@ const TEACHER_MODE_SESSION_KEY = "cvcraft:teacherMode";
 const TEACHER_PIN_SESSION_KEY = "cvcraft:teacherPinHash"; // optional cleanup
 
 // defaults (must match builder)
-// ✅ Added "experience" support (Experience Summary)
-const DEFAULT_SECTION_ORDER = [
-  "summary",
-  "employment",
-  "qualifications",
-  "skills",
-  "references",
-  "experience",
-];
+const DEFAULT_SECTION_ORDER = ["summary", "employment", "qualifications", "skills", "references"];
 const DEFAULT_SECTION_CONFIG = {
   summary: true,
   employment: true,
   qualifications: true,
   skills: true,
   references: false,
-  experience: true, // ✅ show Experience Summary by default (you can toggle via builder config if you prefer)
 };
 
 // Pro template meta (must match cv.js)
@@ -55,195 +46,12 @@ function regionLocale(region) {
 
 function sectionLabel(key, region) {
   if (key === "summary") return "Professional Summary";
-  if (key === "experience") return "Experience Summary";
   if (key === "employment") return "Employment history";
   if (key === "qualifications")
     return region === "US" ? "Education & Certifications" : "Qualifications & Certifications";
   if (key === "skills") return "Skills";
   if (key === "references") return "References";
   return key;
-}
-
-/**
- * ✅ Robust extractor for BOTH:
- * - Markdown headings (### Skills)
- * - Plain text headings (KEY SKILLS / PROFILE / EXPERIENCE SUMMARY)
- *
- * Your API currently returns plain text headings like:
- * PROFILE
- * ...
- * KEY SKILLS
- * - Skill
- * ...
- */
-function extractSections(cvText) {
-  const text = (cvText || "").replace(/\r\n/g, "\n").trim();
-
-  const out = {
-    summary: "",
-    experienceSummary: "",
-    skills: [],
-  };
-
-  if (!text) return out;
-
-  // Helper: normalize headings to a consistent token so we can parse reliably.
-  const normalizeHeading = (h) =>
-    String(h || "")
-      .trim()
-      .toUpperCase()
-      .replace(/\s+/g, " ");
-
-  // Split into lines for plain-text parsing
-  const lines = text.split("\n");
-
-  // Detect headings like:
-  // PROFILE
-  // KEY SKILLS
-  // EXPERIENCE SUMMARY
-  // EMPLOYMENT HISTORY
-  // EDUCATION
-  // QUALIFICATIONS & CERTIFICATIONS
-  // ADDITIONAL INFORMATION
-  //
-  // We only care about: PROFILE (summary), EXPERIENCE SUMMARY, KEY SKILLS (skills)
-  const sections = {};
-  let current = "__PRE__";
-  sections[current] = [];
-
-  // Consider a line a heading if it is mostly letters/spaces/& and looks “title-like”
-  const isHeadingLine = (line) => {
-    const s = String(line || "").trim();
-    if (!s) return false;
-
-    // Common headings we expect (fast path)
-    const H = normalizeHeading(s);
-    const known = new Set([
-      "PROFILE",
-      "PROFESSIONAL SUMMARY",
-      "SUMMARY",
-      "EXPERIENCE SUMMARY",
-      "KEY EXPERIENCE",
-      "EXPERIENCE",
-      "KEY SKILLS",
-      "SKILLS",
-      "EMPLOYMENT HISTORY",
-      "EDUCATION",
-      "QUALIFICATIONS & CERTIFICATIONS",
-      "QUALIFICATIONS AND CERTIFICATIONS",
-      "ADDITIONAL INFORMATION",
-      "REFERENCES",
-    ]);
-    if (known.has(H)) return true;
-
-    // Generic heading heuristic (avoid catching normal sentences):
-    // - relatively short
-    // - no trailing punctuation like "." ":"
-    // - mostly uppercase or title-like
-    if (s.length > 60) return false;
-    if (/[.:]$/.test(s)) return false;
-
-    // Only allow characters commonly in headings
-    if (!/^[A-Za-z0-9 &/()\-]+$/.test(s)) return false;
-
-    // If it contains many lowercase letters, probably not a heading
-    const lowerCount = (s.match(/[a-z]/g) || []).length;
-    const upperCount = (s.match(/[A-Z]/g) || []).length;
-
-    // If mostly uppercase OR looks like “Words Words”
-    const mostlyUpper = upperCount >= lowerCount * 2 && upperCount >= 3;
-    const titleLike = s.split(" ").filter(Boolean).length <= 5 && upperCount >= 2;
-
-    return mostlyUpper || titleLike;
-  };
-
-  for (const rawLine of lines) {
-    const line = rawLine.trim();
-
-    if (isHeadingLine(line)) {
-      current = normalizeHeading(line);
-      if (!sections[current]) sections[current] = [];
-      continue;
-    }
-
-    // store non-empty lines (but keep blank lines as separators minimally)
-    if (!sections[current]) sections[current] = [];
-    sections[current].push(rawLine);
-  }
-
-  // Map “summary”
-  const profile =
-    sections["PROFILE"] ||
-    sections["PROFESSIONAL SUMMARY"] ||
-    sections["SUMMARY"] ||
-    null;
-
-  if (profile) {
-    out.summary = profile.join("\n").trim();
-  }
-
-  // Map “experience summary”
-  const exp =
-    sections["EXPERIENCE SUMMARY"] ||
-    sections["KEY EXPERIENCE"] ||
-    sections["EXPERIENCE"] ||
-    null;
-
-  if (exp) {
-    out.experienceSummary = exp.join("\n").trim();
-  }
-
-  // Map “skills”
-  const skillsBlock = sections["KEY SKILLS"] || sections["SKILLS"] || null;
-  if (skillsBlock) {
-    const skillLines = skillsBlock
-      .join("\n")
-      .split("\n")
-      .map((l) => l.trim())
-      .filter(Boolean);
-
-    // Prefer bullets if present
-    const bulletSkills = skillLines
-      .map((l) => l.replace(/^[•\-*]\s*/, "").trim())
-      .filter(Boolean)
-      // Guard: don't allow headings accidentally slipping in
-      .filter((s) => {
-        const H = normalizeHeading(s);
-        return ![
-          "PROFILE",
-          "PROFESSIONAL SUMMARY",
-          "SUMMARY",
-          "EXPERIENCE SUMMARY",
-          "KEY SKILLS",
-          "SKILLS",
-          "EMPLOYMENT HISTORY",
-          "EDUCATION",
-          "QUALIFICATIONS & CERTIFICATIONS",
-          "ADDITIONAL INFORMATION",
-          "REFERENCES",
-        ].includes(H);
-      });
-
-    // If someone pasted comma-separated skills in a single line
-    let cleaned = bulletSkills;
-    if (cleaned.length === 1 && cleaned[0].includes(",")) {
-      cleaned = cleaned[0]
-        .split(",")
-        .map((x) => x.trim())
-        .filter(Boolean);
-    }
-
-    // Final de-dupe
-    const seen = new Set();
-    out.skills = cleaned.filter((s) => {
-      const key = s.toLowerCase();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-  }
-
-  return out;
 }
 
 function escapeHtml(s) {
@@ -301,6 +109,215 @@ function getTemplateUiClasses(t) {
     badge: "bg-slate-100 text-slate-900 ring-1 ring-slate-200",
     sectionBox: "bg-slate-50 ring-1 ring-slate-200",
   };
+}
+
+/**
+ * Extract sections from markdown-ish output.
+ * Supports both:
+ *  - Your UI-friendly "### Professional Summary / ### Skills"
+ *  - API output blocks like "PROFILE", "KEY SKILLS", "EMPLOYMENT HISTORY", etc.
+ *
+ * SAFETY: Skills are bullet-only (prevents Experience Summary leaking into skills pills).
+ */
+function extractSections(markdownText) {
+  const text = (markdownText || "").trim();
+
+  const out = {
+    summary: "",
+    experience: [],
+    skills: [],
+  };
+
+  if (!text) return out;
+
+  const normalized = text
+    .replace(/\r\n/g, "\n")
+    // Summary variants
+    .replace(/\*\*Professional Summary:\*\*/gi, "### Professional Summary")
+    .replace(/\*\*Summary:\*\*/gi, "### Professional Summary")
+    .replace(/^###\s*Summary\s*$/gim, "### Professional Summary")
+    // Experience variants
+    .replace(/\*\*Key Experience:\*\*/gi, "### Key Experience")
+    .replace(/\*\*Experience:\*\*/gi, "### Key Experience")
+    .replace(/^###\s*Experience\s*$/gim, "### Key Experience")
+    // Skills variants
+    .replace(/\*\*Professional Skills:\*\*/gi, "### Skills")
+    .replace(/\*\*Skills:\*\*/gi, "### Skills")
+    .replace(/\*\*Core Skills:\*\*/gi, "### Skills")
+    .replace(/\*\*Key Skills:\*\*/gi, "### Skills")
+    .replace(
+      /^###\s*(Professional\s+Skills|Skills|Core\s+Skills|Key\s+Skills)\s*$/gim,
+      "### Skills"
+    );
+
+  // First try: "###" structured format
+  const parts = normalized.split("\n### ").map((p, idx) => (idx === 0 ? p : "### " + p));
+
+  for (const p of parts) {
+    const lower = p.toLowerCase();
+
+    if (lower.startsWith("### professional summary")) {
+      out.summary = p.replace(/^### professional summary\s*/i, "").trim();
+    }
+
+    if (lower.startsWith("### key experience")) {
+      const body = p.replace(/^### key experience\s*/i, "").trim();
+      const lines = body
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
+
+      out.experience = lines
+        .map((l) => l.replace(/^[•\-*]\s*/, "").trim())
+        .filter(Boolean);
+    }
+
+    if (lower.startsWith("### skills")) {
+      const body = p.replace(/^### skills\s*/i, "").trim();
+      const lines = body
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
+
+      // SAFETY: bullet-first
+      const bulletSkills = lines
+        .filter((l) => /^[•\-*]\s+/.test(l))
+        .map((l) => l.replace(/^[•\-*]\s+/, "").trim())
+        .filter(Boolean);
+
+      let skills = bulletSkills;
+
+      // fallback: comma separated
+      if (!skills.length) {
+        const joined = lines.join(" ");
+        if (joined.includes(",")) {
+          skills = joined
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
+        } else {
+          // last resort: each line
+          skills = lines.map((l) => l.replace(/^[•\-*]\s*/, "").trim()).filter(Boolean);
+        }
+      }
+
+      // de-dupe
+      const seen = new Set();
+      out.skills = skills.filter((s) => {
+        const key = s.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+  }
+
+  // If the structured format didn't give us skills/summary, try API block format:
+  // Detect headings like "PROFILE", "KEY SKILLS", "EXPERIENCE SUMMARY", etc.
+  const lines = normalized.split("\n").map((l) => l.trim());
+
+  const normalizeHeading = (s) =>
+    String(s || "")
+      .replace(/[:\-–—]+$/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toUpperCase();
+
+  const KNOWN_HEADINGS = new Set([
+    "PROFILE",
+    "PROFESSIONAL SUMMARY",
+    "SUMMARY",
+    "EXPERIENCE SUMMARY",
+    "KEY SKILLS",
+    "SKILLS",
+    "EMPLOYMENT HISTORY",
+    "EDUCATION",
+    "QUALIFICATIONS & CERTIFICATIONS",
+    "QUALIFICATIONS AND CERTIFICATIONS",
+    "ADDITIONAL INFORMATION",
+    "REFERENCES",
+  ]);
+
+  const isHeadingLine = (l) => {
+    const h = normalizeHeading(l);
+    return KNOWN_HEADINGS.has(h);
+  };
+
+  // Build a map of heading -> lines until next heading
+  const sections = {};
+  let current = null;
+
+  for (const l of lines) {
+    if (!l) continue;
+
+    if (isHeadingLine(l)) {
+      current = normalizeHeading(l);
+      if (!sections[current]) sections[current] = [];
+      continue;
+    }
+
+    if (current) sections[current].push(l);
+  }
+
+  // ✅ Summary fallback (MERGED): PROFILE + SUMMARY + EXPERIENCE SUMMARY
+  if (!out.summary) {
+    const merged = []
+      .concat(
+        sections["PROFESSIONAL SUMMARY"] || [],
+        sections["SUMMARY"] || [],
+        sections["PROFILE"] || [],
+        sections["EXPERIENCE SUMMARY"] || []
+      )
+      .join("\n")
+      .trim();
+
+    if (merged) out.summary = merged.replace(/^[•\-*]\s*/gm, "").trim();
+  }
+
+  // Skills fallback (KEY SKILLS / SKILLS) — BULLET ONLY!
+  if (!out.skills.length) {
+    const skillsBlock = sections["KEY SKILLS"] || sections["SKILLS"] || null;
+    if (skillsBlock) {
+      const raw = skillsBlock.join("\n");
+
+      // ✅ Only accept BULLET lines as skills (prevents headings/paragraphs leaking in)
+      const bulletOnly = raw
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean)
+        .filter((l) => /^[•\-*]\s+/.test(l))
+        .map((l) => l.replace(/^[•\-*]\s+/, "").trim())
+        .filter(Boolean);
+
+      let cleaned = bulletOnly;
+
+      // If no bullets were found, fall back to comma-separated single line (rare)
+      if (!cleaned.length) {
+        const fallback = raw
+          .split("\n")
+          .map((l) => l.trim())
+          .filter(Boolean)
+          .join(" ");
+        if (fallback.includes(",")) {
+          cleaned = fallback
+            .split(",")
+            .map((x) => x.trim())
+            .filter(Boolean);
+        }
+      }
+
+      // Final de-dupe
+      const seen = new Set();
+      out.skills = cleaned.filter((s) => {
+        const key = s.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+  }
+
+  return out;
 }
 
 function getPdfCss(template) {
@@ -468,13 +485,12 @@ export default function PreviewPage() {
   const qualifications = Array.isArray(input.qualifications) ? input.qualifications : [];
   const employmentHistory = Array.isArray(input.employmentHistory) ? input.employmentHistory : [];
 
-  // ✅ Skills: prefer parsed KEY SKILLS bullets; fallback to input.skills
   const fallbackSkills = Array.isArray(input.skills) ? input.skills : [];
   const skillsForDisplay =
     Array.isArray(sections.skills) && sections.skills.length ? sections.skills : fallbackSkills;
 
   // ---- Pro gating helpers (hard gate export on premium templates) ----
-  const templateIsPremium = !!(TEMPLATE_META[template]?.premium);
+  const templateIsPremium = !!TEMPLATE_META[template]?.premium;
   const exportLocked = !teacherMode && templateIsPremium && !proUnlocked;
 
   const requestExportUnlock = () => {
@@ -524,6 +540,7 @@ export default function PreviewPage() {
   }, [pendingClearAfterPrint, safeModeActive]);
 
   const onPrint = () => {
+    // Hard gate print export when template is premium and Pro not unlocked
     if (requestExportUnlock()) return;
 
     if (safeModeActive) setPendingClearAfterPrint(true);
@@ -531,6 +548,7 @@ export default function PreviewPage() {
   };
 
   const downloadPdf = async () => {
+    // Hard gate download export when template is premium and Pro not unlocked
     if (requestExportUnlock()) return;
 
     if (!saved) {
@@ -552,14 +570,6 @@ export default function PreviewPage() {
         ? `<div class="section">
              <h2>Professional Summary</h2>
              <p>${escapeHtml(sections.summary).replaceAll("\n", "<br/>")}</p>
-           </div>`
-        : "";
-
-    const experienceHtml =
-      cfg.experience && (sections.experienceSummary || "").trim()
-        ? `<div class="section">
-             <h2>Experience Summary</h2>
-             <p>${escapeHtml(sections.experienceSummary).replaceAll("\n", "<br/>")}</p>
            </div>`
         : "";
 
@@ -635,7 +645,6 @@ export default function PreviewPage() {
       qualifications: qualsHtml,
       skills: skillsHtml,
       references: refsHtml,
-      experience: experienceHtml,
     };
 
     const assembledSections = order.map((k) => sectionMap[k] || "").filter(Boolean).join("\n");
@@ -704,17 +713,6 @@ export default function PreviewPage() {
       return (
         <section>
           <h2 className={ui.sectionTitle}>{sectionLabel("summary", region)}</h2>
-          <p className={`mt-2 whitespace-pre-line ${ui.body}`}>{content}</p>
-        </section>
-      );
-    }
-
-    if (key === "experience") {
-      const content = (sections.experienceSummary || "").trim();
-      if (!content) return null;
-      return (
-        <section>
-          <h2 className={ui.sectionTitle}>{sectionLabel("experience", region)}</h2>
           <p className={`mt-2 whitespace-pre-line ${ui.body}`}>{content}</p>
         </section>
       );
@@ -942,12 +940,13 @@ export default function PreviewPage() {
         reason="export"
         onClose={() => setPaywallOpen(false)}
         onPreviewAnyway={() => {
+          // Not used for export, but modal component expects it
           setPaywallOpen(false);
         }}
         onUnlockClick={() => {
           const link = process.env.NEXT_PUBLIC_STRIPE_CV_PRO_LINK;
 
-          // Dev fallback: simulate unlock
+          // Dev fallback: simulate unlock (same pattern as cv.js recommended)
           if (!link) {
             console.warn("Stripe link missing — simulating unlock");
             setProUnlocked(true);

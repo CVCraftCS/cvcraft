@@ -5,7 +5,7 @@ import { isProUnlocked, setProUnlocked } from "../lib/proUnlock";
 
 const STORAGE_KEY = "cvcraft:lastResult";
 
-// ---- Teacher Mode (v1 + v2 panel) ----
+// ---- Teacher Mode ----
 const TEACHER_MODE_SESSION_KEY = "cvcraft:teacherMode";
 const TEACHER_PIN_SESSION_KEY = "cvcraft:teacherPinHash";
 
@@ -27,7 +27,7 @@ const TEACHER_MODE_DEFAULTS = {
   enableReferences: false,
 };
 
-// ---- Pro template meta (monetisation v1) ----
+// ---- Pro template meta (must match preview.js) ----
 const TEMPLATE_META = {
   classic: { name: "Classic", premium: false },
   modern: { name: "Modern", premium: true },
@@ -54,7 +54,7 @@ function skillsToText(skills) {
 }
 
 function parseSkills(text) {
-  return text
+  return (text || "")
     .split("\n")
     .map((s) => s.trim())
     .filter(Boolean);
@@ -141,7 +141,6 @@ function phonePlaceholder(region) {
 }
 
 function regionDefaults(region) {
-  // Conservative defaults that are common expectations
   if (region === "US") {
     return {
       referencesEnabled: false,
@@ -154,7 +153,7 @@ function regionDefaults(region) {
   };
 }
 
-// ---- section config defaults ----
+// ---- section config defaults (must match preview.js) ----
 const DEFAULT_SECTION_ORDER = [
   "summary",
   "employment",
@@ -191,13 +190,11 @@ function sectionLabel(key, region) {
 function getPresetConfig(presetName, region) {
   const def = regionDefaults(region);
 
-  // baseline objects to reduce repetition
   const base = {
     referencesText: def.referencesText,
     referencesEnabled: def.referencesEnabled,
   };
 
-  // Student: short, skill-first, education/quals shown, experience optional
   if (presetName === "student") {
     if (region === "US") {
       return {
@@ -208,7 +205,7 @@ function getPresetConfig(presetName, region) {
           skills: true,
           qualifications: true,
           employment: false,
-          references: false, // US: hide by default
+          references: false,
         },
         sectionOrder: [
           "summary",
@@ -221,7 +218,6 @@ function getPresetConfig(presetName, region) {
           "Student Mode (US Résumé) applied — short, skills + education focused.",
       };
     }
-    // UK / AU
     return {
       ...base,
       template: "compact",
@@ -230,14 +226,19 @@ function getPresetConfig(presetName, region) {
         skills: true,
         qualifications: true,
         employment: false,
-        references: def.referencesEnabled, // UK/AU: commonly okay
+        references: def.referencesEnabled,
       },
-      sectionOrder: ["summary", "skills", "qualifications", "references", "employment"],
+      sectionOrder: [
+        "summary",
+        "skills",
+        "qualifications",
+        "references",
+        "employment",
+      ],
       notice: "Student Mode applied — ideal for school leavers and first jobs.",
     };
   }
 
-  // Apprenticeship: skills + qualifications forward, employment allowed but not dominant
   if (presetName === "apprenticeship") {
     if (region === "US") {
       return {
@@ -270,12 +271,17 @@ function getPresetConfig(presetName, region) {
         employment: true,
         references: def.referencesEnabled,
       },
-      sectionOrder: ["summary", "skills", "qualifications", "employment", "references"],
+      sectionOrder: [
+        "summary",
+        "skills",
+        "qualifications",
+        "employment",
+        "references",
+      ],
       notice: "Apprenticeship Mode applied — skills + qualifications forward.",
     };
   }
 
-  // Jobseeker: employment is prominent; references depends on region
   if (presetName === "jobseeker") {
     if (region === "US") {
       return {
@@ -309,12 +315,17 @@ function getPresetConfig(presetName, region) {
         qualifications: true,
         references: def.referencesEnabled,
       },
-      sectionOrder: ["summary", "employment", "skills", "qualifications", "references"],
+      sectionOrder: [
+        "summary",
+        "employment",
+        "skills",
+        "qualifications",
+        "references",
+      ],
       notice: "Jobseeker Mode applied — best for general applications.",
     };
   }
 
-  // fallback: no-op
   return null;
 }
 
@@ -324,36 +335,29 @@ export default function CVBuilderPage() {
   // ---- Pro unlock + Paywall state ----
   const [proUnlocked, setProUnlockedState] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
-  const [paywallReason, setPaywallReason] = useState("template"); // "template" | "export"
+  const [paywallReason, setPaywallReason] = useState("template");
   const [pendingTemplate, setPendingTemplate] = useState(null);
 
-  // Region
-  const [region, setRegion] = useState("UK"); // UK | US | AU
+  // Teacher UI availability gate
+  const [teacherUiAllowed, setTeacherUiAllowed] = useState(false);
 
-  // Template selection
-  const [template, setTemplate] = useState("classic"); // classic | modern | compact
-
-  // Section toggles + ordering
+  // Region / template / sections
+  const [region, setRegion] = useState("UK");
+  const [template, setTemplate] = useState("classic");
   const [sectionConfig, setSectionConfig] = useState(DEFAULT_SECTION_CONFIG);
   const [sectionOrder, setSectionOrder] = useState(DEFAULT_SECTION_ORDER);
-
-  // References text
   const [referencesText, setReferencesText] = useState(
     "References available on request."
   );
 
-  // Student Safe Mode
+  // Safe modes
   const [studentSafeMode, setStudentSafeMode] = useState(false);
-
-  // Teacher Mode
   const [teacherMode, setTeacherMode] = useState(false);
 
-  // Teacher-config is editable (teacher panel)
+  // Teacher config + unlock
   const [teacherConfig, setTeacherConfig] = useState({
     ...TEACHER_MODE_DEFAULTS,
   });
-
-  // Teacher-only unlock flag (PIN-gated)
   const [teacherUnlocked, setTeacherUnlocked] = useState(false);
 
   // Preset feedback
@@ -391,7 +395,7 @@ export default function CVBuilderPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Load pro unlock + handle Stripe return (?unlocked=true)
+  // Pro unlock + Stripe return (?unlocked=true)
   useEffect(() => {
     setProUnlockedState(isProUnlocked());
 
@@ -400,7 +404,6 @@ export default function CVBuilderPage() {
       if (url.searchParams.get("unlocked") === "true") {
         setProUnlocked(true);
         setProUnlockedState(true);
-
         url.searchParams.delete("unlocked");
         window.history.replaceState({}, "", url.toString());
       }
@@ -439,7 +442,7 @@ export default function CVBuilderPage() {
       );
   }, [employmentHistory]);
 
-  // Apply region defaults (references behaviour) light-touch
+  // Apply region defaults (references behaviour)
   const applyRegionDefaults = useCallback((nextRegion) => {
     const def = regionDefaults(nextRegion);
     setSectionConfig((prev) => ({
@@ -449,14 +452,12 @@ export default function CVBuilderPage() {
     setReferencesText(def.referencesText);
   }, []);
 
-  // ✅ Teacher lock helper (students locked; teachers can unlock with PIN)
+  // Teacher lock helper
   const isTeacherLocked = (key) => {
     if (!teacherMode) return false;
 
-    // If teacher has unlocked controls, allow changes EXCEPT Student Safe Mode.
     if (teacherUnlocked && key !== "studentSafeMode") return false;
 
-    // Otherwise apply classroom locks (student-facing)
     if (key === "template") return !!teacherConfig.lockTemplate;
     if (key === "ordering") return !!teacherConfig.lockOrdering;
     if (key === "sectionToggles") return !!teacherConfig.lockSectionToggles;
@@ -473,10 +474,8 @@ export default function CVBuilderPage() {
   };
 
   const requestTemplateChange = (nextTemplate) => {
-    // Respect Teacher Mode locks exactly as before
     if (teacherMode && isTeacherLocked("template")) return;
 
-    // In Teacher Mode we never show paywalls (classroom-safe)
     if (teacherMode) {
       setTemplate(nextTemplate);
       return;
@@ -528,7 +527,13 @@ export default function CVBuilderPage() {
     [teacherConfig, applyRegionDefaults]
   );
 
-  // ✅ SAFETY FIX: remove session keys when disabling (don’t set "0")
+  /**
+   * IMPORTANT FIX:
+   * - Disabling Teacher Mode should NOT delete the PIN hash.
+   *   Otherwise you can never disable (because verifyTeacherPin fails).
+   * - We only remove the teacher mode flag here.
+   * - PIN hash is session-only and can be removed by a refresh or explicit clearing.
+   */
   const setTeacherModeEnabled = (enabled) => {
     setTeacherMode(enabled);
 
@@ -537,7 +542,7 @@ export default function CVBuilderPage() {
         sessionStorage.setItem(TEACHER_MODE_SESSION_KEY, "1");
       } else {
         sessionStorage.removeItem(TEACHER_MODE_SESSION_KEY);
-        sessionStorage.removeItem(TEACHER_PIN_SESSION_KEY);
+        // do NOT remove TEACHER_PIN_SESSION_KEY here
       }
     }
 
@@ -568,7 +573,6 @@ export default function CVBuilderPage() {
     setTeacherModeEnabled(false);
   };
 
-  // Unlock Teacher Controls (PIN gated)
   const unlockTeacherControlsWithPin = async () => {
     try {
       const pin = window.prompt("Enter Teacher PIN to unlock teacher controls:");
@@ -583,7 +587,6 @@ export default function CVBuilderPage() {
 
   const lockTeacherControls = () => setTeacherUnlocked(false);
 
-  // Header button handlers
   const handleEnableTeacherMode = async () => {
     try {
       const existing = getTeacherPinHash();
@@ -616,7 +619,6 @@ export default function CVBuilderPage() {
     const cfg = getPresetConfig(presetName, region);
     if (!cfg) return;
 
-    // If preset picks a premium template, respect paywall in normal mode
     if (!teacherMode) {
       const meta = TEMPLATE_META[cfg.template] || { premium: false };
       if (meta.premium && !proUnlocked) {
@@ -646,6 +648,20 @@ export default function CVBuilderPage() {
   // If Teacher Mode is active, do NOT prefill.
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    // Gate teacher UI via URL
+    const url = new URL(window.location.href);
+    const teacherParam = url.searchParams.get("teacher");
+    const allowTeacherUi = teacherParam === "1" || teacherParam === "true";
+    setTeacherUiAllowed(allowTeacherUi);
+
+    // If public user (no ?teacher=1), hard-clear any old teacher flags so /cv never gets stuck.
+    if (!allowTeacherUi) {
+      sessionStorage.removeItem(TEACHER_MODE_SESSION_KEY);
+      sessionStorage.removeItem(TEACHER_PIN_SESSION_KEY);
+      setTeacherMode(false);
+      setTeacherUnlocked(false);
+    }
 
     const tmEnabled = sessionStorage.getItem(TEACHER_MODE_SESSION_KEY) === "1";
     if (tmEnabled) {
@@ -922,24 +938,26 @@ export default function CVBuilderPage() {
     });
   };
 
-  const teacherToggleEmployment = (enabled) => {
+  const teacherToggleEmployment = () => {
     setTeacherConfig((prev) => {
-      const next = { ...prev, enableEmployment: enabled };
+      const next = { ...prev, enableEmployment: !prev.enableEmployment };
       applyTeacherPreset(next);
       return next;
     });
   };
 
-  const teacherToggleReferences = (enabled) => {
+  const teacherToggleReferences = () => {
     setTeacherConfig((prev) => {
-      const next = { ...prev, enableReferences: enabled };
+      const next = { ...prev, enableReferences: !prev.enableReferences };
       applyTeacherPreset(next);
       return next;
     });
   };
 
-  const modernLocked = !teacherMode && TEMPLATE_META.modern.premium && !proUnlocked;
-  const compactLocked = !teacherMode && TEMPLATE_META.compact.premium && !proUnlocked;
+  const modernLocked =
+    !teacherMode && TEMPLATE_META.modern.premium && !proUnlocked;
+  const compactLocked =
+    !teacherMode && TEMPLATE_META.compact.premium && !proUnlocked;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white px-6 py-12">
@@ -954,51 +972,53 @@ export default function CVBuilderPage() {
           </button>
 
           <div className="flex items-center gap-4">
-            {teacherMode ? (
-              <div className="flex items-center gap-3">
-                <span className="rounded-full bg-emerald-400/20 text-emerald-200 ring-1 ring-emerald-400/30 px-3 py-1 text-xs font-semibold">
-                  🔒 Teacher Mode Active
-                </span>
+            {teacherUiAllowed ? (
+              teacherMode ? (
+                <div className="flex items-center gap-3">
+                  <span className="rounded-full bg-emerald-400/20 text-emerald-200 ring-1 ring-emerald-400/30 px-3 py-1 text-xs font-semibold">
+                    🔒 Teacher Mode Active
+                  </span>
 
-                {!teacherUnlocked ? (
+                  {!teacherUnlocked ? (
+                    <button
+                      type="button"
+                      onClick={unlockTeacherControlsWithPin}
+                      className="text-sm text-emerald-200 hover:text-emerald-100 underline underline-offset-4"
+                      title="Unlock teacher-only controls (PIN required)"
+                    >
+                      Teacher controls
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={lockTeacherControls}
+                      className="text-sm text-emerald-200 hover:text-emerald-100 underline underline-offset-4"
+                      title="Hide/lock teacher controls"
+                    >
+                      Lock controls
+                    </button>
+                  )}
+
                   <button
                     type="button"
-                    onClick={unlockTeacherControlsWithPin}
+                    onClick={handleDisableTeacherMode}
                     className="text-sm text-emerald-200 hover:text-emerald-100 underline underline-offset-4"
-                    title="Unlock teacher-only controls (PIN required)"
+                    title="Disable Teacher Mode (PIN required)"
                   >
-                    Teacher controls
+                    Disable Teacher Mode
                   </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={lockTeacherControls}
-                    className="text-sm text-emerald-200 hover:text-emerald-100 underline underline-offset-4"
-                    title="Hide/lock teacher controls"
-                  >
-                    Lock controls
-                  </button>
-                )}
-
+                </div>
+              ) : (
                 <button
                   type="button"
-                  onClick={handleDisableTeacherMode}
+                  onClick={handleEnableTeacherMode}
                   className="text-sm text-emerald-200 hover:text-emerald-100 underline underline-offset-4"
-                  title="Disable Teacher Mode (PIN required)"
+                  title="Enable Teacher Mode (PIN protected, session only)"
                 >
-                  Disable Teacher Mode
+                  Enable Teacher Mode
                 </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={handleEnableTeacherMode}
-                className="text-sm text-emerald-200 hover:text-emerald-100 underline underline-offset-4"
-                title="Enable Teacher Mode (PIN protected, session only)"
-              >
-                Enable Teacher Mode
-              </button>
-            )}
+              )
+            ) : null}
 
             <button
               onClick={clearForm}
@@ -1034,7 +1054,7 @@ export default function CVBuilderPage() {
         ) : null}
 
         {/* Teacher Control Panel (PIN-gated) */}
-        {teacherMode && teacherUnlocked ? (
+        {teacherUiAllowed && teacherMode && teacherUnlocked ? (
           <div className="mb-8 rounded-2xl bg-emerald-950/30 border border-emerald-400/20 p-6 space-y-4">
             <h2 className="text-lg font-semibold">Teacher controls</h2>
             <p className="text-sm text-emerald-100/90">
@@ -1067,9 +1087,7 @@ export default function CVBuilderPage() {
             <div className="grid gap-3 md:grid-cols-2">
               <button
                 type="button"
-                onClick={() =>
-                  teacherToggleEmployment(!teacherConfig.enableEmployment)
-                }
+                onClick={teacherToggleEmployment}
                 className={`rounded-xl px-4 py-3 text-sm font-semibold ring-1 transition ${
                   teacherConfig.enableEmployment
                     ? "bg-white text-slate-900 ring-white"
@@ -1083,9 +1101,7 @@ export default function CVBuilderPage() {
 
               <button
                 type="button"
-                onClick={() =>
-                  teacherToggleReferences(!teacherConfig.enableReferences)
-                }
+                onClick={teacherToggleReferences}
                 className={`rounded-xl px-4 py-3 text-sm font-semibold ring-1 transition ${
                   teacherConfig.enableReferences
                     ? "bg-white text-slate-900 ring-white"
@@ -1105,6 +1121,7 @@ export default function CVBuilderPage() {
           </div>
         ) : null}
 
+        {/* --- FORM --- */}
         <form onSubmit={handleGenerate} className="space-y-8">
           {/* Region */}
           <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-3">
@@ -1590,7 +1607,9 @@ export default function CVBuilderPage() {
                           )
                         }
                         placeholder={
-                          region === "US" ? "e.g. Lincoln High School" : "e.g. College Name"
+                          region === "US"
+                            ? "e.g. Lincoln High School"
+                            : "e.g. College Name"
                         }
                         className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
                       />
@@ -1629,7 +1648,9 @@ export default function CVBuilderPage() {
                           )
                         }
                         placeholder={
-                          region === "US" ? "e.g. GPA 3.6, Honors" : "e.g. Grade 6, Pass"
+                          region === "US"
+                            ? "e.g. GPA 3.6, Honors"
+                            : "e.g. Grade 6, Pass"
                         }
                         className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
                       />
@@ -1891,7 +1912,7 @@ Timekeeping`}
           </button>
         </form>
 
-        {/* Paywall modal (soft gate for template selection on this page) */}
+        {/* Paywall modal */}
         <PaywallModal
           open={paywallOpen}
           reason={paywallReason}
@@ -1908,10 +1929,16 @@ Timekeeping`}
           }}
           onUnlockClick={() => {
             const link = process.env.NEXT_PUBLIC_STRIPE_CV_PRO_LINK;
+
+            // Dev fallback: simulate unlock if link missing
             if (!link) {
-              window.alert("Missing env var: NEXT_PUBLIC_STRIPE_CV_PRO_LINK");
+              console.warn("Stripe link missing — simulating unlock");
+              setProUnlocked(true);
+              setProUnlockedState(true);
+              setPaywallOpen(false);
               return;
             }
+
             // Configure Stripe Payment Link success URL to return to /cv?unlocked=true
             window.location.href = link;
           }}
