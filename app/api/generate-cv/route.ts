@@ -4,6 +4,15 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+type JobInput = {
+  title?: string;
+  company?: string;
+  location?: string;
+  start?: string;
+  end?: string;
+  bullets?: string[]; // responsibilities/achievements
+};
+
 type Body = {
   // Flexible field names (your UI may send different ones)
   targetRoleTitle?: string;
@@ -14,6 +23,9 @@ type Body = {
 
   skillsText?: string | string[];
   skills?: string | string[];
+
+  // Option A: structured employment history
+  jobs?: JobInput[];
 
   // Optional extras
   region?: string;
@@ -69,6 +81,53 @@ function cleanMultiline(s: string): string {
     .trim();
 }
 
+function isNonEmptyString(v: unknown): v is string {
+  return typeof v === "string" && v.trim().length > 0;
+}
+
+function normalizeJobs(v: unknown): JobInput[] {
+  if (!Array.isArray(v)) return [];
+
+  return v
+    .filter((j) => j && typeof j === "object")
+    .map((j: any) => ({
+      title: isNonEmptyString(j.title) ? j.title.trim() : undefined,
+      company: isNonEmptyString(j.company) ? j.company.trim() : undefined,
+      location: isNonEmptyString(j.location) ? j.location.trim() : undefined,
+      start: isNonEmptyString(j.start) ? j.start.trim() : undefined,
+      end: isNonEmptyString(j.end) ? j.end.trim() : undefined,
+      bullets: Array.isArray(j.bullets)
+        ? j.bullets.map(String).map((s) => s.trim()).filter(Boolean)
+        : undefined,
+    }))
+    // keep only entries that have at least something
+    .filter((j) => !!(j.title || j.company || j.location || j.start || j.end || (j.bullets && j.bullets.length)));
+}
+
+function formatJobsForPrompt(jobs: JobInput[]): string {
+  if (!jobs.length) return `(No structured jobs provided)`;
+
+  return jobs
+    .map((j, idx) => {
+      const header = [
+        j.title ? `Title: ${j.title}` : `Title: [Job Title]`,
+        j.company ? `Company: ${j.company}` : `Company: [Company]`,
+        j.location ? `Location: ${j.location}` : `Location: [Location]`,
+        (j.start || j.end)
+          ? `Dates: ${j.start ?? "[Start]"} – ${j.end ?? "[End/Present]"}`
+          : `Dates: [Start] – [End/Present]`,
+      ].join(" | ");
+
+      const bullets =
+        j.bullets && j.bullets.length
+          ? j.bullets.map((b) => `- ${b}`).join("\n")
+          : `- [Responsibility/achievement]\n- [Responsibility/achievement]`;
+
+      return `JOB ${idx + 1}\n${header}\nBullets:\n${bullets}`;
+    })
+    .join("\n\n");
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as Body;
@@ -93,6 +152,9 @@ export async function POST(req: NextRequest) {
       body.skillsText ?? body.skills ?? body.form?.skillsText ?? body.form?.skills
     );
 
+    // Option A structured jobs (either top-level jobs or within form.jobs)
+    const jobs = normalizeJobs((body as any).jobs ?? body.form?.jobs);
+
     const region = (body.region ?? body.form?.region ?? "UK").toString();
     const template = (body.template ?? body.form?.template ?? "classic").toString();
     const tone = (body.tone ?? body.form?.tone ?? "professional").toString();
@@ -112,7 +174,11 @@ export async function POST(req: NextRequest) {
     /**
      * IMPORTANT CHANGE:
      * We force a predictable section structure so the preview can reliably show "Experience" content.
-     * Specifically, we require a "PROFILE" section and tell it to use the provided experience text.
+     * Specifically, we require an explicit "EXPERIENCE SUMMARY" section that MUST be based on the provided experience text.
+     *
+     * Option A:
+     * If structured jobs are provided, we use them for EMPLOYMENT HISTORY.
+     * If not, we output bracket placeholders (not "Details available on request").
      */
     const prompt = [
       `You are CVCraft, an expert CV writer.`,
@@ -122,11 +188,14 @@ export async function POST(req: NextRequest) {
       ``,
       `TARGET ROLE: ${role}`,
       ``,
-      `CANDIDATE CONTEXT (may be incomplete):`,
+      `USER-PROVIDED EXPERIENCE TEXT (authoritative):`,
       experience ? experience : `(No experience text provided)`,
       ``,
       `SKILLS (if provided):`,
       skills.length ? skills.map((s) => `- ${s}`).join("\n") : `(No skills provided)`,
+      ``,
+      `STRUCTURED EMPLOYMENT HISTORY (authoritative, if provided):`,
+      formatJobsForPrompt(jobs),
       ``,
       `TASK: Generate a strong, ATS-friendly CV tailored to the target role.`,
       ``,
@@ -134,19 +203,46 @@ export async function POST(req: NextRequest) {
       `- Return ONLY plain CV text (no JSON, no code, no markdown fences).`,
       `- Use THESE EXACT HEADINGS in this order (even if some are short):`,
       `  1) PROFILE`,
-      `  2) KEY SKILLS`,
-      `  3) EMPLOYMENT HISTORY`,
-      `  4) EDUCATION`,
-      `  5) QUALIFICATIONS & CERTIFICATIONS`,
-      `  6) ADDITIONAL INFORMATION`,
+      `  2) EXPERIENCE SUMMARY`,
+      `  3) KEY SKILLS`,
+      `  4) EMPLOYMENT HISTORY`,
+      `  5) EDUCATION`,
+      `  6) QUALIFICATIONS & CERTIFICATIONS`,
+      `  7) ADDITIONAL INFORMATION`,
+      ``,
       `- Under PROFILE:`,
-      `  - If candidate context was provided, you MUST base the PROFILE on it (paraphrase/rewrite it).`,
-      `  - Do NOT omit PROFILE.`,
+      `  - Write 2–4 lines as a professional profile tailored to the target role.`,
+      `  - You MAY draw from the user's experience text, but do not copy it verbatim.`,
+      ``,
+      `- Under EXPERIENCE SUMMARY:`,
+      `  - MUST be present.`,
+      `  - MUST be based on the user's provided experience text if available.`,
+      `  - Write 3–6 lines, slightly rewritten for clarity, preserving key facts.`,
+      `  - If no experience text was provided, use placeholders like "[X years]" and "[industry]" rather than inventing facts.`,
+      ``,
       `- Under KEY SKILLS:`,
       `  - Prefer using provided skills verbatim as bullets; if none were provided, infer only general skills without fabricating facts.`,
-      `- Under EMPLOYMENT HISTORY / EDUCATION / QUALIFICATIONS:`,
-      `  - Do NOT invent employers, dates, schools, or certifications.`,
-      `  - If missing, write a short placeholder-style line like "Details available on request" or keep the section minimal.`,
+      ``,
+      `- Under EMPLOYMENT HISTORY:`,
+      `  - If structured jobs were provided above, format each job as:`,
+      `    Job Title — Company`,
+      `    Location | Dates`,
+      `    • bullet`,
+      `    • bullet`,
+      `    (Improve wording of provided bullets for professionalism, but do NOT invent employers/dates.)`,
+      `  - If no structured jobs were provided, output 2–3 placeholder roles using bracket placeholders like:`,
+      `    [Job Title] — [Company]`,
+      `    [Location] | [Dates]`,
+      `    • [Responsibility/achievement]`,
+      `    • [Responsibility/achievement]`,
+      `  - Do NOT write "Details available on request".`,
+      ``,
+      `- Under EDUCATION and QUALIFICATIONS & CERTIFICATIONS:`,
+      `  - Do NOT invent schools/certifications.`,
+      `  - If missing, output bracket placeholders like:`,
+      `    [Qualification] — [Institution] ([Year])`,
+      `    [Certification] — [Provider] ([Year])`,
+      ``,
       `- Use bullet points where appropriate.`,
     ].join("\n");
 
