@@ -10,7 +10,6 @@ const TEACHER_MODE_SESSION_KEY = "cvcraft:teacherMode";
 const TEACHER_PIN_SESSION_KEY = "cvcraft:teacherPinHash"; // optional cleanup
 
 // defaults (must match builder)
-// ✅ Added experienceSummary
 const DEFAULT_SECTION_ORDER = [
   "summary",
   "experienceSummary",
@@ -19,6 +18,7 @@ const DEFAULT_SECTION_ORDER = [
   "skills",
   "references",
 ];
+
 const DEFAULT_SECTION_CONFIG = {
   summary: true,
   experienceSummary: true,
@@ -76,17 +76,33 @@ function extractSections(markdownText) {
 
   if (!text) return out;
 
+  // Normalize various heading styles into "### ..."
   const normalized = text
     .replace(/\r\n/g, "\n")
+
+    // PROFILE -> Professional Summary
+    .replace(/^PROFILE\s*$/gim, "### Professional Summary")
+    .replace(/^PROFILE\s*\n/gim, "### Professional Summary\n")
+
     // Summary variants
     .replace(/\*\*Professional Summary:\*\*/gi, "### Professional Summary")
     .replace(/\*\*Summary:\*\*/gi, "### Professional Summary")
     .replace(/^###\s*Summary\s*$/gim, "### Professional Summary")
-    // Experience variants
+
+    // Experience Summary variants
+    .replace(/^EXPERIENCE SUMMARY\s*$/gim, "### Experience Summary")
+    .replace(/^EXPERIENCE SUMMARY\s*\n/gim, "### Experience Summary\n")
+    .replace(/\*\*Experience Summary:\*\*/gi, "### Experience Summary")
+    .replace(/^###\s*Experience Summary\s*$/gim, "### Experience Summary")
+
+    // Key Experience variants (bullet-style)
     .replace(/\*\*Key Experience:\*\*/gi, "### Key Experience")
     .replace(/\*\*Experience:\*\*/gi, "### Key Experience")
     .replace(/^###\s*Experience\s*$/gim, "### Key Experience")
+
     // Skills variants
+    .replace(/^KEY SKILLS\s*$/gim, "### Skills")
+    .replace(/^KEY SKILLS\s*\n/gim, "### Skills\n")
     .replace(/\*\*Professional Skills:\*\*/gi, "### Skills")
     .replace(/\*\*Skills:\*\*/gi, "### Skills")
     .replace(/\*\*Core Skills:\*\*/gi, "### Skills")
@@ -96,63 +112,7 @@ function extractSections(markdownText) {
       "### Skills"
     );
 
-  // ✅ NEW: plain heading parser for the new generator output
-  const headingSet = new Set([
-    "PROFILE",
-    "EXPERIENCE SUMMARY",
-    "KEY SKILLS",
-    "EMPLOYMENT HISTORY",
-    "EDUCATION",
-    "QUALIFICATIONS & CERTIFICATIONS",
-    "ADDITIONAL INFORMATION",
-  ]);
-
-  const hasPlainHeadings =
-    /\nPROFILE\s*\n/i.test("\n" + normalized + "\n") ||
-    /\nEXPERIENCE SUMMARY\s*\n/i.test("\n" + normalized + "\n") ||
-    /\nKEY SKILLS\s*\n/i.test("\n" + normalized + "\n");
-
-  if (hasPlainHeadings) {
-    const lines = normalized.split("\n");
-    let current = "";
-    const buckets = {};
-
-    for (const rawLine of lines) {
-      const line = rawLine.trim();
-      const upper = line.replace(/\s+/g, " ").toUpperCase();
-
-      if (headingSet.has(upper)) {
-        current = upper;
-        if (!buckets[current]) buckets[current] = [];
-        continue;
-      }
-
-      if (!current) continue;
-      buckets[current].push(rawLine);
-    }
-
-    out.summary = (buckets["PROFILE"] || []).join("\n").trim();
-    out.experienceSummary = (buckets["EXPERIENCE SUMMARY"] || []).join("\n").trim();
-
-    const keySkills = (buckets["KEY SKILLS"] || []).join("\n").trim();
-    if (keySkills) {
-      const skillLines = keySkills
-        .split("\n")
-        .map((l) => l.trim())
-        .filter(Boolean)
-        .map((l) => l.replace(/^[•\-*]\s*/, "").trim())
-        .filter(Boolean);
-
-      out.skills =
-        skillLines.length === 1 && skillLines[0].includes(",")
-          ? skillLines[0].split(",").map((s) => s.trim()).filter(Boolean)
-          : skillLines;
-    }
-
-    return out;
-  }
-
-  // Existing markdown heading parsing (backwards compatible)
+  // Split into sections by heading marker
   const parts = normalized.split("\n### ").map((p, idx) => (idx === 0 ? p : "### " + p));
 
   for (const p of parts) {
@@ -160,6 +120,10 @@ function extractSections(markdownText) {
 
     if (lower.startsWith("### professional summary")) {
       out.summary = p.replace(/^### professional summary\s*/i, "").trim();
+    }
+
+    if (lower.startsWith("### experience summary")) {
+      out.experienceSummary = p.replace(/^### experience summary\s*/i, "").trim();
     }
 
     if (lower.startsWith("### key experience")) {
@@ -513,7 +477,6 @@ export default function PreviewPage() {
            </div>`
         : "";
 
-    // ✅ Added Experience Summary to PDF export
     const experienceSummaryHtml =
       cfg.experienceSummary && (sections.experienceSummary || "").trim()
         ? `<div class="section">
@@ -668,7 +631,6 @@ export default function PreviewPage() {
       );
     }
 
-    // ✅ Added Experience Summary section
     if (key === "experienceSummary") {
       const content = (sections.experienceSummary || "").trim();
       if (!content) return null;
@@ -774,7 +736,8 @@ export default function PreviewPage() {
             <h2 className="text-2xl font-bold text-slate-900 mb-4">Before you leave this computer</h2>
 
             <p className="text-slate-700 mb-6">
-              Your {labelDoc} has been downloaded and all personal information has been removed from this device.
+              Your {labelDoc} has been downloaded and all personal information has been removed from
+              this device.
             </p>
 
             <p className="text-sm text-slate-500 mb-6">
