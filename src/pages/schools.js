@@ -9,7 +9,7 @@ export default function SchoolsPage() {
             ← Back
           </Link>
 
-          {/* ✅ IMPORTANT: schools should open the teacher-enabled builder */}
+          {/* Schools open teacher-enabled builder */}
           <Link
             href="/cv?teacher=1"
             className="rounded-xl bg-white text-black px-4 py-2 text-sm font-semibold hover:bg-slate-100"
@@ -21,6 +21,7 @@ export default function SchoolsPage() {
         <h1 className="text-4xl font-extrabold tracking-tight">
           CVCraft for Schools & Educators
         </h1>
+
         <p className="mt-3 text-slate-300 text-lg">
           Help ensure every student leaves school with a professional, interview-ready CV — built in
           minutes.
@@ -40,9 +41,9 @@ export default function SchoolsPage() {
           <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10">
             <h2 className="text-xl font-bold">GDPR & shared-device safe</h2>
             <ul className="mt-4 space-y-2 text-slate-200">
-              <li>• Student info is saved locally in the browser (not uploaded)</li>
+              <li>• Student information is saved locally in the browser</li>
               <li>• No student accounts or logins required</li>
-              <li>• Student Safe Mode clears data after download/print (recommended)</li>
+              <li>• Student Safe Mode clears data after download or print</li>
               <li>• Suitable for shared PCs in schools, libraries, and job centres</li>
             </ul>
           </div>
@@ -50,6 +51,7 @@ export default function SchoolsPage() {
 
         <div className="mt-10 rounded-2xl bg-white/5 p-6 ring-1 ring-white/10">
           <h2 className="text-xl font-bold">Typical delivery model</h2>
+
           <div className="mt-4 grid gap-6 md:grid-cols-3 text-slate-200">
             <div>
               <div className="font-semibold">1) Lesson</div>
@@ -57,12 +59,14 @@ export default function SchoolsPage() {
                 Students complete the guided builder in a single session.
               </p>
             </div>
+
             <div>
               <div className="font-semibold">2) Export</div>
               <p className="mt-2 text-sm text-slate-300">
                 Each student downloads a professional PDF CV for applications.
               </p>
             </div>
+
             <div>
               <div className="font-semibold">3) Improve</div>
               <p className="mt-2 text-sm text-slate-300">
@@ -74,6 +78,7 @@ export default function SchoolsPage() {
 
         <div className="mt-10 rounded-2xl bg-white p-6 text-slate-900">
           <h2 className="text-xl font-bold">Pilot opportunity</h2>
+
           <p className="mt-2 text-slate-700">
             If you’re a school, academy trust, or local authority, we can run a pilot programme and
             provide onboarding materials. The goal: measurable employability outcomes and every
@@ -82,13 +87,12 @@ export default function SchoolsPage() {
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
             <a
+              href="mailto:cvcraftcs@outlook.com?subject=CVCraft%20Schools%20Pilot"
               className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800 text-center"
-              href="mailto:hello@cvcraft.uk?subject=CVCraft%20Schools%20Pilot"
             >
               Email about a pilot
             </a>
 
-            {/* ✅ IMPORTANT: this should also open teacher-enabled builder */}
             <Link
               href="/cv?teacher=1"
               className="rounded-xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-200 text-center"
@@ -96,14 +100,6 @@ export default function SchoolsPage() {
               Try the builder
             </Link>
           </div>
-
-          <p className="mt-4 text-xs text-slate-500">
-            Note: Replace the email address with your preferred contact.
-          </p>
-        </div>
-
-        <div className="mt-10 text-sm text-slate-300">
-          Want a one-page PDF overview for headteachers/councils? Tell me and I’ll generate it next.
         </div>
       </div>
     </div>
