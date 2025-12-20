@@ -62,6 +62,13 @@ function extractResponseText(d: any): string {
   return "";
 }
 
+function cleanMultiline(s: string): string {
+  return (s || "")
+    .replace(/\r\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as Body;
@@ -73,12 +80,14 @@ export async function POST(req: NextRequest) {
       body.form?.role?.trim() ||
       "";
 
-    const experience =
+    const experienceRaw =
       body.experienceText?.trim() ||
       body.experience?.trim() ||
       body.form?.experienceText?.trim() ||
       body.form?.experience?.trim() ||
       "";
+
+    const experience = cleanMultiline(experienceRaw);
 
     const skills = normalizeSkills(
       body.skillsText ?? body.skills ?? body.form?.skillsText ?? body.form?.skills
@@ -89,45 +98,56 @@ export async function POST(req: NextRequest) {
     const tone = (body.tone ?? body.form?.tone ?? "professional").toString();
 
     if (!role) {
-      return NextResponse.json(
-        { ok: false, error: "Missing target role title." },
-        { status: 400 }
-      );
+      return NextResponse.json({ ok: false, error: "Missing target role title." }, { status: 400 });
     }
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      return NextResponse.json(
-        { ok: false, error: "Server missing OPENAI_API_KEY." },
-        { status: 500 }
-      );
+      return NextResponse.json({ ok: false, error: "Server missing OPENAI_API_KEY." }, { status: 500 });
     }
 
     // Keep your default model here. You can override via Vercel env var OPENAI_MODEL.
     const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
 
+    /**
+     * IMPORTANT CHANGE:
+     * We force a predictable section structure so the preview can reliably show "Experience" content.
+     * Specifically, we require a "PROFILE" section and tell it to use the provided experience text.
+     */
     const prompt = [
       `You are CVCraft, an expert CV writer.`,
       `Write in a ${tone} tone.`,
       `Region: ${region}.`,
       `Template hint: ${template}.`,
       ``,
-      `Target role: ${role}`,
+      `TARGET ROLE: ${role}`,
       ``,
-      experience
-        ? `Experience/context (may be incomplete):\n${experience}`
-        : `Experience/context: (none provided)`,
+      `CANDIDATE CONTEXT (may be incomplete):`,
+      experience ? experience : `(No experience text provided)`,
       ``,
-      skills.length
-        ? `Skills:\n${skills.map((s) => `- ${s}`).join("\n")}`
-        : `Skills: (none provided)`,
+      `SKILLS (if provided):`,
+      skills.length ? skills.map((s) => `- ${s}`).join("\n") : `(No skills provided)`,
       ``,
-      `Task: Generate a strong, ATS-friendly CV tailored to the target role.`,
-      `Rules:`,
-      `- Return ONLY the CV text (no JSON, no code, no markdown fences).`,
-      `- Use clear section headings.`,
+      `TASK: Generate a strong, ATS-friendly CV tailored to the target role.`,
+      ``,
+      `OUTPUT RULES (must follow exactly):`,
+      `- Return ONLY plain CV text (no JSON, no code, no markdown fences).`,
+      `- Use THESE EXACT HEADINGS in this order (even if some are short):`,
+      `  1) PROFILE`,
+      `  2) KEY SKILLS`,
+      `  3) EMPLOYMENT HISTORY`,
+      `  4) EDUCATION`,
+      `  5) QUALIFICATIONS & CERTIFICATIONS`,
+      `  6) ADDITIONAL INFORMATION`,
+      `- Under PROFILE:`,
+      `  - If candidate context was provided, you MUST base the PROFILE on it (paraphrase/rewrite it).`,
+      `  - Do NOT omit PROFILE.`,
+      `- Under KEY SKILLS:`,
+      `  - Prefer using provided skills verbatim as bullets; if none were provided, infer only general skills without fabricating facts.`,
+      `- Under EMPLOYMENT HISTORY / EDUCATION / QUALIFICATIONS:`,
+      `  - Do NOT invent employers, dates, schools, or certifications.`,
+      `  - If missing, write a short placeholder-style line like "Details available on request" or keep the section minimal.`,
       `- Use bullet points where appropriate.`,
-      `- Do not invent employers or qualifications; if something is missing, write generally without adding fake facts.`,
     ].join("\n");
 
     const r = await fetch("https://api.openai.com/v1/responses", {
