@@ -1,4 +1,7 @@
+// app/api/export/pdf/route.ts
 import { NextRequest } from "next/server";
+import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -8,81 +11,60 @@ type Body = {
   filename?: string;
 };
 
-function isVercel(): boolean {
-  return process.env.VERCEL === "1";
-}
-
-async function getBrowser() {
-  // Vercel (Linux serverless)
-  if (isVercel()) {
-    const chromium = (await import("@sparticuz/chromium")).default;
-    const puppeteer = await import("puppeteer-core");
-
-    return puppeteer.launch({
-      args: chromium.args,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
-      defaultViewport: chromium.defaultViewport,
-    });
-  }
-
-  // Local dev
-  const puppeteer = await import("puppeteer");
-  return puppeteer.launch({ headless: true });
-}
-
-function safeFilename(name: string) {
-  return name.replace(/["\r\n]/g, "").trim() || "CVCraft-CV.pdf";
-}
-
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as Body;
-
-    const html = (body.html || "").trim();
-    const filename = safeFilename(body.filename || "CVCraft-CV.pdf");
+    const html = body.html?.trim();
 
     if (!html) {
       return Response.json(
-        { ok: false, error: "Missing html in request body." },
+        { ok: false, error: "Missing html in request body" },
         { status: 400 }
       );
     }
 
-    const browser = await getBrowser();
+    const browser = await puppeteer.launch({
+      args: [
+        ...chromium.args,
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+      ],
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+    });
 
-    try {
-      const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: "networkidle0" });
+    const page = await browser.newPage();
 
-      const pdf = await page.pdf({
-        format: "A4",
-        printBackground: true,
-        preferCSSPageSize: true,
-      });
+    await page.setContent(html, { waitUntil: "load" });
 
-      // ✅ Key fix: wrap bytes in Blob (always valid BodyInit)
-      const pdfBytes = pdf instanceof Uint8Array ? pdf : new Uint8Array(pdf as any);
-      const blob = new Blob([pdfBytes], { type: "application/pdf" });
+    const pdf = await page.pdf({
+      format: "A4",
+      printBackground: true,
+    });
 
-      return new Response(blob, {
-        status: 200,
-        headers: {
-          "Content-Type": "application/pdf",
-          "Content-Disposition": `attachment; filename="${filename}"`,
-          "Cache-Control": "no-store",
-        },
-      });
-    } finally {
-      await browser.close();
-    }
+    await browser.close();
+
+    // ✅ Web-standard binary response (this matters)
+    return new Response(pdf, {
+      status: 200,
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="${
+          body.filename || "CVCraft-CV.pdf"
+        }"`,
+        "Cache-Control": "no-store",
+      },
+    });
   } catch (err) {
     console.error("PDF export failed:", err);
 
     return Response.json(
       {
         ok: false,
-        error: "PDF export failed.",
+        error: "PDF export failed",
         message: err instanceof Error ? err.message : String(err),
       },
       { status: 500 }
