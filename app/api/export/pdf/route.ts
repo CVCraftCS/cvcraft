@@ -13,6 +13,7 @@ function isVercel(): boolean {
 }
 
 async function getBrowser() {
+  // Vercel (Linux serverless)
   if (isVercel()) {
     const chromium = (await import("@sparticuz/chromium")).default;
     const puppeteer = await import("puppeteer-core");
@@ -60,8 +61,11 @@ export async function POST(req: NextRequest) {
         preferCSSPageSize: true,
       });
 
-      // ✅ Web-compatible binary response
-      return new Response(pdf, {
+      // ✅ Key fix: wrap bytes in Blob (always valid BodyInit)
+      const pdfBytes = pdf instanceof Uint8Array ? pdf : new Uint8Array(pdf as any);
+      const blob = new Blob([pdfBytes], { type: "application/pdf" });
+
+      return new Response(blob, {
         status: 200,
         headers: {
           "Content-Type": "application/pdf",
