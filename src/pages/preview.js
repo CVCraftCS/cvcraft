@@ -10,9 +10,18 @@ const TEACHER_MODE_SESSION_KEY = "cvcraft:teacherMode";
 const TEACHER_PIN_SESSION_KEY = "cvcraft:teacherPinHash"; // optional cleanup
 
 // defaults (must match builder)
-const DEFAULT_SECTION_ORDER = ["summary", "employment", "qualifications", "skills", "references"];
+// ✅ Added experienceSummary
+const DEFAULT_SECTION_ORDER = [
+  "summary",
+  "experienceSummary",
+  "employment",
+  "qualifications",
+  "skills",
+  "references",
+];
 const DEFAULT_SECTION_CONFIG = {
   summary: true,
+  experienceSummary: true,
   employment: true,
   qualifications: true,
   skills: true,
@@ -46,6 +55,7 @@ function regionLocale(region) {
 
 function sectionLabel(key, region) {
   if (key === "summary") return "Professional Summary";
+  if (key === "experienceSummary") return "Experience Summary";
   if (key === "employment") return "Employment history";
   if (key === "qualifications")
     return region === "US" ? "Education & Certifications" : "Qualifications & Certifications";
@@ -59,6 +69,7 @@ function extractSections(markdownText) {
 
   const out = {
     summary: "",
+    experienceSummary: "",
     experience: [],
     skills: [],
   };
@@ -85,6 +96,63 @@ function extractSections(markdownText) {
       "### Skills"
     );
 
+  // ✅ NEW: plain heading parser for the new generator output
+  const headingSet = new Set([
+    "PROFILE",
+    "EXPERIENCE SUMMARY",
+    "KEY SKILLS",
+    "EMPLOYMENT HISTORY",
+    "EDUCATION",
+    "QUALIFICATIONS & CERTIFICATIONS",
+    "ADDITIONAL INFORMATION",
+  ]);
+
+  const hasPlainHeadings =
+    /\nPROFILE\s*\n/i.test("\n" + normalized + "\n") ||
+    /\nEXPERIENCE SUMMARY\s*\n/i.test("\n" + normalized + "\n") ||
+    /\nKEY SKILLS\s*\n/i.test("\n" + normalized + "\n");
+
+  if (hasPlainHeadings) {
+    const lines = normalized.split("\n");
+    let current = "";
+    const buckets = {};
+
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      const upper = line.replace(/\s+/g, " ").toUpperCase();
+
+      if (headingSet.has(upper)) {
+        current = upper;
+        if (!buckets[current]) buckets[current] = [];
+        continue;
+      }
+
+      if (!current) continue;
+      buckets[current].push(rawLine);
+    }
+
+    out.summary = (buckets["PROFILE"] || []).join("\n").trim();
+    out.experienceSummary = (buckets["EXPERIENCE SUMMARY"] || []).join("\n").trim();
+
+    const keySkills = (buckets["KEY SKILLS"] || []).join("\n").trim();
+    if (keySkills) {
+      const skillLines = keySkills
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean)
+        .map((l) => l.replace(/^[•\-*]\s*/, "").trim())
+        .filter(Boolean);
+
+      out.skills =
+        skillLines.length === 1 && skillLines[0].includes(",")
+          ? skillLines[0].split(",").map((s) => s.trim()).filter(Boolean)
+          : skillLines;
+    }
+
+    return out;
+  }
+
+  // Existing markdown heading parsing (backwards compatible)
   const parts = normalized.split("\n### ").map((p, idx) => (idx === 0 ? p : "### " + p));
 
   for (const p of parts) {
@@ -445,6 +513,15 @@ export default function PreviewPage() {
            </div>`
         : "";
 
+    // ✅ Added Experience Summary to PDF export
+    const experienceSummaryHtml =
+      cfg.experienceSummary && (sections.experienceSummary || "").trim()
+        ? `<div class="section">
+             <h2>Experience Summary</h2>
+             <p>${escapeHtml(sections.experienceSummary).replaceAll("\n", "<br/>")}</p>
+           </div>`
+        : "";
+
     const jobsHtml =
       cfg.employment && employmentHistory.length
         ? `<div class="section">
@@ -513,6 +590,7 @@ export default function PreviewPage() {
 
     const sectionMap = {
       summary: summaryHtml,
+      experienceSummary: experienceSummaryHtml,
       employment: jobsHtml,
       qualifications: qualsHtml,
       skills: skillsHtml,
@@ -585,6 +663,18 @@ export default function PreviewPage() {
       return (
         <section>
           <h2 className={ui.sectionTitle}>{sectionLabel("summary", region)}</h2>
+          <p className={`mt-2 whitespace-pre-line ${ui.body}`}>{content}</p>
+        </section>
+      );
+    }
+
+    // ✅ Added Experience Summary section
+    if (key === "experienceSummary") {
+      const content = (sections.experienceSummary || "").trim();
+      if (!content) return null;
+      return (
+        <section>
+          <h2 className={ui.sectionTitle}>{sectionLabel("experienceSummary", region)}</h2>
           <p className={`mt-2 whitespace-pre-line ${ui.body}`}>{content}</p>
         </section>
       );
