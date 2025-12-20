@@ -11,16 +11,17 @@ type Body = {
   filename?: string;
 };
 
+function safeFilename(name?: string) {
+  return (name || "CVCraft-CV.pdf").replace(/["\r\n]/g, "").trim() || "CVCraft-CV.pdf";
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as Body;
     const html = body.html?.trim();
 
     if (!html) {
-      return Response.json(
-        { ok: false, error: "Missing html in request body" },
-        { status: 400 }
-      );
+      return Response.json({ ok: false, error: "Missing html in request body" }, { status: 400 });
     }
 
     const browser = await puppeteer.launch({
@@ -36,28 +37,31 @@ export async function POST(req: NextRequest) {
       headless: chromium.headless,
     });
 
-    const page = await browser.newPage();
+    try {
+      const page = await browser.newPage();
 
-    await page.setContent(html, { waitUntil: "load" });
+      // networkidle0 can hang on serverless; "load" is safer on Vercel
+      await page.setContent(html, { waitUntil: "load" });
 
-    const pdf = await page.pdf({
-      format: "A4",
-      printBackground: true,
-    });
+      const pdfUint8 = await page.pdf({
+        format: "A4",
+        printBackground: true,
+      });
 
-    await browser.close();
+      // ✅ Make BodyInit unambiguous for TypeScript/Vercel: Blob is always accepted
+      const pdfBlob = new Blob([pdfUint8], { type: "application/pdf" });
 
-    // ✅ Web-standard binary response (this matters)
-    return new Response(pdf, {
-      status: 200,
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${
-          body.filename || "CVCraft-CV.pdf"
-        }"`,
-        "Cache-Control": "no-store",
-      },
-    });
+      return new Response(pdfBlob, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `attachment; filename="${safeFilename(body.filename)}"`,
+          "Cache-Control": "no-store",
+        },
+      });
+    } finally {
+      await browser.close();
+    }
   } catch (err) {
     console.error("PDF export failed:", err);
 
