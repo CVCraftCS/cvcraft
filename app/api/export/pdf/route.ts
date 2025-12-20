@@ -39,8 +39,6 @@ export async function POST(req: NextRequest) {
 
     try {
       const page = await browser.newPage();
-
-      // "load" is safer than networkidle0 on serverless
       await page.setContent(html, { waitUntil: "load" });
 
       const pdfUint8 = await page.pdf({
@@ -48,15 +46,14 @@ export async function POST(req: NextRequest) {
         printBackground: true,
       });
 
-      // ✅ FIX: create a real ArrayBuffer slice (TS accepts this as BlobPart)
-      const pdfArrayBuffer = pdfUint8.buffer.slice(
+      // Convert Uint8Array -> exact ArrayBuffer slice
+      const ab = pdfUint8.buffer.slice(
         pdfUint8.byteOffset,
         pdfUint8.byteOffset + pdfUint8.byteLength
       );
 
-      const pdfBlob = new Blob([pdfArrayBuffer], { type: "application/pdf" });
-
-      return new Response(pdfBlob, {
+      // ✅ key: cast to BodyInit to satisfy Next/Vercel TS types
+      return new Response(ab as unknown as BodyInit, {
         status: 200,
         headers: {
           "Content-Type": "application/pdf",
