@@ -15,7 +15,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-slate-950 text-white">
-        {/* Global header */}
         <header className="border-b border-white/10 bg-slate-950">
           <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
             <Link href="/" className="text-lg font-semibold text-white">
@@ -23,10 +22,7 @@ export default function RootLayout({
             </Link>
 
             <div className="flex items-center gap-6">
-              <Link
-                href="/pricing"
-                className="text-sm text-white/80 hover:text-white"
-              >
+              <Link href="/pricing" className="text-sm text-white/80 hover:text-white">
                 Pricing
               </Link>
 
@@ -40,7 +36,6 @@ export default function RootLayout({
           </nav>
         </header>
 
-        {/* Page content */}
         <main>{children}</main>
       </body>
     </html>

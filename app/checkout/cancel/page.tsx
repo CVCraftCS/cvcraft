@@ -7,8 +7,7 @@ export default function CheckoutCancelPage() {
         <h1 className="text-4xl font-semibold">Payment cancelled</h1>
 
         <p className="mt-4 text-white/70">
-          No payment was taken. You can return to pricing and try again whenever
-          you’re ready.
+          No payment was taken. You can return to pricing and try again whenever you’re ready.
         </p>
 
         <div className="mt-8 flex flex-col gap-4 sm:flex-row">
