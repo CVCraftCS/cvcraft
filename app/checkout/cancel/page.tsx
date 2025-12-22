@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function CheckoutCancelPage() {
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -9,20 +11,20 @@ export default function CheckoutCancelPage() {
           you’re ready.
         </p>
 
-        <div className="mt-8 flex gap-4">
-          <a
+        <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+          <Link
             href="/pricing"
             className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 font-semibold text-slate-900 hover:bg-white/90"
           >
             Back to pricing
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/"
             className="inline-flex items-center justify-center rounded-xl border border-white/20 px-5 py-3 font-semibold text-white hover:bg-white/10"
           >
             Home
-          </a>
+          </Link>
         </div>
       </div>
     </main>
