@@ -1,20 +1,23 @@
+// app/checkout/success/success-client.tsx
 "use client";
 
 import { useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function CheckoutSuccessClient() {
+export default function SuccessClient() {
   const params = useSearchParams();
   const router = useRouter();
 
   useEffect(() => {
-    const sessionId = params.get("session_id");
+    const sessionId = params?.get("session_id"); // safe
     if (!sessionId) return;
 
-    fetch(`/api/verify-payment?session_id=${sessionId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.valid) {
+    (async () => {
+      try {
+        const res = await fetch(`/api/verify-payment?session_id=${sessionId}`);
+        const data = await res.json();
+
+        if (res.ok && data?.valid) {
           localStorage.setItem(
             "cvcraft_access",
             JSON.stringify({
@@ -23,12 +26,16 @@ export default function CheckoutSuccessClient() {
             })
           );
 
-          router.push("/cv");
+          router.replace("/cv");
+          return;
         }
-      })
-      .catch(() => {
-        // optional: show error state
-      });
+
+        // If invalid, send to pricing (or /checkout/cancel if you prefer)
+        router.replace("/pricing");
+      } catch {
+        router.replace("/pricing");
+      }
+    })();
   }, [params, router]);
 
   return (

@@ -5,9 +5,7 @@ import Stripe from "stripe";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2025-12-15.clover",
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 
 export async function GET(req: NextRequest) {
   try {
@@ -16,25 +14,32 @@ export async function GET(req: NextRequest) {
 
     if (!session_id) {
       return NextResponse.json(
-        { ok: false, error: "Missing session_id" },
+        { valid: false, error: "Missing session_id" },
         { status: 400 }
+      );
+    }
+
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return NextResponse.json(
+        { valid: false, error: "Server misconfigured (STRIPE_SECRET_KEY missing)" },
+        { status: 500 }
       );
     }
 
     const session = await stripe.checkout.sessions.retrieve(session_id);
 
     const paid = session.payment_status === "paid";
-    const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000; // example: 30 days
+    if (!paid) {
+      return NextResponse.json({ valid: false }, { status: 401 });
+    }
 
-    return NextResponse.json({
-      ok: true,
-      paid,
-      customer_email: session.customer_details?.email || null,
-      expiresAt,
-    });
+    // Option A: grant access for 30 days from now (you can change this later)
+    const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
+
+    return NextResponse.json({ valid: true, expiresAt }, { status: 200 });
   } catch (err: any) {
     return NextResponse.json(
-      { ok: false, error: err?.message || "Verification failed" },
+      { valid: false, error: err?.message || "Verification failed" },
       { status: 500 }
     );
   }

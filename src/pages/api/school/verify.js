@@ -24,15 +24,16 @@ export default function handler(req, res) {
     return res.status(401).json({ ok: false, error: "Invalid code" });
   }
 
-  const a = Buffer.from(incoming, "utf8");
-  const b = Buffer.from(expected, "utf8");
+  const a = Buffer.from(incoming);
+  const b = Buffer.from(expected);
 
+  // timingSafeEqual requires same length
   if (a.length !== b.length) {
     return res.status(401).json({ ok: false, error: "Invalid code" });
   }
 
-  const same = crypto.timingSafeEqual(a, b);
-  if (!same) {
+  const ok = crypto.timingSafeEqual(a, b);
+  if (!ok) {
     return res.status(401).json({ ok: false, error: "Invalid code" });
   }
 
