@@ -1,4 +1,3 @@
-// app/checkout/success/success-client.tsx
 "use client";
 
 import { useEffect } from "react";
@@ -9,15 +8,13 @@ export default function SuccessClient() {
   const router = useRouter();
 
   useEffect(() => {
-    const sessionId = params?.get("session_id"); // safe
+    const sessionId = params?.get("session_id") || "";
     if (!sessionId) return;
 
-    (async () => {
-      try {
-        const res = await fetch(`/api/verify-payment?session_id=${sessionId}`);
-        const data = await res.json();
-
-        if (res.ok && data?.valid) {
+    fetch(`/api/verify-payment?session_id=${encodeURIComponent(sessionId)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.valid) {
           localStorage.setItem(
             "cvcraft_access",
             JSON.stringify({
@@ -27,20 +24,12 @@ export default function SuccessClient() {
           );
 
           router.replace("/cv");
-          return;
         }
-
-        // If invalid, send to pricing (or /checkout/cancel if you prefer)
-        router.replace("/pricing");
-      } catch {
-        router.replace("/pricing");
-      }
-    })();
+      })
+      .catch(() => {
+        // Fail silently; user can refresh or go to /pricing
+      });
   }, [params, router]);
 
-  return (
-    <main className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
-      <p>Verifying your payment…</p>
-    </main>
-  );
+  return <p>Verifying your payment…</p>;
 }

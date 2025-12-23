@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import PaywallModal from "../components/PaywallModal";
-import { isProUnlocked, setProUnlocked } from "../lib/proUnlock";
 
 const STORAGE_KEY = "cvcraft:lastResult";
 
@@ -31,7 +30,7 @@ const TEACHER_MODE_DEFAULTS = {
   enableReferences: false,
 };
 
-// ---- Pro template meta (must match preview.js) ----
+// ---- Template meta (must match preview.js) ----
 const TEMPLATE_META = {
   classic: { name: "Classic", premium: false },
   modern: { name: "Modern", premium: true },
@@ -131,6 +130,20 @@ async function verifyTeacherPin(pin) {
 function hasSchoolAccess() {
   if (typeof window === "undefined") return false;
   return sessionStorage.getItem(SCHOOL_ACCESS_SESSION_KEY) === "1";
+}
+
+// ---- paid access (Option A) helper ----
+function hasPaidAccess() {
+  if (typeof window === "undefined") return false;
+
+  try {
+    const access = JSON.parse(localStorage.getItem("cvcraft_access") || "null");
+    const paid = !!access?.paid;
+    const expiresAt = Number(access?.expiresAt || 0);
+    return paid && expiresAt > 0 && Date.now() < expiresAt;
+  } catch {
+    return false;
+  }
 }
 
 // ---- region helpers ----
@@ -238,7 +251,13 @@ function getPresetConfig(presetName, region) {
         employment: false,
         references: def.referencesEnabled,
       },
-      sectionOrder: ["summary", "skills", "qualifications", "references", "employment"],
+      sectionOrder: [
+        "summary",
+        "skills",
+        "qualifications",
+        "references",
+        "employment",
+      ],
       notice: "Student Mode applied — ideal for school leavers and first jobs.",
     };
   }
@@ -275,7 +294,13 @@ function getPresetConfig(presetName, region) {
         employment: true,
         references: def.referencesEnabled,
       },
-      sectionOrder: ["summary", "skills", "qualifications", "employment", "references"],
+      sectionOrder: [
+        "summary",
+        "skills",
+        "qualifications",
+        "employment",
+        "references",
+      ],
       notice: "Apprenticeship Mode applied — skills + qualifications forward.",
     };
   }
@@ -313,7 +338,13 @@ function getPresetConfig(presetName, region) {
         qualifications: true,
         references: def.referencesEnabled,
       },
-      sectionOrder: ["summary", "employment", "skills", "qualifications", "references"],
+      sectionOrder: [
+        "summary",
+        "employment",
+        "skills",
+        "qualifications",
+        "references",
+      ],
       notice: "Jobseeker Mode applied — best for general applications.",
     };
   }
@@ -371,23 +402,12 @@ export default function CVBuilderPage() {
     }
 
     // --- Normal paid route: enforce paid access ---
-    let access = null;
-    try {
-      access = JSON.parse(localStorage.getItem("cvcraft_access") || "null");
-    } catch {
-      access = null;
-    }
-
-    const paid = !!access?.paid;
-    const expiresAt = Number(access?.expiresAt || 0);
-
-    if (!paid || Date.now() > expiresAt) {
+    if (!hasPaidAccess()) {
       router.replace("/pricing");
     }
   }, [router]);
 
-  // ---- Pro unlock + Paywall state ----
-  const [proUnlocked, setProUnlockedState] = useState(false);
+  // ---- Paywall state ----
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [paywallReason, setPaywallReason] = useState("template");
   const [pendingTemplate, setPendingTemplate] = useState(null);
@@ -449,21 +469,6 @@ export default function CVBuilderPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Pro unlock + Stripe return (?unlocked=true)
-  useEffect(() => {
-    setProUnlockedState(isProUnlocked());
-
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      if (url.searchParams.get("unlocked") === "true") {
-        setProUnlocked(true);
-        setProUnlockedState(true);
-        url.searchParams.delete("unlocked");
-        window.history.replaceState({}, "", url.toString());
-      }
-    }
-  }, []);
-
   const cleanedQualifications = useMemo(() => {
     return (qualifications || [])
       .map((q) => ({
@@ -521,7 +526,7 @@ export default function CVBuilderPage() {
     return false;
   };
 
-  // ---- Pro gating helpers ----
+  // ---- Paywall helpers ----
   const openPaywall = (reason) => {
     setPaywallReason(reason);
     setPaywallOpen(true);
@@ -536,7 +541,7 @@ export default function CVBuilderPage() {
     }
 
     const meta = TEMPLATE_META[nextTemplate] || { premium: false };
-    if (meta.premium && !proUnlocked) {
+    if (meta.premium && !hasPaidAccess()) {
       setPendingTemplate(nextTemplate);
       openPaywall("template");
       return;
@@ -675,7 +680,7 @@ export default function CVBuilderPage() {
 
     if (!teacherMode) {
       const meta = TEMPLATE_META[cfg.template] || { premium: false };
-      if (meta.premium && !proUnlocked) {
+      if (meta.premium && !hasPaidAccess()) {
         setPendingTemplate(cfg.template);
         openPaywall("template");
       } else {
@@ -952,7 +957,9 @@ export default function CVBuilderPage() {
 
       const resultText = data?.result;
       if (!resultText || typeof resultText !== "string") {
-        throw new Error("API returned no result text (expected { result: string }).");
+        throw new Error(
+          "API returned no result text (expected { result: string })."
+        );
       }
 
       const saved = {
@@ -1007,8 +1014,10 @@ export default function CVBuilderPage() {
     });
   };
 
-  const modernLocked = !teacherMode && TEMPLATE_META.modern.premium && !proUnlocked;
-  const compactLocked = !teacherMode && TEMPLATE_META.compact.premium && !proUnlocked;
+  const modernLocked =
+    !teacherMode && TEMPLATE_META.modern.premium && !hasPaidAccess();
+  const compactLocked =
+    !teacherMode && TEMPLATE_META.compact.premium && !hasPaidAccess();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white px-6 py-12">
@@ -1099,8 +1108,8 @@ export default function CVBuilderPage() {
 
         {teacherMode ? (
           <div className="mb-4 rounded-2xl bg-emerald-950/40 border border-emerald-400/30 px-4 py-3 text-emerald-100">
-            🔒 Teacher Mode is active. Student Safe Mode is locked ON and no data is
-            saved to this device.
+            🔒 Teacher Mode is active. Student Safe Mode is locked ON and no data
+            is saved to this device.
           </div>
         ) : null}
 
@@ -1292,9 +1301,9 @@ export default function CVBuilderPage() {
             </h2>
 
             <p className="text-sm text-amber-100">
-              Prevents personal information from being stored on shared computers.
-              When enabled, data is saved temporarily for preview, then cleared
-              automatically after PDF download/print.
+              Prevents personal information from being stored on shared
+              computers. When enabled, data is saved temporarily for preview,
+              then cleared automatically after PDF download/print.
             </p>
 
             <button
@@ -1316,7 +1325,9 @@ export default function CVBuilderPage() {
               aria-pressed={studentSafeMode || teacherMode ? "true" : "false"}
               title={teacherMode ? "Locked in Teacher Mode" : undefined}
             >
-              {studentSafeMode || teacherMode ? "✓ Enabled" : "Enable Student Safe Mode"}
+              {studentSafeMode || teacherMode
+                ? "✓ Enabled"
+                : "Enable Student Safe Mode"}
             </button>
           </div>
 
@@ -1440,7 +1451,9 @@ export default function CVBuilderPage() {
                     </button>
 
                     <div>
-                      <div className="font-semibold">{sectionLabel(key, region)}</div>
+                      <div className="font-semibold">
+                        {sectionLabel(key, region)}
+                      </div>
                       {key === "references" ? (
                         <div className="text-xs text-slate-300">
                           Region note: US résumés usually hide references.
@@ -1472,7 +1485,9 @@ export default function CVBuilderPage() {
                           ? "opacity-60 cursor-not-allowed"
                           : ""
                       }`}
-                      title={teacherMode ? "Locked in Teacher Mode" : "Move down"}
+                      title={
+                        teacherMode ? "Locked in Teacher Mode" : "Move down"
+                      }
                     >
                       ↓
                     </button>
@@ -1506,7 +1521,9 @@ export default function CVBuilderPage() {
 
             <div className="space-y-5 pt-2">
               <div>
-                <label className="block text-sm font-semibold mb-2">Full name</label>
+                <label className="block text-sm font-semibold mb-2">
+                  Full name
+                </label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -1518,7 +1535,9 @@ export default function CVBuilderPage() {
 
               <div className="grid gap-5 md:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-semibold mb-2">Email</label>
+                  <label className="block text-sm font-semibold mb-2">
+                    Email
+                  </label>
                   <input
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -1529,7 +1548,9 @@ export default function CVBuilderPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold mb-2">Phone</label>
+                  <label className="block text-sm font-semibold mb-2">
+                    Phone
+                  </label>
                   <input
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
@@ -1540,7 +1561,9 @@ export default function CVBuilderPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold mb-2">Location</label>
+                <label className="block text-sm font-semibold mb-2">
+                  Location
+                </label>
                 <input
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
@@ -1559,7 +1582,8 @@ export default function CVBuilderPage() {
                   {sectionLabel("qualifications", region)}
                 </h2>
                 <p className="text-sm text-slate-300">
-                  Add any qualifications, courses, licences, or certificates (optional).
+                  Add any qualifications, courses, licences, or certificates
+                  (optional).
                 </p>
               </div>
 
@@ -1568,7 +1592,13 @@ export default function CVBuilderPage() {
                 onClick={() =>
                   setQualifications((prev) => [
                     ...(prev || []),
-                    { id: makeId(), title: "", provider: "", year: "", grade: "" },
+                    {
+                      id: makeId(),
+                      title: "",
+                      provider: "",
+                      year: "",
+                      grade: "",
+                    },
                   ])
                 }
                 className="rounded-xl bg-white text-black px-4 py-2 text-sm font-semibold hover:bg-slate-100"
@@ -1595,7 +1625,15 @@ export default function CVBuilderPage() {
                           const next = (prev || []).filter((x) => x.id !== q.id);
                           return next.length
                             ? next
-                            : [{ id: makeId(), title: "", provider: "", year: "", grade: "" }];
+                            : [
+                                {
+                                  id: makeId(),
+                                  title: "",
+                                  provider: "",
+                                  year: "",
+                                  grade: "",
+                                },
+                              ];
                         });
                       }}
                       className="text-sm text-slate-300 hover:text-white underline underline-offset-4"
@@ -1607,7 +1645,9 @@ export default function CVBuilderPage() {
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="md:col-span-2">
                       <label className="block text-sm font-semibold mb-2">
-                        {region === "US" ? "Education / Certificate" : "Qualification / Certificate"}
+                        {region === "US"
+                          ? "Education / Certificate"
+                          : "Qualification / Certificate"}
                       </label>
                       <input
                         value={q.title}
@@ -1618,7 +1658,11 @@ export default function CVBuilderPage() {
                             )
                           )
                         }
-                        placeholder={region === "US" ? "e.g. High School Diploma, OSHA 10, CPR" : "e.g. GCSEs, NVQ Level 2, First Aid"}
+                        placeholder={
+                          region === "US"
+                            ? "e.g. High School Diploma, OSHA 10, CPR"
+                            : "e.g. GCSEs, NVQ Level 2, First Aid"
+                        }
                         className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
                       />
                     </div>
@@ -1632,17 +1676,25 @@ export default function CVBuilderPage() {
                         onChange={(e) =>
                           setQualifications((prev) =>
                             (prev || []).map((x) =>
-                              x.id === q.id ? { ...x, provider: e.target.value } : x
+                              x.id === q.id
+                                ? { ...x, provider: e.target.value }
+                                : x
                             )
                           )
                         }
-                        placeholder={region === "US" ? "e.g. Lincoln High School" : "e.g. College Name"}
+                        placeholder={
+                          region === "US"
+                            ? "e.g. Lincoln High School"
+                            : "e.g. College Name"
+                        }
                         className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold mb-2">Year</label>
+                      <label className="block text-sm font-semibold mb-2">
+                        Year
+                      </label>
                       <input
                         value={q.year}
                         onChange={(e) =>
@@ -1671,7 +1723,11 @@ export default function CVBuilderPage() {
                             )
                           )
                         }
-                        placeholder={region === "US" ? "e.g. GPA 3.6, Honors" : "e.g. Grade 6, Pass"}
+                        placeholder={
+                          region === "US"
+                            ? "e.g. GPA 3.6, Honors"
+                            : "e.g. Grade 6, Pass"
+                        }
                         className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
                       />
                     </div>
@@ -1687,7 +1743,8 @@ export default function CVBuilderPage() {
               <div>
                 <h2 className="text-lg font-semibold">Employment history</h2>
                 <p className="text-sm text-slate-300">
-                  Add roles one-by-one. If you fill this in, you can leave the “Experience text” box empty.
+                  Add roles one-by-one. If you fill this in, you can leave the
+                  “Experience text” box empty.
                 </p>
               </div>
 
@@ -1752,7 +1809,9 @@ export default function CVBuilderPage() {
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <label className="block text-sm font-semibold mb-2">Job title</label>
+                      <label className="block text-sm font-semibold mb-2">
+                        Job title
+                      </label>
                       <input
                         value={j.title}
                         onChange={(e) =>
@@ -1768,13 +1827,17 @@ export default function CVBuilderPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold mb-2">Company</label>
+                      <label className="block text-sm font-semibold mb-2">
+                        Company
+                      </label>
                       <input
                         value={j.company}
                         onChange={(e) =>
                           setEmploymentHistory((prev) =>
                             (prev || []).map((x) =>
-                              x.id === j.id ? { ...x, company: e.target.value } : x
+                              x.id === j.id
+                                ? { ...x, company: e.target.value }
+                                : x
                             )
                           )
                         }
@@ -1784,13 +1847,17 @@ export default function CVBuilderPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold mb-2">Location (optional)</label>
+                      <label className="block text-sm font-semibold mb-2">
+                        Location (optional)
+                      </label>
                       <input
                         value={j.location}
                         onChange={(e) =>
                           setEmploymentHistory((prev) =>
                             (prev || []).map((x) =>
-                              x.id === j.id ? { ...x, location: e.target.value } : x
+                              x.id === j.id
+                                ? { ...x, location: e.target.value }
+                                : x
                             )
                           )
                         }
@@ -1807,13 +1874,17 @@ export default function CVBuilderPage() {
 
                     <div className="grid gap-4 grid-cols-2">
                       <div>
-                        <label className="block text-sm font-semibold mb-2">Start</label>
+                        <label className="block text-sm font-semibold mb-2">
+                          Start
+                        </label>
                         <input
                           value={j.start}
                           onChange={(e) =>
                             setEmploymentHistory((prev) =>
                               (prev || []).map((x) =>
-                                x.id === j.id ? { ...x, start: e.target.value } : x
+                                x.id === j.id
+                                  ? { ...x, start: e.target.value }
+                                  : x
                               )
                             )
                           }
@@ -1823,7 +1894,9 @@ export default function CVBuilderPage() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-semibold mb-2">End</label>
+                        <label className="block text-sm font-semibold mb-2">
+                          End
+                        </label>
                         <input
                           value={j.end}
                           onChange={(e) =>
@@ -1848,7 +1921,9 @@ export default function CVBuilderPage() {
                         onChange={(e) =>
                           setEmploymentHistory((prev) =>
                             (prev || []).map((x) =>
-                              x.id === j.id ? { ...x, bulletsText: e.target.value } : x
+                              x.id === j.id
+                                ? { ...x, bulletsText: e.target.value }
+                                : x
                             )
                           )
                         }
@@ -1867,7 +1942,9 @@ Worked as part of a team under pressure`}
 
           {/* Remaining inputs */}
           <div>
-            <label className="block text-sm font-semibold mb-2">Target role title</label>
+            <label className="block text-sm font-semibold mb-2">
+              Target role title
+            </label>
             <input
               value={role}
               onChange={(e) => setRole(e.target.value)}
@@ -1935,19 +2012,8 @@ Timekeeping`}
             setPaywallOpen(false);
           }}
           onUnlockClick={() => {
-            const link = process.env.NEXT_PUBLIC_STRIPE_CV_PRO_LINK;
-
-            // Dev fallback: simulate unlock if link missing
-            if (!link) {
-              console.warn("Stripe link missing — simulating unlock");
-              setProUnlocked(true);
-              setProUnlockedState(true);
-              setPaywallOpen(false);
-              return;
-            }
-
-            // Configure Stripe Payment Link success URL to return to /cv?unlocked=true
-            window.location.href = link;
+            // Send to Pricing / Access Pass
+            router.push("/pricing");
           }}
         />
       </div>
