@@ -1,22 +1,36 @@
-import Link from "next/link";
+"use client";
+
+import { useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 
 export default function CheckoutSuccessPage() {
+  const params = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    const sessionId = params.get("session_id");
+    if (!sessionId) return;
+
+    fetch(`/api/verify-payment?session_id=${sessionId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.valid) {
+          localStorage.setItem(
+            "cvcraft_access",
+            JSON.stringify({
+              paid: true,
+              expiresAt: data.expiresAt,
+            })
+          );
+
+          router.push("/cv");
+        }
+      });
+  }, [params, router]);
+
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
-      <div className="mx-auto max-w-3xl px-6 py-16">
-        <h1 className="text-4xl font-semibold">Payment successful 🎉</h1>
-
-        <p className="mt-4 text-white/70">
-          You’re all set — your access is now active.
-        </p>
-
-        <Link
-          href="/"
-          className="mt-8 inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 font-semibold text-slate-900 hover:bg-white/90"
-        >
-          Back to CVCraft
-        </Link>
-      </div>
+    <main className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
+      <p>Verifying your payment…</p>
     </main>
   );
 }
