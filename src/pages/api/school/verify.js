@@ -1,19 +1,13 @@
 // src/pages/api/school/verify.js
-
 import crypto from "crypto";
 
-export default async function handler(req, res) {
+export default function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ ok: false, error: "Method not allowed" });
   }
 
-  // Ensure JSON body
-  if (!req.headers["content-type"]?.includes("application/json")) {
-    return res.status(400).json({ ok: false, error: "Invalid content type" });
-  }
-
-  const expected = (process.env.SCHOOL_ACCESS_CODE || "").trim();
+  const expected = String(process.env.SCHOOL_ACCESS_CODE || "").trim();
 
   // Misconfiguration safety
   if (!expected) {
@@ -33,15 +27,12 @@ export default async function handler(req, res) {
   const a = Buffer.from(incoming, "utf8");
   const b = Buffer.from(expected, "utf8");
 
-  // Must be same length for timingSafeEqual
   if (a.length !== b.length) {
     return res.status(401).json({ ok: false, error: "Invalid code" });
   }
 
-  // Constant-time comparison
-  const match = crypto.timingSafeEqual(a, b);
-
-  if (!match) {
+  const same = crypto.timingSafeEqual(a, b);
+  if (!same) {
     return res.status(401).json({ ok: false, error: "Invalid code" });
   }
 
