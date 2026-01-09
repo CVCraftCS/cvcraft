@@ -40,11 +40,9 @@ export default function PricingPage() {
       <div className="mx-auto max-w-5xl px-6 py-16">
         {/* Hero */}
         <header className="text-center">
-          <h1 className="text-5xl font-semibold tracking-tight">
-            Simple. Fair. No subscriptions.
-          </h1>
+          <h1 className="text-5xl font-semibold tracking-tight">Simple. Fair. No subscriptions.</h1>
           <p className="mt-4 text-lg text-white/70">
-            We want you to have everything you need to be successful on your very first attempt.
+            Everything you need to create a professional CV fast — with one simple payment.
           </p>
         </header>
 
@@ -58,9 +56,18 @@ export default function PricingPage() {
         {/* Main product */}
         <section className="mx-auto mt-10 max-w-3xl rounded-2xl border border-white/10 bg-white/5 p-8 shadow-lg">
           <div className="flex flex-col gap-2">
-            <h2 className="text-2xl font-semibold">30-Day CV Access Pass</h2>
-            <p className="text-white/80">£12.99 one-off</p>
-            <p className="text-white/70">Pay once. Edit when it matters.</p>
+            <h2 className="text-2xl font-semibold">30-Day CV Access</h2>
+
+            <p className="text-white/80">£9.99 one-off</p>
+            <p className="text-white/70">Full access for 30 days. Unlimited edits. No subscriptions.</p>
+
+            <ul className="mt-4 space-y-2 text-white/75">
+              <li>• Unlimited CV edits for 30 days</li>
+              <li>• Unlimited PDF downloads</li>
+              <li>• Switch templates anytime</li>
+              <li>• Region presets (UK / US / AU)</li>
+              <li>• ✅ Free cover letter included</li>
+            </ul>
 
             <button
               type="button"
@@ -68,43 +75,12 @@ export default function PricingPage() {
               disabled={loading !== null}
               className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-white px-5 py-3 font-semibold text-slate-900 hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {loading === "access_pass" ? "Redirecting…" : "Buy your Access Pass"}
+              {loading === "access_pass" ? "Redirecting…" : "Get 30-Day Access — £9.99"}
             </button>
 
             <p className="mt-3 text-center text-sm text-white/60">
-              No subscriptions. No automatic renewals.
+              One payment. No renewals. No recurring charges.
             </p>
-          </div>
-        </section>
-
-        {/* Timeline */}
-        <section className="mt-10 grid gap-6 md:grid-cols-3">
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-lg">
-            <h3 className="text-lg font-semibold">Days 1–14 — Full editing</h3>
-            <ul className="mt-3 space-y-2 text-white/75">
-              <li>• Unlimited edits</li>
-              <li>• Switch templates</li>
-              <li>• Tailor for different roles</li>
-              <li>• Unlimited PDF downloads</li>
-              <li>• Change region (UK / US / AU)</li>
-            </ul>
-          </div>
-
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-lg">
-            <h3 className="text-lg font-semibold">Days 15–28 — Minor tweaks</h3>
-            <ul className="mt-3 space-y-2 text-white/75">
-              <li>• Adjust wording and bullet points</li>
-              <li>• Fix details before interviews</li>
-              <li>• Re-download PDFs anytime</li>
-            </ul>
-          </div>
-
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-lg">
-            <h3 className="text-lg font-semibold">After day 28 — View & download</h3>
-            <ul className="mt-3 space-y-2 text-white/75">
-              <li>• View and re-download your CV</li>
-              <li>• Start a new access pass to edit again</li>
-            </ul>
           </div>
         </section>
 
@@ -112,57 +88,12 @@ export default function PricingPage() {
         <section className="mx-auto mt-10 max-w-4xl rounded-2xl border border-white/10 bg-white/5 p-8 shadow-lg">
           <h3 className="text-xl font-semibold">Built for real job-search timelines</h3>
           <p className="mt-3 text-white/70">
-            Most people don’t need a CV tool every month. They need it when applying and interviewing.
+            Most people don’t need a CV tool every month — they need it when applying, interviewing, and improving.
           </p>
           <p className="mt-3 text-white/70">
             <span className="font-medium text-white">CVCraft is pay-once, use-when-needed.</span>
           </p>
           <p className="mt-3 text-white/70">Most CV builders renew monthly. We don’t.</p>
-        </section>
-
-        {/* Optional extras */}
-        <section className="mx-auto mt-10 max-w-4xl rounded-2xl border border-white/10 bg-white/5 p-8 shadow-lg">
-          <h3 className="text-xl font-semibold">Optional extras</h3>
-
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-              <p className="text-white">
-                <span className="font-medium">+14 Day Extension</span>{" "}
-                <span className="text-white/70">— £3.99</span>
-              </p>
-              <p className="mt-1 text-sm text-white/60">
-                Extend your editing window before expiry.
-              </p>
-              <button
-                type="button"
-                onClick={() => startCheckout("extension")}
-                disabled={loading !== null}
-                className="mt-4 inline-flex w-full items-center justify-center rounded-xl border border-white/15 bg-white px-4 py-2 font-semibold text-slate-900 hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {loading === "extension" ? "Redirecting…" : "Add extension"}
-              </button>
-            </div>
-
-            <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-              <p className="text-white">
-                <span className="font-medium">Second Role CV Copy</span>{" "}
-                <span className="text-white/70">— £4.99</span>
-              </p>
-              <p className="mt-1 text-sm text-white/60">
-                Duplicate your CV for another role and tailor it fast.
-              </p>
-              <button
-                type="button"
-                onClick={() => startCheckout("second_role")}
-                disabled={loading !== null}
-                className="mt-4 inline-flex w-full items-center justify-center rounded-xl border border-white/15 bg-white px-4 py-2 font-semibold text-slate-900 hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {loading === "second_role" ? "Redirecting…" : "Add second role copy"}
-              </button>
-            </div>
-          </div>
-
-          <p className="mt-3 text-sm text-white/60">Available before your access expires.</p>
         </section>
 
         {/* FAQ */}
@@ -172,23 +103,28 @@ export default function PricingPage() {
           <div className="mt-5 space-y-5">
             <div>
               <p className="font-medium text-white">Is this a subscription?</p>
+              <p className="mt-1 text-white/70">No. You pay once for 30 days of full access.</p>
+            </div>
+
+            <div>
+              <p className="font-medium text-white">What do I get in the 30 days?</p>
               <p className="mt-1 text-white/70">
-                No. You pay once, and only when you need access.
+                Unlimited edits, templates, PDF exports, region presets — and a free cover letter generator.
               </p>
             </div>
 
             <div>
-              <p className="font-medium text-white">Can I download my CV after access ends?</p>
+              <p className="font-medium text-white">Can I download my CV during access?</p>
               <p className="mt-1 text-white/70">
-                Yes — you can always view and re-download your existing PDFs.
+                Yes — download as many times as you like while your access is active.
               </p>
             </div>
 
             <div>
               <p className="font-medium text-white">Can I get a refund?</p>
               <p className="mt-1 text-white/70">
-                If you haven’t exported a CV, you can request a refund within 24 hours. Once exported,
-                the service has been delivered.
+                If you haven’t exported a CV, you can request a refund within 24 hours. Once exported, the service has
+                been delivered.
               </p>
             </div>
           </div>
@@ -199,9 +135,7 @@ export default function PricingPage() {
           <div className="flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <h3 className="text-2xl font-semibold">Ready to get interview-ready?</h3>
-              <p className="mt-1 text-sm text-white/60">
-                No subscriptions. No automatic renewals.
-              </p>
+              <p className="mt-1 text-sm text-white/60">One payment. No renewals. No recurring charges.</p>
             </div>
 
             <button
@@ -210,7 +144,7 @@ export default function PricingPage() {
               disabled={loading !== null}
               className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 font-semibold text-slate-900 hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {loading === "access_pass" ? "Redirecting…" : "Buy your 30-Day CV Access Pass"}
+              {loading === "access_pass" ? "Redirecting…" : "Get 30-Day Access — £9.99"}
             </button>
           </div>
         </section>
