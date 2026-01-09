@@ -22,8 +22,19 @@ export default function RootLayout({
             </Link>
 
             <div className="flex items-center gap-6">
-              <Link href="/pricing" className="text-sm text-white/80 hover:text-white">
+              <Link
+                href="/pricing"
+                className="text-sm text-white/80 hover:text-white"
+              >
                 Pricing
+              </Link>
+
+              {/* ✅ NEW: Cover Letter link */}
+              <Link
+                href="/cover-letter"
+                className="text-sm text-white/80 hover:text-white"
+              >
+                Cover Letter
               </Link>
 
               <Link
