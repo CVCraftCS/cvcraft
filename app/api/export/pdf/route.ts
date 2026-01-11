@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import chromium from "@sparticuz/chromium";
 import puppeteerCore from "puppeteer-core";
 
-// ✅ FIX: avoid alias import that is breaking your Vercel build
+// ✅ IMPORTANT: Do NOT use "@/..." aliases in server routes (Vercel build can fail).
 import { readAccessCookieValue, getAccessCookieName } from "../../../lib/access";
 
 export const runtime = "nodejs";
@@ -19,7 +19,6 @@ function safeFilename(name?: string) {
 }
 
 function isVercelLike() {
-  // Vercel sets VERCEL=1 in deployments
   return process.env.VERCEL === "1" || process.env.VERCEL === "true";
 }
 
@@ -35,12 +34,11 @@ function isLinux() {
 
 /**
  * Try common Chrome install locations for local dev.
- * This avoids "set env var" pain on Windows/Mac, and prevents ENOENT.
+ * This avoids “set env var” pain on Windows/Mac, and prevents ENOENT.
  */
 async function tryFindLocalChromeExecutable(): Promise<string | null> {
   try {
     const fs = await import("fs/promises");
-
     const candidates: string[] = [];
 
     if (isWindows()) {
@@ -68,7 +66,6 @@ async function tryFindLocalChromeExecutable(): Promise<string | null> {
       );
     }
 
-    // Linux differs a lot, but include a few common ones.
     if (isLinux()) {
       candidates.push(
         "/usr/bin/google-chrome",
@@ -85,7 +82,7 @@ async function tryFindLocalChromeExecutable(): Promise<string | null> {
         await fs.access(p);
         return p;
       } catch {
-        // continue
+        // keep trying
       }
     }
 
@@ -101,10 +98,7 @@ async function launchBrowser() {
   // ------------------------------
   if (isVercelLike()) {
     const executablePath = await chromium.executablePath();
-
-    if (!executablePath) {
-      throw new Error("Chromium executablePath() returned empty on Vercel.");
-    }
+    if (!executablePath) throw new Error("Chromium executablePath() returned empty on Vercel.");
 
     return puppeteerCore.launch({
       args: [
@@ -122,31 +116,26 @@ async function launchBrowser() {
 
   // ------------------------------
   // LOCAL DEV:
-  // 1) Prefer full puppeteer if installed (brings its own Chrome for Testing)
+  // 1) Prefer full puppeteer if installed (brings its own Chromium)
   // 2) Else, try installed Chrome/Edge automatically
   // 3) Else, fall back to explicit env path
   // ------------------------------
   try {
-    // Dynamic import so prod bundle isn't forced to include puppeteer
     const puppeteer = await import("puppeteer");
-
-    // ✅ Use boolean headless for TS compatibility (Vercel build checks types)
     return puppeteer.default.launch({
-      headless: true,
+      headless: true, // ✅ TS-safe
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
   } catch (e) {
-    // Try common local installs (Chrome/Edge) without env vars
     const found = await tryFindLocalChromeExecutable();
     if (found) {
       return puppeteerCore.launch({
-        headless: true, // ✅ TS-safe
+        headless: true,
         executablePath: found,
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
       });
     }
 
-    // Fallback: use puppeteer-core with a user-provided Chrome path if they have it
     const explicitPath =
       process.env.PUPPETEER_EXECUTABLE_PATH ||
       process.env.CHROME_PATH ||
@@ -168,7 +157,7 @@ async function launchBrowser() {
     }
 
     return puppeteerCore.launch({
-      headless: true, // ✅ TS-safe
+      headless: true,
       executablePath: explicitPath,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
@@ -177,22 +166,21 @@ async function launchBrowser() {
 
 export async function POST(req: NextRequest) {
   try {
-    // ✅ HARD SERVER GATE:
-    // Only allow PDF export if the signed HttpOnly cookie is present and valid.
-    // This prevents “back button”, Incognito, and devtools localStorage bypass.
+    // ✅ HARD SERVER GATE: must have valid signed HttpOnly cookie
     const cookie = req.cookies.get(getAccessCookieName())?.value;
     const access = readAccessCookieValue(cookie);
 
-    if (!access) {
+    // Basic validation
+    if (!access || (access as any).paid !== true) {
       return Response.json(
         { ok: false, error: "Access required. Please purchase a 30-day pass to export PDFs." },
         { status: 403 }
       );
     }
 
-    // Optional extra safety: reject expired access (depends on your lib’s behavior)
-    // If readAccessCookieValue already enforces expiry, this is harmless.
-    if (typeof (access as any).expiresAt === "number" && Date.now() > (access as any).expiresAt) {
+    // Expiry validation (if your lib already enforces this, this is extra-safe)
+    const expiresAt = (access as any).expiresAt;
+    if (typeof expiresAt === "number" && Date.now() > expiresAt) {
       return Response.json(
         { ok: false, error: "Access expired. Please purchase a new 30-day pass." },
         { status: 403 }
@@ -214,7 +202,7 @@ export async function POST(req: NextRequest) {
       // Ensure print CSS is respected
       await page.emulateMediaType("screen");
 
-      // More reliable than "load" for local + Vercel
+      // More reliable than "load" alone for local + Vercel
       await page.setContent(html, { waitUntil: ["load", "networkidle0"] });
 
       const pdfUint8 = await page.pdf({
@@ -223,7 +211,6 @@ export async function POST(req: NextRequest) {
         preferCSSPageSize: true,
       });
 
-      // Convert Uint8Array -> exact ArrayBuffer slice
       const ab = pdfUint8.buffer.slice(
         pdfUint8.byteOffset,
         pdfUint8.byteOffset + pdfUint8.byteLength
