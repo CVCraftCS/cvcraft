@@ -1,9 +1,10 @@
 // src/pages/cv.js
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import PaywallModal from "../components/PaywallModal";
 
 const STORAGE_KEY = "cvcraft:lastResult";
+const ACCESS_KEY = "cvcraft_access";
 
 // ---- Teacher Mode ----
 const TEACHER_MODE_SESSION_KEY = "cvcraft:teacherMode";
@@ -46,8 +47,10 @@ function safeParse(jsonString) {
   }
 }
 
-function makeId() {
-  return Math.random().toString(16).slice(2) + Date.now().toString(16);
+// Client-safe incremental id generator (no SSR randomness)
+function useIdGen(prefix = "id") {
+  const ref = useRef(1);
+  return useCallback(() => `${prefix}-${ref.current++}`, [prefix]);
 }
 
 function skillsToText(skills) {
@@ -137,7 +140,7 @@ function hasPaidAccess() {
   if (typeof window === "undefined") return false;
 
   try {
-    const access = JSON.parse(localStorage.getItem("cvcraft_access") || "null");
+    const access = JSON.parse(localStorage.getItem(ACCESS_KEY) || "null");
     const paid = !!access?.paid;
     const expiresAt = Number(access?.expiresAt || 0);
     return paid && expiresAt > 0 && Date.now() < expiresAt;
@@ -354,6 +357,26 @@ function getPresetConfig(presetName, region) {
 
 export default function CVBuilderPage() {
   const router = useRouter();
+  const nextQId = useIdGen("q");
+  const nextJobId = useIdGen("job");
+
+  /**
+   * ✅ HYDRATION FIX (critical)
+   * Next.js pages are SSR by default. This page reads localStorage/sessionStorage,
+   * which can cause server HTML to differ from client HTML.
+   *
+   * We render a stable placeholder until the component mounts on the client.
+   */
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  // Cache paid access status on client to avoid storage reads during render
+  const [paidAccess, setPaidAccess] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setPaidAccess(hasPaidAccess());
+  }, [mounted]);
 
   // ✅ PAID ACCESS GATE (Option A) + School access gate (Option B server-verified) for teacher route
   useEffect(() => {
@@ -448,15 +471,15 @@ export default function CVBuilderPage() {
   const [experience, setExperience] = useState("");
   const [skillsText, setSkillsText] = useState("");
 
-  // Qualifications
+  // Qualifications (stable initial ids to avoid hydration mismatch)
   const [qualifications, setQualifications] = useState([
-    { id: makeId(), title: "", provider: "", year: "", grade: "" },
+    { id: "q-1", title: "", provider: "", year: "", grade: "" },
   ]);
 
-  // Employment History
+  // Employment History (stable initial ids to avoid hydration mismatch)
   const [employmentHistory, setEmploymentHistory] = useState([
     {
-      id: makeId(),
+      id: "job-1",
       title: "",
       company: "",
       location: "",
@@ -541,7 +564,8 @@ export default function CVBuilderPage() {
     }
 
     const meta = TEMPLATE_META[nextTemplate] || { premium: false };
-    if (meta.premium && !hasPaidAccess()) {
+    // use cached paidAccess to avoid storage reads during render; this handler is client-only anyway
+    if (meta.premium && !paidAccess) {
       setPendingTemplate(nextTemplate);
       openPaywall("template");
       return;
@@ -680,7 +704,7 @@ export default function CVBuilderPage() {
 
     if (!teacherMode) {
       const meta = TEMPLATE_META[cfg.template] || { premium: false };
-      if (meta.premium && !hasPaidAccess()) {
+      if (meta.premium && !paidAccess) {
         setPendingTemplate(cfg.template);
         openPaywall("template");
       } else {
@@ -789,7 +813,7 @@ export default function CVBuilderPage() {
     if (incomingQ.length) {
       setQualifications(
         incomingQ.map((q) => ({
-          id: makeId(),
+          id: nextQId(),
           title: q.title || "",
           provider: q.provider || "",
           year: q.year || "",
@@ -804,7 +828,7 @@ export default function CVBuilderPage() {
     if (incomingJobs.length) {
       setEmploymentHistory(
         incomingJobs.map((j) => ({
-          id: makeId(),
+          id: nextJobId(),
           title: j.title || "",
           company: j.company || "",
           location: j.location || "",
@@ -816,7 +840,7 @@ export default function CVBuilderPage() {
         }))
       );
     }
-  }, [applyTeacherPreset, applyRegionDefaults]);
+  }, [applyTeacherPreset, applyRegionDefaults, nextJobId, nextQId]);
 
   // ---- clear helpers ----
   const clearForm = () => {
@@ -841,12 +865,12 @@ export default function CVBuilderPage() {
     setSkillsText("");
 
     setQualifications([
-      { id: makeId(), title: "", provider: "", year: "", grade: "" },
+      { id: "q-1", title: "", provider: "", year: "", grade: "" },
     ]);
 
     setEmploymentHistory([
       {
-        id: makeId(),
+        id: "job-1",
         title: "",
         company: "",
         location: "",
@@ -957,9 +981,7 @@ export default function CVBuilderPage() {
 
       const resultText = data?.result;
       if (!resultText || typeof resultText !== "string") {
-        throw new Error(
-          "API returned no result text (expected { result: string })."
-        );
+        throw new Error("API returned no result text (expected { result: string }).");
       }
 
       const saved = {
@@ -1014,10 +1036,16 @@ export default function CVBuilderPage() {
     });
   };
 
+  // IMPORTANT: compute locked flags using cached paidAccess (no storage reads during SSR)
   const modernLocked =
-    !teacherMode && TEMPLATE_META.modern.premium && !hasPaidAccess();
+    !teacherMode && TEMPLATE_META.modern.premium && !paidAccess;
   const compactLocked =
-    !teacherMode && TEMPLATE_META.compact.premium && !hasPaidAccess();
+    !teacherMode && TEMPLATE_META.compact.premium && !paidAccess;
+
+  // ✅ Hydration guard: render stable placeholder until mounted
+  if (!mounted) {
+    return <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800" />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white px-6 py-12">
@@ -1485,9 +1513,7 @@ export default function CVBuilderPage() {
                           ? "opacity-60 cursor-not-allowed"
                           : ""
                       }`}
-                      title={
-                        teacherMode ? "Locked in Teacher Mode" : "Move down"
-                      }
+                      title={teacherMode ? "Locked in Teacher Mode" : "Move down"}
                     >
                       ↓
                     </button>
@@ -1593,7 +1619,7 @@ export default function CVBuilderPage() {
                   setQualifications((prev) => [
                     ...(prev || []),
                     {
-                      id: makeId(),
+                      id: nextQId(),
                       title: "",
                       provider: "",
                       year: "",
@@ -1627,7 +1653,7 @@ export default function CVBuilderPage() {
                             ? next
                             : [
                                 {
-                                  id: makeId(),
+                                  id: "q-1",
                                   title: "",
                                   provider: "",
                                   year: "",
@@ -1723,11 +1749,7 @@ export default function CVBuilderPage() {
                             )
                           )
                         }
-                        placeholder={
-                          region === "US"
-                            ? "e.g. GPA 3.6, Honors"
-                            : "e.g. Grade 6, Pass"
-                        }
+                        placeholder={region === "US" ? "e.g. GPA 3.6, Honors" : "e.g. Grade 6, Pass"}
                         className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
                       />
                     </div>
@@ -1754,7 +1776,7 @@ export default function CVBuilderPage() {
                   setEmploymentHistory((prev) => [
                     ...(prev || []),
                     {
-                      id: makeId(),
+                      id: nextJobId(),
                       title: "",
                       company: "",
                       location: "",
@@ -1790,7 +1812,7 @@ export default function CVBuilderPage() {
                             ? next
                             : [
                                 {
-                                  id: makeId(),
+                                  id: "job-1",
                                   title: "",
                                   company: "",
                                   location: "",
@@ -1835,9 +1857,7 @@ export default function CVBuilderPage() {
                         onChange={(e) =>
                           setEmploymentHistory((prev) =>
                             (prev || []).map((x) =>
-                              x.id === j.id
-                                ? { ...x, company: e.target.value }
-                                : x
+                              x.id === j.id ? { ...x, company: e.target.value } : x
                             )
                           )
                         }
@@ -1855,9 +1875,7 @@ export default function CVBuilderPage() {
                         onChange={(e) =>
                           setEmploymentHistory((prev) =>
                             (prev || []).map((x) =>
-                              x.id === j.id
-                                ? { ...x, location: e.target.value }
-                                : x
+                              x.id === j.id ? { ...x, location: e.target.value } : x
                             )
                           )
                         }
@@ -1882,9 +1900,7 @@ export default function CVBuilderPage() {
                           onChange={(e) =>
                             setEmploymentHistory((prev) =>
                               (prev || []).map((x) =>
-                                x.id === j.id
-                                  ? { ...x, start: e.target.value }
-                                  : x
+                                x.id === j.id ? { ...x, start: e.target.value } : x
                               )
                             )
                           }
@@ -1921,9 +1937,7 @@ export default function CVBuilderPage() {
                         onChange={(e) =>
                           setEmploymentHistory((prev) =>
                             (prev || []).map((x) =>
-                              x.id === j.id
-                                ? { ...x, bulletsText: e.target.value }
-                                : x
+                              x.id === j.id ? { ...x, bulletsText: e.target.value } : x
                             )
                           )
                         }
@@ -2012,7 +2026,6 @@ Timekeeping`}
             setPaywallOpen(false);
           }}
           onUnlockClick={() => {
-            // Send to Pricing / Access Pass
             router.push("/pricing");
           }}
         />

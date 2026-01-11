@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import PaywallModal from "../components/PaywallModal";
-import { isProUnlocked, setProUnlocked } from "../lib/proUnlock";
 
 const STORAGE_KEY = "cvcraft:lastResult";
+const ACCESS_KEY = "cvcraft_access";
 
 // Teacher Mode flag (set by cv.js)
 const TEACHER_MODE_SESSION_KEY = "cvcraft:teacherMode";
@@ -109,6 +109,26 @@ function getTemplateUiClasses(t) {
     badge: "bg-slate-100 text-slate-900 ring-1 ring-slate-200",
     sectionBox: "bg-slate-50 ring-1 ring-slate-200",
   };
+}
+
+// ---- Paid access helpers (Option A) ----
+function hasPaidAccessClient() {
+  if (typeof window === "undefined") return false;
+  try {
+    const raw = localStorage.getItem(ACCESS_KEY) || sessionStorage.getItem(ACCESS_KEY);
+    const access = JSON.parse(raw || "null");
+    const paid = !!access?.paid;
+    const expiresAt = Number(access?.expiresAt || 0);
+    return paid && expiresAt > 0 && Date.now() < expiresAt;
+  } catch {
+    return false;
+  }
+}
+
+function setPaidAccessClient(days = 30) {
+  if (typeof window === "undefined") return;
+  const expiresAt = Date.now() + days * 24 * 60 * 60 * 1000;
+  localStorage.setItem(ACCESS_KEY, JSON.stringify({ paid: true, expiresAt }));
 }
 
 /**
@@ -408,19 +428,26 @@ export default function PreviewPage() {
   // Track when we should clear after print (reliable via afterprint)
   const [pendingClearAfterPrint, setPendingClearAfterPrint] = useState(false);
 
-  // Pro unlock + paywall state (hard gate export)
-  const [proUnlocked, setProUnlockedState] = useState(false);
+  // ✅ Paid access (Option A) — replaces legacy proUnlock gating
+  const [paidAccess, setPaidAccess] = useState(false);
+
+  // Paywall state (hard gate export)
   const [paywallOpen, setPaywallOpen] = useState(false);
+
+  // UI state
+  const [exportBusy, setExportBusy] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // Pro unlock (and Stripe return support here too)
-    setProUnlockedState(isProUnlocked());
+    // Paid access (Option A)
+    setPaidAccess(hasPaidAccessClient());
+
+    // Support dev/manual unlock via ?unlocked=true
     const url = new URL(window.location.href);
     if (url.searchParams.get("unlocked") === "true") {
-      setProUnlocked(true);
-      setProUnlockedState(true);
+      setPaidAccessClient(30);
+      setPaidAccess(true);
       url.searchParams.delete("unlocked");
       window.history.replaceState({}, "", url.toString());
     }
@@ -489,9 +516,9 @@ export default function PreviewPage() {
   const skillsForDisplay =
     Array.isArray(sections.skills) && sections.skills.length ? sections.skills : fallbackSkills;
 
-  // ---- Pro gating helpers (hard gate export on premium templates) ----
+  // ---- Paid access gating (hard gate export on premium templates) ----
   const templateIsPremium = !!TEMPLATE_META[template]?.premium;
-  const exportLocked = !teacherMode && templateIsPremium && !proUnlocked;
+  const exportLocked = !teacherMode && templateIsPremium && !paidAccess;
 
   const requestExportUnlock = () => {
     // Teacher Mode never paywalls (classroom safe)
@@ -539,23 +566,11 @@ export default function PreviewPage() {
     return () => window.removeEventListener("afterprint", onAfterPrint);
   }, [pendingClearAfterPrint, safeModeActive]);
 
-  const onPrint = () => {
-    // Hard gate print export when template is premium and Pro not unlocked
-    if (requestExportUnlock()) return;
-
-    if (safeModeActive) setPendingClearAfterPrint(true);
-    window.print();
-  };
-
-  const downloadPdf = async () => {
-    // Hard gate download export when template is premium and Pro not unlocked
-    if (requestExportUnlock()) return;
-
-    if (!saved) {
-      alert(`No ${labelDoc} data found yet. Go back and generate one.`);
-      return;
-    }
-
+  /**
+   * Build a clean, export-only HTML document (no UI labels like Template/Region/Tip)
+   * This is used for server PDF generation (/api/export/pdf)
+   */
+  const buildExportHtml = () => {
     const css = getPdfCss(template);
 
     const contactLine =
@@ -568,7 +583,7 @@ export default function PreviewPage() {
     const summaryHtml =
       cfg.summary && (sections.summary || "").trim()
         ? `<div class="section">
-             <h2>Professional Summary</h2>
+             <h2>${escapeHtml(sectionLabel("summary", region))}</h2>
              <p>${escapeHtml(sections.summary).replaceAll("\n", "<br/>")}</p>
            </div>`
         : "";
@@ -576,7 +591,7 @@ export default function PreviewPage() {
     const jobsHtml =
       cfg.employment && employmentHistory.length
         ? `<div class="section">
-             <h2>Employment history</h2>
+             <h2>${escapeHtml(sectionLabel("employment", region))}</h2>
              ${employmentHistory
                .map((j) => {
                  const titleLine = [j.title, j.company].filter(Boolean).join(" — ");
@@ -624,7 +639,7 @@ export default function PreviewPage() {
     const skillsHtml =
       cfg.skills && skillsForDisplay.length
         ? `<div class="section">
-             <h2>Skills</h2>
+             <h2>${escapeHtml(sectionLabel("skills", region))}</h2>
              <div class="pillRow">
                ${skillsForDisplay.map((x) => `<span class="pill">${escapeHtml(x)}</span>`).join("")}
              </div>
@@ -634,7 +649,7 @@ export default function PreviewPage() {
     const refsHtml =
       cfg.references && referencesText
         ? `<div class="section">
-             <h2>References</h2>
+             <h2>${escapeHtml(sectionLabel("references", region))}</h2>
              <p>${escapeHtml(referencesText).replaceAll("\n", "<br/>")}</p>
            </div>`
         : "";
@@ -649,10 +664,12 @@ export default function PreviewPage() {
 
     const assembledSections = order.map((k) => sectionMap[k] || "").filter(Boolean).join("\n");
 
-    const html = `<!doctype html>
+    // ✅ Clean export: name + contacts + generated date + content ONLY
+    return `<!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
+  <title>${escapeHtml(fullName)} - ${escapeHtml(labelDoc)}</title>
   <style>${css}</style>
 </head>
 <body>
@@ -661,46 +678,100 @@ export default function PreviewPage() {
       <h1>${escapeHtml(fullName)}</h1>
 
       <div class="meta">
-        <div><b>Target Role:</b> ${escapeHtml(targetRole || "—")}</div>
-        <div><b>Generated:</b> ${escapeHtml(generatedLabel || "—")}</div>
-        <div><b>Template:</b> ${escapeHtml(templateLabel(template))}</div>
-        <div><b>Region:</b> ${escapeHtml(region)}</div>
         ${contactLine ? `<div>${contactLine}</div>` : ""}
+        ${targetRole ? `<div><b>Target Role:</b> ${escapeHtml(targetRole)}</div>` : ""}
+        ${generatedLabel ? `<div><b>Generated:</b> ${escapeHtml(generatedLabel)}</div>` : ""}
       </div>
 
       <hr />
 
       ${assembledSections}
-
-      <div class="smallNote">Exported via CVCraft</div>
     </div>
   </div>
 </body>
 </html>`;
+  };
 
-    const filename = region === "US" ? "CVCraft-Resume.pdf" : "CVCraft-CV.pdf";
+  const onPrint = () => {
+    // Hard gate print export when template is premium and access not paid
+    if (requestExportUnlock()) return;
 
-    const res = await fetch("/api/export/pdf", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ html, filename }),
-    });
+    if (safeModeActive) setPendingClearAfterPrint(true);
 
-    if (!res.ok) {
-      alert("PDF export failed.");
+    // ✅ Print ONLY the CV “paper” on this page (CSS below enforces this)
+    window.print();
+  };
+
+  const downloadPdf = async () => {
+    // Hard gate download export when template is premium and access not paid
+    if (requestExportUnlock()) return;
+
+    if (!saved) {
+      alert(`No ${labelDoc} data found yet. Go back and generate one.`);
       return;
     }
 
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
+    if (exportBusy) return;
+    setExportBusy(true);
 
-    if (safeModeActive) {
-      clearStoredDataAndShowNotice();
+    const filename = region === "US" ? "CVCraft-Resume.pdf" : "CVCraft-CV.pdf";
+    const html = buildExportHtml();
+
+    try {
+      const res = await fetch("/api/export/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ html, filename }),
+      });
+
+      if (!res.ok) {
+        let detail = "";
+        try {
+          const ct = res.headers.get("content-type") || "";
+          if (ct.includes("application/json")) {
+            const j = await res.json();
+            detail = String(j?.message || j?.error || "");
+          }
+        } catch {}
+
+        console.warn("PDF export failed:", res.status, detail);
+
+        alert(
+          [
+            "PDF download failed on this device.",
+            "Use “Print / Save PDF” instead (choose “Save as PDF”).",
+            detail ? "" : "",
+            detail ? "Details: " + detail : "",
+          ]
+            .filter(Boolean)
+            .join("\n")
+        );
+        return;
+      }
+
+      const blob = await res.blob();
+
+      // ✅ Trigger a download WITHOUT opening any tabs/windows
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      // Give the browser a moment before revoking the URL
+      setTimeout(() => URL.revokeObjectURL(url), 1200);
+
+      if (safeModeActive) {
+        // Ensure download has started before wiping
+        setTimeout(() => clearStoredDataAndShowNotice(), 250);
+      }
+    } catch (e) {
+      console.warn("PDF export request crashed:", e);
+      alert("PDF download failed. Use “Print / Save PDF” instead (choose “Save as PDF”).");
+    } finally {
+      setExportBusy(false);
     }
   };
 
@@ -830,7 +901,8 @@ export default function PreviewPage() {
       ) : null}
 
       <div className="mx-auto max-w-4xl">
-        <div className="mb-6 flex items-center justify-between gap-3">
+        {/* ✅ Actions row is explicitly non-print */}
+        <div className="mb-6 flex items-center justify-between gap-3 print:hidden">
           <Link href="/cv" className="text-sm text-slate-600 hover:text-slate-900">
             ← Back to builder
           </Link>
@@ -838,18 +910,22 @@ export default function PreviewPage() {
           <div className="flex gap-2">
             <button
               onClick={downloadPdf}
-              className={`rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition ${
-                exportLocked ? "opacity-60 cursor-not-allowed" : "hover:bg-emerald-500"
+              disabled={exportLocked || exportBusy}
+              className={`rounded-lg px-4 py-2 text-sm font-semibold text-white transition ${
+                exportLocked || exportBusy
+                  ? "opacity-60 cursor-not-allowed bg-emerald-600"
+                  : "bg-emerald-600 hover:bg-emerald-500"
               }`}
               title="Downloads a clean PDF (recommended)"
             >
-              Download PDF{exportLocked ? " 🔒" : ""}
+              {exportBusy ? "Preparing…" : `Download PDF${exportLocked ? " 🔒" : ""}`}
             </button>
 
             <button
               onClick={onPrint}
-              className={`rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition ${
-                exportLocked ? "opacity-60 cursor-not-allowed" : "hover:bg-slate-800"
+              disabled={exportLocked}
+              className={`rounded-lg px-4 py-2 text-sm font-semibold text-white transition ${
+                exportLocked ? "opacity-60 cursor-not-allowed bg-slate-900" : "bg-slate-900 hover:bg-slate-800"
               }`}
               title="Uses browser print dialog"
             >
@@ -858,7 +934,8 @@ export default function PreviewPage() {
           </div>
         </div>
 
-        <div className={ui.card}>
+        {/* ✅ This is the ONLY thing that should appear in browser print */}
+        <div id="cv-print-root" className={ui.card}>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h1 className={ui.name}>{fullName}</h1>
@@ -869,6 +946,7 @@ export default function PreviewPage() {
               </div>
             </div>
 
+            {/* Badge stays in print (it’s part of the CV styling) */}
             <div className={`rounded-xl px-4 py-3 ${ui.badge}`}>
               <div className="text-xs font-semibold uppercase tracking-wider">Template</div>
               <div className="text-sm font-bold">{templateLabel(template)}</div>
@@ -887,8 +965,9 @@ export default function PreviewPage() {
               {generatedLabel ? generatedLabel : "—"}
             </div>
 
+            {/* ✅ Notices should NOT print */}
             {safeModeActive ? (
-              <div className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-amber-900 ring-1 ring-amber-200">
+              <div className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-amber-900 ring-1 ring-amber-200 print:hidden">
                 {teacherMode
                   ? "Teacher Mode is enabled — data will be cleared after download/print."
                   : "Student Safe Mode is enabled — data will be cleared after download/print."}
@@ -896,7 +975,7 @@ export default function PreviewPage() {
             ) : null}
 
             {exportLocked ? (
-              <div className="mt-2 rounded-xl bg-slate-100 px-3 py-2 text-slate-800 ring-1 ring-slate-200">
+              <div className="mt-2 rounded-xl bg-slate-100 px-3 py-2 text-slate-800 ring-1 ring-slate-200 print:hidden">
                 Export is locked for <b>{templateLabel(template)}</b>. Unlock Pro to download/print.
               </div>
             ) : null}
@@ -905,7 +984,7 @@ export default function PreviewPage() {
           <hr className="my-6 border-slate-200" />
 
           {!saved ? (
-            <div>
+            <div className="print:hidden">
               <h2 className="text-xl font-bold">{labelDoc} Preview</h2>
               <p className="mt-2 text-slate-600">
                 No {labelDoc} data found yet. Go back and generate one.
@@ -926,7 +1005,8 @@ export default function PreviewPage() {
                 <div key={key}>{renderSection(key)}</div>
               ))}
 
-              <p className="text-sm text-slate-500">
+              {/* ✅ Tip should never print */}
+              <p className="text-sm text-slate-500 print:hidden">
                 Tip: “Download PDF” uses your chosen section order and toggles.
               </p>
             </div>
@@ -946,11 +1026,11 @@ export default function PreviewPage() {
         onUnlockClick={() => {
           const link = process.env.NEXT_PUBLIC_STRIPE_CV_PRO_LINK;
 
-          // Dev fallback: simulate unlock (same pattern as cv.js recommended)
+          // If link is missing (dev), simulate a 30-day access pass
           if (!link) {
-            console.warn("Stripe link missing — simulating unlock");
-            setProUnlocked(true);
-            setProUnlockedState(true);
+            console.warn("Stripe link missing — simulating access pass for dev");
+            setPaidAccessClient(30);
+            setPaidAccess(true);
             setPaywallOpen(false);
             return;
           }
@@ -960,20 +1040,53 @@ export default function PreviewPage() {
       />
 
       <style jsx global>{`
+        /* ------------------------------------------------------------
+           PRINT FIX (CRITICAL):
+           - Only print #cv-print-root (no back link, no buttons, no tips)
+           ------------------------------------------------------------ */
         @media print {
+          html,
           body {
             background: white !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
           }
-          a,
-          button {
-            display: none !important;
+
+          /* Hide everything by default */
+          body * {
+            visibility: hidden !important;
           }
+
+          /* Show only the CV print root */
+          #cv-print-root,
+          #cv-print-root * {
+            visibility: visible !important;
+          }
+
+          /* Position the CV at the top-left and use full width */
+          #cv-print-root {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+          }
+
+          /* Remove any shadows/rings in print (cleaner) */
           .shadow-sm,
           [class*="shadow"] {
             box-shadow: none !important;
           }
+
+          /* Make ring look like border */
           .ring-1 {
             border: 1px solid #e5e7eb !important;
+          }
+
+          /* Don’t print links as URLs in some browsers */
+          a[href]::after {
+            content: "" !important;
           }
         }
       `}</style>
