@@ -2,6 +2,7 @@
 import { NextRequest } from "next/server";
 import chromium from "@sparticuz/chromium";
 import puppeteerCore from "puppeteer-core";
+import { readAccessCookieValue, getAccessCookieName } from "@/app/lib/access";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,18 +18,15 @@ function safeFilename(name?: string) {
 
 function isVercelLike() {
   // Vercel sets VERCEL=1 in deployments
-  // Keep this simple and reliable
   return process.env.VERCEL === "1" || process.env.VERCEL === "true";
 }
 
 function isWindows() {
   return process.platform === "win32";
 }
-
 function isMac() {
   return process.platform === "darwin";
 }
-
 function isLinux() {
   return process.platform === "linux";
 }
@@ -178,6 +176,18 @@ async function launchBrowser() {
 
 export async function POST(req: NextRequest) {
   try {
+    // ✅ HARD SERVER GATE:
+    // Only allow PDF export if the signed HttpOnly cookie is present and valid.
+    // This prevents “back button”, Incognito, and devtools localStorage bypass.
+    const cookie = req.cookies.get(getAccessCookieName())?.value;
+    const access = readAccessCookieValue(cookie);
+    if (!access) {
+      return Response.json(
+        { ok: false, error: "Access required. Please purchase a 30-day pass to export PDFs." },
+        { status: 403 }
+      );
+    }
+
     const body = (await req.json()) as Body;
     const html = body.html?.trim();
 
