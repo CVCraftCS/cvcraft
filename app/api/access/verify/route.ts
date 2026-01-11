@@ -1,7 +1,9 @@
 // app/api/access/verify/route.ts
 import { NextRequest } from "next/server";
 import Stripe from "stripe";
-import { makeAccessCookieValue, getAccessCookieName } from "@/app/lib/access";
+
+// ✅ FIX: avoid alias imports that can break on Vercel build
+import { makeAccessCookieValue, getAccessCookieName } from "../../../lib/access";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,6 +13,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
 });
 
 type Body = { session_id?: string };
+
+function isVercelLike() {
+  return process.env.VERCEL === "1" || process.env.VERCEL === "true";
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,27 +43,32 @@ export async function POST(req: NextRequest) {
     }
 
     // 30-day access
-    const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
+    const maxAgeSeconds = 30 * 24 * 60 * 60;
+    const expiresAt = Date.now() + maxAgeSeconds * 1000;
 
     const cookieValue = makeAccessCookieValue({ paid: true, expiresAt });
 
-    // HttpOnly cookie so it cannot be forged by JS
+    // ✅ Secure should be on in production (Vercel). Leaving Secure off locally helps dev on http://localhost
+    const secureAttr = isVercelLike() ? " Secure;" : "";
+
+    const setCookie = `${getAccessCookieName()}=${cookieValue}; Path=/; HttpOnly;${secureAttr} SameSite=Lax; Max-Age=${maxAgeSeconds}`;
+
     return new Response(JSON.stringify({ ok: true, expiresAt }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
-        "Set-Cookie": [
-          `${getAccessCookieName()}=${cookieValue}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${
-            30 * 24 * 60 * 60
-          }`,
-        ].join(","),
+        "Set-Cookie": setCookie,
         "Cache-Control": "no-store",
       },
     });
   } catch (err) {
     console.error("Access verify failed:", err);
     return Response.json(
-      { ok: false, error: "Access verify failed", message: err instanceof Error ? err.message : String(err) },
+      {
+        ok: false,
+        error: "Access verify failed",
+        message: err instanceof Error ? err.message : String(err),
+      },
       { status: 500 }
     );
   }

@@ -2,7 +2,9 @@
 import { NextRequest } from "next/server";
 import chromium from "@sparticuz/chromium";
 import puppeteerCore from "puppeteer-core";
-import { readAccessCookieValue, getAccessCookieName } from "@/app/lib/access";
+
+// ✅ FIX: avoid alias import that is breaking your Vercel build
+import { readAccessCookieValue, getAccessCookieName } from "../../../lib/access";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -128,7 +130,6 @@ async function launchBrowser() {
     // Dynamic import so prod bundle isn't forced to include puppeteer
     const puppeteer = await import("puppeteer");
 
-    // puppeteer.launch() will use its downloaded Chromium automatically
     // ✅ Use boolean headless for TS compatibility (Vercel build checks types)
     return puppeteer.default.launch({
       headless: true,
@@ -181,9 +182,19 @@ export async function POST(req: NextRequest) {
     // This prevents “back button”, Incognito, and devtools localStorage bypass.
     const cookie = req.cookies.get(getAccessCookieName())?.value;
     const access = readAccessCookieValue(cookie);
+
     if (!access) {
       return Response.json(
         { ok: false, error: "Access required. Please purchase a 30-day pass to export PDFs." },
+        { status: 403 }
+      );
+    }
+
+    // Optional extra safety: reject expired access (depends on your lib’s behavior)
+    // If readAccessCookieValue already enforces expiry, this is harmless.
+    if (typeof (access as any).expiresAt === "number" && Date.now() > (access as any).expiresAt) {
+      return Response.json(
+        { ok: false, error: "Access expired. Please purchase a new 30-day pass." },
         { status: 403 }
       );
     }

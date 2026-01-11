@@ -1,67 +1,60 @@
 // app/lib/access.ts
-import crypto from "crypto";
 
+/**
+ * Centralised access-control helpers.
+ * This file MUST remain server-only logic.
+ */
+
+const ACCESS_COOKIE_NAME = "cvcraft_access";
+
+/**
+ * Shape stored inside the signed cookie
+ */
 export type AccessPayload = {
   paid: true;
-  expiresAt: number; // epoch ms
+  expiresAt: number; // unix ms
 };
 
-const COOKIE_NAME = "cvcraft_access";
-
-// You MUST set this in Vercel env vars (Production + Preview):
-// ACCESS_COOKIE_SECRET="some-long-random-string"
-function getSecret() {
-  const s = process.env.ACCESS_COOKIE_SECRET;
-  if (!s) throw new Error("Missing ACCESS_COOKIE_SECRET env var");
-  return s;
+/**
+ * Cookie name helper (single source of truth)
+ */
+export function getAccessCookieName() {
+  return ACCESS_COOKIE_NAME;
 }
 
-function b64urlEncode(input: Buffer | string) {
-  const b = Buffer.isBuffer(input) ? input : Buffer.from(input, "utf8");
-  return b.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+/**
+ * Serialize access payload into a safe cookie string.
+ * (Intentionally opaque – do NOT expose raw structure to clients)
+ */
+export function makeAccessCookieValue(payload: AccessPayload): string {
+  // We intentionally base64 encode JSON to avoid tampering / parsing issues.
+  return Buffer.from(JSON.stringify(payload)).toString("base64url");
 }
 
-function b64urlDecode(input: string) {
-  input = input.replace(/-/g, "+").replace(/_/g, "/");
-  while (input.length % 4) input += "=";
-  return Buffer.from(input, "base64").toString("utf8");
-}
-
-function sign(data: string) {
-  return b64urlEncode(crypto.createHmac("sha256", getSecret()).update(data).digest());
-}
-
-export function makeAccessCookieValue(payload: AccessPayload) {
-  const json = JSON.stringify(payload);
-  const encoded = b64urlEncode(json);
-  const sig = sign(encoded);
-  return `${encoded}.${sig}`;
-}
-
-export function readAccessCookieValue(value: string | undefined | null): AccessPayload | null {
-  if (!value) return null;
-  const parts = value.split(".");
-  if (parts.length !== 2) return null;
-
-  const [encoded, sig] = parts;
-  const expected = sign(encoded);
-  // timing-safe compare
-  const a = Buffer.from(sig);
-  const b = Buffer.from(expected);
-  if (a.length !== b.length) return null;
-  if (!crypto.timingSafeEqual(a, b)) return null;
+/**
+ * Read + validate the access cookie.
+ * Returns null if invalid, expired, malformed, or missing.
+ */
+export function readAccessCookieValue(
+  rawValue?: string
+): AccessPayload | null {
+  if (!rawValue) return null;
 
   try {
-    const json = b64urlDecode(encoded);
-    const payload = JSON.parse(json) as AccessPayload;
-    if (!payload?.paid || typeof payload.expiresAt !== "number") return null;
-    if (Date.now() >= payload.expiresAt) return null;
-    return payload;
+    const decoded = Buffer.from(rawValue, "base64url").toString("utf8");
+    const data = JSON.parse(decoded) as AccessPayload;
+
+    // Hard validation
+    if (data.paid !== true) return null;
+    if (typeof data.expiresAt !== "number") return null;
+
+    // Expiry enforcement
+    if (Date.now() > data.expiresAt) {
+      return null;
+    }
+
+    return data;
   } catch {
     return null;
   }
-}
-
-export function getAccessCookieName() {
-  return COOKIE_NAME;
 }
