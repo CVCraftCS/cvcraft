@@ -1,63 +1,64 @@
 // app/api/access/verify/route.ts
 import { NextRequest } from "next/server";
 import Stripe from "stripe";
-
-// ✅ FIX: avoid alias imports that can break on Vercel build
-import { makeAccessCookieValue, getAccessCookieName } from "../../../lib/access";
+import { makeAccessCookieValue, getAccessCookieName } from "@/app/lib/access";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2024-06-20",
-});
+// ⚠️ IMPORTANT:
+// Do NOT hardcode apiVersion – Stripe SDK typings must match
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 
 type Body = { session_id?: string };
 
-function isVercelLike() {
-  return process.env.VERCEL === "1" || process.env.VERCEL === "true";
-}
-
 export async function POST(req: NextRequest) {
   try {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return Response.json(
+        { ok: false, error: "Missing STRIPE_SECRET_KEY" },
+        { status: 500 }
+      );
+    }
+
     const body = (await req.json()) as Body;
     const sessionId = body.session_id?.trim();
 
     if (!sessionId) {
-      return Response.json({ ok: false, error: "Missing session_id" }, { status: 400 });
+      return Response.json(
+        { ok: false, error: "Missing session_id" },
+        { status: 400 }
+      );
     }
 
-    if (!process.env.STRIPE_SECRET_KEY) {
-      return Response.json({ ok: false, error: "Missing STRIPE_SECRET_KEY" }, { status: 500 });
-    }
-
-    // Verify checkout session
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    // Stripe uses payment_status: 'paid' when complete
     if (session.payment_status !== "paid") {
       return Response.json(
-        { ok: false, error: "Payment not completed", payment_status: session.payment_status },
+        {
+          ok: false,
+          error: "Payment not completed",
+          payment_status: session.payment_status,
+        },
         { status: 403 }
       );
     }
 
-    // 30-day access
-    const maxAgeSeconds = 30 * 24 * 60 * 60;
-    const expiresAt = Date.now() + maxAgeSeconds * 1000;
+    // 30-day access window
+    const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
 
-    const cookieValue = makeAccessCookieValue({ paid: true, expiresAt });
-
-    // ✅ Secure should be on in production (Vercel). Leaving Secure off locally helps dev on http://localhost
-    const secureAttr = isVercelLike() ? " Secure;" : "";
-
-    const setCookie = `${getAccessCookieName()}=${cookieValue}; Path=/; HttpOnly;${secureAttr} SameSite=Lax; Max-Age=${maxAgeSeconds}`;
+    const cookieValue = makeAccessCookieValue({
+      paid: true,
+      expiresAt,
+    });
 
     return new Response(JSON.stringify({ ok: true, expiresAt }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
-        "Set-Cookie": setCookie,
+        "Set-Cookie": `${getAccessCookieName()}=${cookieValue}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${
+          30 * 24 * 60 * 60
+        }`,
         "Cache-Control": "no-store",
       },
     });

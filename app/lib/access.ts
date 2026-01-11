@@ -1,59 +1,59 @@
 // app/lib/access.ts
+import crypto from "crypto";
+
+const COOKIE_NAME = "cvcraft_access";
+const SECRET = process.env.ACCESS_COOKIE_SECRET || "cvcraft_dev_secret";
 
 /**
- * Centralised access-control helpers.
- * This file MUST remain server-only logic.
+ * Name of the HttpOnly access cookie
  */
+export function getAccessCookieName() {
+  return COOKIE_NAME;
+}
 
-const ACCESS_COOKIE_NAME = "cvcraft_access";
-
-/**
- * Shape stored inside the signed cookie
- */
-export type AccessPayload = {
-  paid: true;
-  expiresAt: number; // unix ms
+type AccessPayload = {
+  paid: boolean;
+  expiresAt: number;
 };
 
 /**
- * Cookie name helper (single source of truth)
+ * Create a signed cookie value (HMAC-SHA256)
  */
-export function getAccessCookieName() {
-  return ACCESS_COOKIE_NAME;
+export function makeAccessCookieValue(payload: AccessPayload) {
+  const json = JSON.stringify(payload);
+  const sig = crypto
+    .createHmac("sha256", SECRET)
+    .update(json)
+    .digest("hex");
+
+  return Buffer.from(`${json}.${sig}`).toString("base64");
 }
 
 /**
- * Serialize access payload into a safe cookie string.
- * (Intentionally opaque – do NOT expose raw structure to clients)
+ * Read & verify signed cookie value
  */
-export function makeAccessCookieValue(payload: AccessPayload): string {
-  // We intentionally base64 encode JSON to avoid tampering / parsing issues.
-  return Buffer.from(JSON.stringify(payload)).toString("base64url");
-}
-
-/**
- * Read + validate the access cookie.
- * Returns null if invalid, expired, malformed, or missing.
- */
-export function readAccessCookieValue(
-  rawValue?: string
-): AccessPayload | null {
-  if (!rawValue) return null;
+export function readAccessCookieValue(cookie?: string): AccessPayload | null {
+  if (!cookie) return null;
 
   try {
-    const decoded = Buffer.from(rawValue, "base64url").toString("utf8");
-    const data = JSON.parse(decoded) as AccessPayload;
+    const decoded = Buffer.from(cookie, "base64").toString("utf8");
+    const [json, sig] = decoded.split(".");
 
-    // Hard validation
-    if (data.paid !== true) return null;
-    if (typeof data.expiresAt !== "number") return null;
+    if (!json || !sig) return null;
 
-    // Expiry enforcement
-    if (Date.now() > data.expiresAt) {
-      return null;
-    }
+    const expectedSig = crypto
+      .createHmac("sha256", SECRET)
+      .update(json)
+      .digest("hex");
 
-    return data;
+    if (sig !== expectedSig) return null;
+
+    const payload = JSON.parse(json) as AccessPayload;
+
+    if (!payload.paid) return null;
+    if (Date.now() > payload.expiresAt) return null;
+
+    return payload;
   } catch {
     return null;
   }
