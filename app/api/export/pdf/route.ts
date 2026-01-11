@@ -131,8 +131,9 @@ async function launchBrowser() {
     const puppeteer = await import("puppeteer");
 
     // puppeteer.launch() will use its downloaded Chromium automatically
+    // ✅ Use boolean headless for TS compatibility (Vercel build checks types)
     return puppeteer.default.launch({
-      headless: "new",
+      headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
   } catch (e) {
@@ -140,7 +141,7 @@ async function launchBrowser() {
     const found = await tryFindLocalChromeExecutable();
     if (found) {
       return puppeteerCore.launch({
-        headless: "new",
+        headless: true, // ✅ TS-safe
         executablePath: found,
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
       });
@@ -168,7 +169,7 @@ async function launchBrowser() {
     }
 
     return puppeteerCore.launch({
-      headless: "new",
+      headless: true, // ✅ TS-safe
       executablePath: explicitPath,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
