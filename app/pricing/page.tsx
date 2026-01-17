@@ -1,23 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+
+type ProductKey = "access_pass" | "extension" | "second_role";
 
 export default function PricingPage() {
-  const [loading, setLoading] = useState<null | "access_pass" | "extension" | "second_role">(null);
+  const searchParams = useSearchParams();
+
+  const [loading, setLoading] = useState<null | ProductKey>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function startCheckout(product: "access_pass" | "extension" | "second_role") {
+  // ✅ Safe internal return path (default to /cv)
+  const returnTo = useMemo(() => {
+    const raw = searchParams?.get("return") || "/cv";
+
+    // Only allow internal paths like "/cv" or "/preview"
+    if (typeof raw !== "string") return "/cv";
+    if (!raw.startsWith("/")) return "/cv";
+    if (raw.startsWith("//")) return "/cv";
+    return raw;
+  }, [searchParams]);
+
+  async function startCheckout(product: ProductKey) {
     try {
       setError(null);
       setLoading(product);
 
+      // ✅ Correct API route (matches /app/api/checkout/route.ts)
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product }),
+        // ✅ Keys must match route.ts: { product, return, cancel }
+        body: JSON.stringify({
+          product,
+          return: returnTo,
+          cancel: "/pricing",
+        }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
         throw new Error(data?.error || "Unable to start checkout");
@@ -40,13 +62,15 @@ export default function PricingPage() {
       <div className="mx-auto max-w-5xl px-6 py-16">
         {/* Hero */}
         <header className="text-center">
-          <h1 className="text-5xl font-semibold tracking-tight">Simple. Fair. No subscriptions.</h1>
+          <h1 className="text-5xl font-semibold tracking-tight">
+            Simple. Fair. No subscriptions.
+          </h1>
           <p className="mt-4 text-lg text-white/70">
             Everything you need to create a professional CV fast — with one simple payment.
           </p>
         </header>
 
-        {/* Error banner (only shows if something fails) */}
+        {/* Error banner */}
         {error ? (
           <div className="mx-auto mt-8 max-w-3xl rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">
             {error}
@@ -59,7 +83,9 @@ export default function PricingPage() {
             <h2 className="text-2xl font-semibold">30-Day CV Access</h2>
 
             <p className="text-white/80">£9.99 one-off</p>
-            <p className="text-white/70">Full access for 30 days. Unlimited edits. No subscriptions.</p>
+            <p className="text-white/70">
+              Full access for 30 days. Unlimited edits. No subscriptions.
+            </p>
 
             <ul className="mt-4 space-y-2 text-white/75">
               <li>• Unlimited CV edits for 30 days</li>
@@ -88,7 +114,8 @@ export default function PricingPage() {
         <section className="mx-auto mt-10 max-w-4xl rounded-2xl border border-white/10 bg-white/5 p-8 shadow-lg">
           <h3 className="text-xl font-semibold">Built for real job-search timelines</h3>
           <p className="mt-3 text-white/70">
-            Most people don’t need a CV tool every month — they need it when applying, interviewing, and improving.
+            Most people don’t need a CV tool every month — they need it when applying,
+            interviewing, and improving.
           </p>
           <p className="mt-3 text-white/70">
             <span className="font-medium text-white">CVCraft is pay-once, use-when-needed.</span>
