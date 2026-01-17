@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 type Tone = "professional" | "friendly" | "confident";
@@ -82,9 +83,12 @@ export default function CoverLetterPage() {
           {/* ✅ Soft upgrade link (non-pushy) */}
           <p className="mt-2 text-sm text-white/60">
             Want a CV to match it?{" "}
-            <a href="/pricing" className="text-white underline decoration-white/30 hover:decoration-white/70">
+            <Link
+              href="/pricing"
+              className="text-white underline decoration-white/30 hover:decoration-white/70"
+            >
               Get 30-day CV access anytime
-            </a>
+            </Link>
             .
           </p>
         </header>
@@ -175,19 +179,19 @@ export default function CoverLetterPage() {
               </p>
 
               <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <a
+                <Link
                   href="/pricing"
                   className="inline-flex w-full sm:w-auto items-center justify-center rounded-xl bg-white px-5 py-3 font-semibold text-slate-900 hover:bg-white/90"
                 >
                   Get 30-Day CV Access — £9.99
-                </a>
+                </Link>
 
-                <a
+                <Link
                   href="/cv"
                   className="inline-flex w-full sm:w-auto items-center justify-center rounded-xl border border-white/15 bg-transparent px-5 py-3 font-semibold text-white hover:bg-white/5"
                 >
                   Or build your CV first
-                </a>
+                </Link>
               </div>
             </div>
           ) : null}
@@ -202,18 +206,18 @@ export default function CoverLetterPage() {
               <span className="font-semibold text-white">You’ve got the cover letter</span> — now match it with a CV.
             </div>
             <div className="flex gap-2">
-              <a
+              <Link
                 href="/pricing"
                 className="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 font-semibold text-slate-900 hover:bg-white/90"
               >
                 Build CV (30-Day Access)
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/cv"
                 className="inline-flex items-center justify-center rounded-xl border border-white/15 px-4 py-2 font-semibold text-white hover:bg-white/5"
               >
                 Go to CV builder
-              </a>
+              </Link>
             </div>
           </div>
         </div>
