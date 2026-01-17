@@ -14,7 +14,7 @@ type Status = "verifying" | "ok" | "error";
 
 export default function SuccessClient() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams() ?? new URLSearchParams();
 
   const sessionId = useMemo(
     () => searchParams.get("session_id") || "",
