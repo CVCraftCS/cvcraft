@@ -77,9 +77,10 @@ function jobsToExperienceText(jobs) {
 
   const lines = [];
   for (const j of jobs) {
-    const headerParts = [j.title ? j.title.trim() : "", j.company ? j.company.trim() : ""].filter(
-      Boolean
-    );
+    const headerParts = [
+      j.title ? j.title.trim() : "",
+      j.company ? j.company.trim() : "",
+    ].filter(Boolean);
 
     const metaParts = [
       j.location ? j.location.trim() : "",
@@ -162,7 +163,13 @@ function regionDefaults(region) {
 }
 
 // ---- section config defaults (must match preview.js) ----
-const DEFAULT_SECTION_ORDER = ["summary", "employment", "qualifications", "skills", "references"];
+const DEFAULT_SECTION_ORDER = [
+  "summary",
+  "employment",
+  "qualifications",
+  "skills",
+  "references",
+];
 
 const DEFAULT_SECTION_CONFIG = {
   summary: true,
@@ -987,7 +994,7 @@ export default function CVBuilderPage() {
     });
   };
 
-  // Locked flags
+  // Locked flags (keep logic, but we won't show padlock icons)
   const modernLocked = !teacherMode && TEMPLATE_META.modern.premium && !paidAccess;
   const compactLocked = !teacherMode && TEMPLATE_META.compact.premium && !paidAccess;
 
@@ -1000,7 +1007,11 @@ export default function CVBuilderPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white px-6 py-12">
       <div className="mx-auto max-w-3xl">
         <div className="mb-6 flex items-center justify-between">
-          <button onClick={() => router.push("/")} className="text-slate-300 hover:text-white" type="button">
+          <button
+            onClick={() => router.push("/")}
+            className="text-slate-300 hover:text-white"
+            type="button"
+          >
             ← Back
           </button>
 
@@ -1178,7 +1189,9 @@ export default function CVBuilderPage() {
               <div className="rounded-xl bg-white/5 ring-1 ring-white/10 p-4 text-sm text-slate-200">
                 <div className="font-semibold mb-1">Current output:</div>
                 <div>{labelDoc}</div>
-                <div className="text-slate-300 mt-2">Presets below will adapt to this region automatically.</div>
+                <div className="text-slate-300 mt-2">
+                  Presets below will adapt to this region automatically.
+                </div>
               </div>
             </div>
           </div>
@@ -1200,7 +1213,9 @@ export default function CVBuilderPage() {
                 }`}
               >
                 Student Mode
-                <div className="mt-1 text-sm font-normal text-slate-700">Skills + education forward. Great for first CVs.</div>
+                <div className="mt-1 text-sm font-normal text-slate-700">
+                  Skills + education forward. Great for first CVs.
+                </div>
               </button>
 
               <button
@@ -1212,7 +1227,9 @@ export default function CVBuilderPage() {
                 }`}
               >
                 Apprenticeship Mode
-                <div className="mt-1 text-sm font-normal text-slate-700">Skills + qualifications high priority.</div>
+                <div className="mt-1 text-sm font-normal text-slate-700">
+                  Skills + qualifications high priority.
+                </div>
               </button>
 
               <button
@@ -1224,7 +1241,9 @@ export default function CVBuilderPage() {
                 }`}
               >
                 Jobseeker Mode
-                <div className="mt-1 text-sm font-normal text-slate-700">Experience-forward for general applications.</div>
+                <div className="mt-1 text-sm font-normal text-slate-700">
+                  Experience-forward for general applications.
+                </div>
               </button>
             </div>
 
@@ -1237,11 +1256,13 @@ export default function CVBuilderPage() {
 
           {/* Student Safe Mode */}
           <div className="rounded-2xl bg-amber-950/30 p-6 ring-1 ring-amber-400/30 space-y-3">
-            <h2 className="text-lg font-semibold text-amber-200">Student Safe Mode (recommended for schools)</h2>
+            <h2 className="text-lg font-semibold text-amber-200">
+              Student Safe Mode (recommended for schools)
+            </h2>
 
             <p className="text-sm text-amber-100">
-              Prevents personal information from being stored on shared computers. When enabled, data is saved temporarily for preview,
-              then cleared automatically after PDF download/print.
+              Prevents personal information from being stored on shared computers. When enabled, data is
+              saved temporarily for preview, then cleared automatically after PDF download/print.
             </p>
 
             <button
@@ -1266,7 +1287,9 @@ export default function CVBuilderPage() {
           {/* Template selector */}
           <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-4">
             <h2 className="text-lg font-semibold">{labelDoc} template</h2>
-            <p className="text-sm text-slate-300">Choose a style. This affects both the preview and the PDF.</p>
+            <p className="text-sm text-slate-300">
+              Choose a style. This affects both the preview and the PDF.
+            </p>
 
             <div className="grid gap-3 sm:grid-cols-3">
               <button
@@ -1294,10 +1317,10 @@ export default function CVBuilderPage() {
                     ? "bg-white text-slate-900 ring-white"
                     : "bg-white/5 text-white ring-white/10 hover:bg-white/10"
                 } ${teacherMode && isTeacherLocked("template") ? "opacity-60 cursor-not-allowed" : ""}`}
+                aria-disabled={teacherMode && isTeacherLocked("template")}
+                title={modernLocked ? `Premium template — unlock for ${ACCESS_PRICE_LABEL}` : undefined}
               >
-                <div className="font-semibold">
-                  Modern{modernLocked ? <span className="ml-1">🔒</span> : null}
-                </div>
+                <div className="font-semibold">Modern</div>
                 <div className={`${template === "modern" ? "text-slate-700" : "text-slate-300"} text-sm mt-1`}>
                   Cleaner typography, stronger hierarchy.
                 </div>
@@ -1312,10 +1335,10 @@ export default function CVBuilderPage() {
                     ? "bg-white text-slate-900 ring-white"
                     : "bg-white/5 text-white ring-white/10 hover:bg-white/10"
                 } ${teacherMode && isTeacherLocked("template") ? "opacity-60 cursor-not-allowed" : ""}`}
+                aria-disabled={teacherMode && isTeacherLocked("template")}
+                title={compactLocked ? `Premium template — unlock for ${ACCESS_PRICE_LABEL}` : undefined}
               >
-                <div className="font-semibold">
-                  Compact{compactLocked ? <span className="ml-1">🔒</span> : null}
-                </div>
+                <div className="font-semibold">Compact</div>
                 <div className={`${template === "compact" ? "text-slate-700" : "text-slate-300"} text-sm mt-1`}>
                   Tighter spacing for 1-page outputs.
                 </div>
@@ -1355,7 +1378,9 @@ export default function CVBuilderPage() {
                     <div>
                       <div className="font-semibold">{sectionLabel(key, region)}</div>
                       {key === "references" ? (
-                        <div className="text-xs text-slate-300">Region note: US résumés usually hide references.</div>
+                        <div className="text-xs text-slate-300">
+                          Region note: US résumés usually hide references.
+                        </div>
                       ) : null}
                     </div>
                   </div>
@@ -1405,7 +1430,8 @@ export default function CVBuilderPage() {
           <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-3">
             <h2 className="text-lg font-semibold">Personal details</h2>
             <p className="text-sm text-slate-300">
-              Saved locally in your browser (not uploaded). If you are using this service on a shared computer, enable “Student Safe Mode”.
+              Saved locally in your browser (not uploaded). If you are using this service on a shared computer,
+              enable “Student Safe Mode”.
             </p>
 
             <div className="space-y-5 pt-2">
@@ -1470,7 +1496,13 @@ export default function CVBuilderPage() {
                 onClick={() =>
                   setQualifications((prev) => [
                     ...(prev || []),
-                    { id: `q-${(prev?.length || 0) + 1}`, title: "", provider: "", year: "", grade: "" },
+                    {
+                      id: `q-${(prev?.length || 0) + 1}`,
+                      title: "",
+                      provider: "",
+                      year: "",
+                      grade: "",
+                    },
                   ])
                 }
                 className="rounded-xl bg-white text-black px-4 py-2 text-sm font-semibold hover:bg-slate-100"
@@ -1490,7 +1522,9 @@ export default function CVBuilderPage() {
                       onClick={() => {
                         setQualifications((prev) => {
                           const next = (prev || []).filter((x) => x.id !== q.id);
-                          return next.length ? next : [{ id: "q-1", title: "", provider: "", year: "", grade: "" }];
+                          return next.length
+                            ? next
+                            : [{ id: "q-1", title: "", provider: "", year: "", grade: "" }];
                         });
                       }}
                       className="text-sm text-slate-300 hover:text-white underline underline-offset-4"
@@ -1511,7 +1545,11 @@ export default function CVBuilderPage() {
                             (prev || []).map((x) => (x.id === q.id ? { ...x, title: e.target.value } : x))
                           )
                         }
-                        placeholder={region === "US" ? "e.g. High School Diploma, OSHA 10, CPR" : "e.g. GCSEs, NVQ Level 2, First Aid"}
+                        placeholder={
+                          region === "US"
+                            ? "e.g. High School Diploma, OSHA 10, CPR"
+                            : "e.g. GCSEs, NVQ Level 2, First Aid"
+                        }
                         className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
                       />
                     </div>
@@ -1579,7 +1617,15 @@ export default function CVBuilderPage() {
                 onClick={() =>
                   setEmploymentHistory((prev) => [
                     ...(prev || []),
-                    { id: `job-${(prev?.length || 0) + 1}`, title: "", company: "", location: "", start: "", end: "", bulletsText: "" },
+                    {
+                      id: `job-${(prev?.length || 0) + 1}`,
+                      title: "",
+                      company: "",
+                      location: "",
+                      start: "",
+                      end: "",
+                      bulletsText: "",
+                    },
                   ])
                 }
                 className="rounded-xl bg-white text-black px-4 py-2 text-sm font-semibold hover:bg-slate-100"
@@ -1601,7 +1647,17 @@ export default function CVBuilderPage() {
                           const next = (prev || []).filter((x) => x.id !== j.id);
                           return next.length
                             ? next
-                            : [{ id: "job-1", title: "", company: "", location: "", start: "", end: "", bulletsText: "" }];
+                            : [
+                                {
+                                  id: "job-1",
+                                  title: "",
+                                  company: "",
+                                  location: "",
+                                  start: "",
+                                  end: "",
+                                  bulletsText: "",
+                                },
+                              ];
                         });
                       }}
                       className="text-sm text-slate-300 hover:text-white underline underline-offset-4"
@@ -1648,7 +1704,13 @@ export default function CVBuilderPage() {
                             (prev || []).map((x) => (x.id === j.id ? { ...x, location: e.target.value } : x))
                           )
                         }
-                        placeholder={region === "US" ? "e.g. Dallas, TX" : region === "AU" ? "e.g. Brisbane" : "e.g. Sheffield"}
+                        placeholder={
+                          region === "US"
+                            ? "e.g. Dallas, TX"
+                            : region === "AU"
+                            ? "e.g. Brisbane"
+                            : "e.g. Sheffield"
+                        }
                         className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
                       />
                     </div>
@@ -1684,7 +1746,9 @@ export default function CVBuilderPage() {
                     </div>
 
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-semibold mb-2">Responsibilities / achievements (one per line)</label>
+                      <label className="block text-sm font-semibold mb-2">
+                        Responsibilities / achievements (one per line)
+                      </label>
                       <textarea
                         value={j.bulletsText}
                         onChange={(e) =>
@@ -1718,7 +1782,9 @@ Worked as part of a team under pressure`}
           </div>
 
           <div>
-            <label className="block text-sm font-semibold mb-2">Experience text (optional if you filled in Employment history)</label>
+            <label className="block text-sm font-semibold mb-2">
+              Experience text (optional if you filled in Employment history)
+            </label>
             <textarea
               value={experience}
               onChange={(e) => setExperience(e.target.value)}
@@ -1741,10 +1807,16 @@ Timekeeping`}
           </div>
 
           {errorMsg ? (
-            <div className="rounded-xl border border-red-400 bg-red-950/40 px-4 py-3 text-red-200">{errorMsg}</div>
+            <div className="rounded-xl border border-red-400 bg-red-950/40 px-4 py-3 text-red-200">
+              {errorMsg}
+            </div>
           ) : null}
 
-          <button type="submit" disabled={isLoading} className="rounded-xl bg-white text-black px-6 py-3 font-semibold disabled:opacity-60">
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="rounded-xl bg-white text-black px-6 py-3 font-semibold disabled:opacity-60"
+          >
             {isLoading ? "Generating..." : `Generate ${labelDoc}`}
           </button>
         </form>
