@@ -18,13 +18,15 @@ export default function CoverLetterPage() {
   const selectClass =
     "mt-2 w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none focus:border-white/20 focus:ring-0";
 
-  // ✅ Move 1: make the generated text box usable + wrapped + resizable
+  // ✅ Make the generated text box usable + wrapped + resizable
   const textareaClass =
     "mt-4 min-h-[420px] w-full resize-y rounded-xl border border-white/10 bg-slate-900 p-4 text-white placeholder:text-white/40 outline-none focus:border-white/20 focus:ring-0 leading-relaxed whitespace-pre-wrap";
 
   const canGenerate = useMemo(() => {
     return jobTitle.trim().length >= 2 && companyName.trim().length >= 2 && !loading;
   }, [jobTitle, companyName, loading]);
+
+  const hasResult = useMemo(() => result.trim().length > 0, [result]);
 
   async function generate() {
     try {
@@ -73,7 +75,18 @@ export default function CoverLetterPage() {
           <p className="mt-4 text-lg text-white/70">
             Enter the role and company — we’ll write a clean, professional cover letter you can copy and use.
           </p>
-          <p className="mt-3 text-sm text-white/60">Included with your 30-day access. No subscriptions.</p>
+
+          {/* ✅ Free-first trust line */}
+          <p className="mt-3 text-sm text-white/60">Free to use. No account. Copy instantly.</p>
+
+          {/* ✅ Soft upgrade link (non-pushy) */}
+          <p className="mt-2 text-sm text-white/60">
+            Want a CV to match it?{" "}
+            <a href="/pricing" className="text-white underline decoration-white/30 hover:decoration-white/70">
+              Get 30-day CV access anytime
+            </a>
+            .
+          </p>
         </header>
 
         {/* Form */}
@@ -152,8 +165,59 @@ export default function CoverLetterPage() {
             placeholder="Your generated cover letter will appear here…"
             className={textareaClass}
           />
+
+          {/* ✅ Conversion block (ONLY after a letter exists) */}
+          {hasResult ? (
+            <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-6">
+              <h3 className="text-lg font-semibold">Want this perfectly matched to your CV?</h3>
+              <p className="mt-2 text-sm text-white/70">
+                Build your CV in the same style, then download a recruiter-ready PDF. One-off payment, 30 days access.
+              </p>
+
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <a
+                  href="/pricing"
+                  className="inline-flex w-full sm:w-auto items-center justify-center rounded-xl bg-white px-5 py-3 font-semibold text-slate-900 hover:bg-white/90"
+                >
+                  Get 30-Day CV Access — £9.99
+                </a>
+
+                <a
+                  href="/cv"
+                  className="inline-flex w-full sm:w-auto items-center justify-center rounded-xl border border-white/15 bg-transparent px-5 py-3 font-semibold text-white hover:bg-white/5"
+                >
+                  Or build your CV first
+                </a>
+              </div>
+            </div>
+          ) : null}
         </section>
       </div>
+
+      {/* ✅ Sticky CTA (ONLY after a letter exists) */}
+      {hasResult ? (
+        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-slate-950/95 backdrop-blur">
+          <div className="mx-auto flex max-w-5xl flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-sm text-white/80">
+              <span className="font-semibold text-white">You’ve got the cover letter</span> — now match it with a CV.
+            </div>
+            <div className="flex gap-2">
+              <a
+                href="/pricing"
+                className="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 font-semibold text-slate-900 hover:bg-white/90"
+              >
+                Build CV (30-Day Access)
+              </a>
+              <a
+                href="/cv"
+                className="inline-flex items-center justify-center rounded-xl border border-white/15 px-4 py-2 font-semibold text-white hover:bg-white/5"
+              >
+                Go to CV builder
+              </a>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

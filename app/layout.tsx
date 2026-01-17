@@ -7,6 +7,20 @@ export const metadata: Metadata = {
   description: "Build your CV with confidence. No subscriptions.",
 };
 
+function NavLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link href={href} className="text-sm text-white/80 hover:text-white">
+      {children}
+    </Link>
+  );
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -22,23 +36,22 @@ export default function RootLayout({
             </Link>
 
             <div className="flex items-center gap-6">
-              <Link
-                href="/pricing"
-                className="text-sm text-white/80 hover:text-white"
-              >
-                Pricing
-              </Link>
+              <NavLink href="/pricing">Pricing</NavLink>
 
-              {/* ✅ NEW: Cover Letter link */}
+              {/* ✅ Cover Letter (Free) */}
               <Link
                 href="/cover-letter"
-                className="text-sm text-white/80 hover:text-white"
+                className="inline-flex items-center gap-2 text-sm text-white/80 hover:text-white"
               >
-                Cover Letter
+                <span>Cover Letter</span>
+                <span className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[10px] font-semibold text-white/80">
+                  FREE
+                </span>
               </Link>
 
+              {/* ✅ Always go to the builder */}
               <Link
-                href="/"
+                href="/cv"
                 className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-white/90"
               >
                 Build CV
