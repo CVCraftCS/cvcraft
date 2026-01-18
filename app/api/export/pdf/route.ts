@@ -166,7 +166,7 @@ async function launchBrowser() {
 }
 
 // Stripe Checkout Session has no "refunded" field; refund truth is on Charge / Refund objects.
-// We'll use Charge.amount_refunded and compare against PaymentIntent.amount_received/amount.
+// We will use stripe.charges.list({ payment_intent }) and read Charge.amount_refunded (typed-safe).
 async function isSessionRefundedOrRevoked(sessionId: string): Promise<boolean> {
   const secretKey = (process.env.STRIPE_SECRET_KEY || "").trim();
   if (!secretKey) {
@@ -202,21 +202,19 @@ async function isSessionRefundedOrRevoked(sessionId: string): Promise<boolean> {
 
   if (!paymentIntentId) return false;
 
-  // IMPORTANT: Expand charges so we can read amount_refunded from Charge (not PaymentIntent)
-  const piResp = await stripe.paymentIntents.retrieve(paymentIntentId, {
-    expand: ["charges"],
-  });
+  // Retrieve PaymentIntent (for base amount). Do NOT expand charges — Stripe TS types may not include it.
+  const piResp = await stripe.paymentIntents.retrieve(paymentIntentId);
+  const piObj = ("data" in (piResp as any) ? (piResp as any).data : piResp) as Stripe.PaymentIntent;
 
-  // ✅ Unwrap Response<PaymentIntent> so TS knows charges exists
-  const piObj = ("data" in piResp ? piResp.data : piResp) as Stripe.PaymentIntent;
-
-  const charge = piObj.charges?.data?.[0] ?? null;
+  // Typed-safe: list charges by payment_intent
+  const charges = await stripe.charges.list({ payment_intent: paymentIntentId, limit: 1 });
+  const charge = charges.data?.[0] ?? null;
 
   // amount_refunded exists on Charge
   const amountRefunded = charge?.amount_refunded ?? 0;
 
-  // Base amount: prefer amount_received; fallback to charge.amount; then amount
-  const amountBase = piObj.amount_received ?? charge?.amount ?? piObj.amount ?? 0;
+  // Base amount: prefer amount_received; fallback to amount; then charge.amount
+  const amountBase = (piObj.amount_received ?? piObj.amount ?? charge?.amount ?? 0) as number;
 
   // Fully refunded if refunded >= base (and base > 0)
   if (amountBase > 0 && amountRefunded >= amountBase) {
