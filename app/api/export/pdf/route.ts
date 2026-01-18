@@ -175,9 +175,8 @@ async function isSessionRefundedOrRevoked(sessionId: string): Promise<boolean> {
     return false;
   }
 
-  const stripe = new Stripe(secretKey, {
-    apiVersion: "2024-06-20",
-  });
+  // ✅ DO NOT pin apiVersion — avoids Stripe type mismatches on Vercel
+  const stripe = new Stripe(secretKey);
 
   const session = await stripe.checkout.sessions.retrieve(sessionId, {
     expand: ["payment_intent"],
