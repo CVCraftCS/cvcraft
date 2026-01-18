@@ -229,6 +229,14 @@ async function verifyAndRespond(opts: {
   // Verify checkout session
   const session = await stripe.checkout.sessions.retrieve(opts.sessionId);
 
+  // ✅ HARD REVOKE CHECK (refund/admin revoke)
+  if (session.metadata?.cvcraft_revoked === "1") {
+    return NextResponse.json(
+      { ok: false, error: "Access revoked" },
+      { status: 403 }
+    );
+  }
+
   // Must be fully paid
   if (session.payment_status !== "paid") {
     return NextResponse.json(
@@ -254,7 +262,6 @@ async function verifyAndRespond(opts: {
   const expiresAt = Date.now() + maxAgeSeconds * 1000;
 
   const cookieName = getAccessCookieName();
-  const cookieValue = makeAccessCookieValue({ paid: true, expiresAt });
   const isProd = process.env.NODE_ENV === "production";
 
   // ---- Email confirmation (idempotent) ----
@@ -265,6 +272,16 @@ async function verifyAndRespond(opts: {
     (session.metadata?.product as string) ||
     (opts.productHint as string) ||
     "access_pass";
+
+  // ✅ Ensure product is stored on the session (helps future checks/analytics)
+  if (!session.metadata?.product && product) {
+    try {
+      const merged = { ...(session.metadata || {}), product };
+      await stripe.checkout.sessions.update(opts.sessionId, { metadata: merged });
+    } catch {
+      // non-fatal
+    }
+  }
 
   // Prevent duplicate sends using Stripe session metadata
   const alreadySent = session.metadata?.cvcraft_email_sent === "1";
@@ -294,11 +311,20 @@ async function verifyAndRespond(opts: {
     }
   }
 
+  // ✅ COOKIE NOW INCLUDES sessionId so export/pdf can enforce revoke/refund
+  const cookieValue = makeAccessCookieValue({
+    paid: true,
+    expiresAt,
+    sessionId: opts.sessionId,
+    customerEmail: customerEmail || undefined,
+  });
+
   const res = NextResponse.json(
     {
       ok: true,
       expiresAt,
       customerEmail,
+      sessionId: opts.sessionId,
       email:
         emailResult
           ? emailResult.ok
@@ -339,10 +365,7 @@ export async function GET(req: NextRequest) {
   try {
     const sessionId = getSessionIdFromUrl(req);
     if (!sessionId) {
-      return NextResponse.json(
-        { ok: false, error: "Missing session_id" },
-        { status: 400 }
-      );
+      return NextResponse.json({ ok: false, error: "Missing session_id" }, { status: 400 });
     }
 
     const url = new URL(req.url);
@@ -368,10 +391,7 @@ export async function POST(req: NextRequest) {
 
     const sessionId = body.session_id?.trim();
     if (!sessionId) {
-      return NextResponse.json(
-        { ok: false, error: "Missing session_id" },
-        { status: 400 }
-      );
+      return NextResponse.json({ ok: false, error: "Missing session_id" }, { status: 400 });
     }
 
     const productHint = body.product?.trim() || null;

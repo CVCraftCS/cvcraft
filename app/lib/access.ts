@@ -24,6 +24,10 @@ export function getAccessCookieName() {
 export type AccessPayload = {
   paid: boolean;
   expiresAt: number;
+
+  // Optional: allows server-side checks against Stripe later (refund/revoke)
+  sessionId?: string;
+  customerEmail?: string;
 };
 
 function hmacSha256Hex(input: string) {
@@ -51,7 +55,6 @@ function fromBase64UrlOrBase64(input: string) {
   const padLen = (4 - (base64.length % 4)) % 4;
   const padded = base64 + "=".repeat(padLen);
 
-  // Buffer can decode many base64 strings; we just standardize padding
   return Buffer.from(padded, "base64").toString("utf8");
 }
 
@@ -95,6 +98,10 @@ export function readAccessCookieValue(cookie?: string): AccessPayload | null {
     if (!payload?.paid) return null;
     if (typeof payload.expiresAt !== "number") return null;
     if (Date.now() > payload.expiresAt) return null;
+
+    // Optional fields (safe validation)
+    if (payload.sessionId && typeof payload.sessionId !== "string") return null;
+    if (payload.customerEmail && typeof payload.customerEmail !== "string") return null;
 
     return payload;
   } catch {
