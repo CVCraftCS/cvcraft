@@ -1,8 +1,6 @@
 // app/api/access/revoke/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-
-// ✅ IMPORTANT: Do NOT use "@/..." aliases in server routes (Vercel build can fail).
 import { getAccessCookieName } from "../../../lib/access";
 
 export const runtime = "nodejs";
@@ -19,30 +17,12 @@ function getBearerToken(req: NextRequest) {
   return m?.[1]?.trim() || "";
 }
 
-function clearCookie(res: NextResponse) {
-  const cookieName = getAccessCookieName();
-  const isProd = process.env.NODE_ENV === "production";
-
-  // NextResponse.cookies is the cleanest way
-  res.cookies.set({
-    name: cookieName,
-    value: "",
-    path: "/",
-    httpOnly: true,
-    sameSite: "lax",
-    secure: isProd,
-    maxAge: 0,
-  });
-
-  return res;
-}
-
 export async function POST(req: NextRequest) {
   try {
     const adminToken = (process.env.ADMIN_REVOKE_TOKEN || "").trim();
     if (!adminToken) {
       return NextResponse.json(
-        { ok: false, error: "Missing ADMIN_REVOKE_TOKEN on server" },
+        { ok: false, error: "Missing ADMIN_REVOKE_TOKEN" },
         { status: 500 }
       );
     }
@@ -55,34 +35,56 @@ export async function POST(req: NextRequest) {
       "";
 
     if (!provided || provided !== adminToken) {
-      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { ok: false, error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
     const sessionId = (body.session_id || "").trim();
     if (!sessionId) {
-      return NextResponse.json({ ok: false, error: "Missing session_id" }, { status: 400 });
+      return NextResponse.json(
+        { ok: false, error: "Missing session_id" },
+        { status: 400 }
+      );
     }
 
-    const secretKey = (process.env.STRIPE_SECRET_KEY || "").trim();
-    if (!secretKey) {
+    const stripeKey = (process.env.STRIPE_SECRET_KEY || "").trim();
+    if (!stripeKey) {
       return NextResponse.json(
         { ok: false, error: "Missing STRIPE_SECRET_KEY" },
         { status: 500 }
       );
     }
 
-    const stripe = new Stripe(secretKey);
+    const stripe = new Stripe(stripeKey);
 
-    // Mark session as revoked (server-truth)
+    // Mark session as revoked in Stripe metadata
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-    const merged = { ...(session.metadata || {}), cvcraft_revoked: "1" };
+    await stripe.checkout.sessions.update(sessionId, {
+      metadata: {
+        ...(session.metadata || {}),
+        cvcraft_revoked: "1",
+      },
+    });
 
-    await stripe.checkout.sessions.update(sessionId, { metadata: merged });
+    const res = NextResponse.json(
+      { ok: true, revoked: true, session_id: sessionId },
+      { status: 200 }
+    );
 
-    let res = NextResponse.json({ ok: true, revoked: true, session_id: sessionId }, { status: 200 });
+    // Clear access cookie
+    res.cookies.set({
+      name: getAccessCookieName(),
+      value: "",
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 0,
+    });
+
     res.headers.set("Cache-Control", "no-store");
-    res = clearCookie(res);
-
     return res;
   } catch (err) {
     console.error("Revoke failed:", err);
