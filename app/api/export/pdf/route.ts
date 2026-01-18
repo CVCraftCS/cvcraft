@@ -175,12 +175,15 @@ async function isSessionRefundedOrRevoked(sessionId: string): Promise<boolean> {
     return false;
   }
 
-  // ✅ DO NOT pin apiVersion — avoids Stripe type mismatches on Vercel
+  // ✅ Do not pin apiVersion (avoids Stripe TS literal mismatches on Vercel)
   const stripe = new Stripe(secretKey);
 
-  const session = await stripe.checkout.sessions.retrieve(sessionId, {
+  const sessionResp = await stripe.checkout.sessions.retrieve(sessionId, {
     expand: ["payment_intent"],
   });
+
+  // Stripe may return a Response<T> wrapper; unwrap if present
+  const session = ("data" in sessionResp ? sessionResp.data : sessionResp) as Stripe.Checkout.Session;
 
   // Server-truth revoke flag
   const revoked = session.metadata?.cvcraft_revoked === "1";
@@ -200,21 +203,20 @@ async function isSessionRefundedOrRevoked(sessionId: string): Promise<boolean> {
   if (!paymentIntentId) return false;
 
   // IMPORTANT: Expand charges so we can read amount_refunded from Charge (not PaymentIntent)
-  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+  const piResp = await stripe.paymentIntents.retrieve(paymentIntentId, {
     expand: ["charges"],
   });
 
-  const charge = paymentIntent.charges?.data?.[0] ?? null;
+  // ✅ Unwrap Response<PaymentIntent> so TS knows charges exists
+  const piObj = ("data" in piResp ? piResp.data : piResp) as Stripe.PaymentIntent;
+
+  const charge = piObj.charges?.data?.[0] ?? null;
 
   // amount_refunded exists on Charge
   const amountRefunded = charge?.amount_refunded ?? 0;
 
   // Base amount: prefer amount_received; fallback to charge.amount; then amount
-  const amountBase =
-    paymentIntent.amount_received ??
-    charge?.amount ??
-    paymentIntent.amount ??
-    0;
+  const amountBase = piObj.amount_received ?? charge?.amount ?? piObj.amount ?? 0;
 
   // Fully refunded if refunded >= base (and base > 0)
   if (amountBase > 0 && amountRefunded >= amountBase) {
