@@ -1,5 +1,5 @@
 // app/api/export/pdf/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import chromium from "@sparticuz/chromium";
 import puppeteerCore from "puppeteer-core";
 import Stripe from "stripe";
@@ -35,6 +35,7 @@ function isLinux() {
 
 /**
  * Try common Chrome install locations for local dev.
+ * This avoids “set env var” pain on Windows/Mac, and prevents ENOENT.
  */
 async function tryFindLocalChromeExecutable(): Promise<string | null> {
   try {
@@ -93,7 +94,9 @@ async function tryFindLocalChromeExecutable(): Promise<string | null> {
 }
 
 async function launchBrowser() {
+  // ------------------------------
   // PROD (Vercel): puppeteer-core + @sparticuz/chromium
+  // ------------------------------
   if (isVercelLike()) {
     const executablePath = await chromium.executablePath();
     if (!executablePath) throw new Error("Chromium executablePath() returned empty on Vercel.");
@@ -112,10 +115,12 @@ async function launchBrowser() {
     });
   }
 
+  // ------------------------------
   // LOCAL DEV:
   // 1) Prefer full puppeteer if installed (brings its own Chromium)
   // 2) Else, try installed Chrome/Edge automatically
   // 3) Else, fall back to explicit env path
+  // ------------------------------
   try {
     const puppeteer = await import("puppeteer");
     return puppeteer.default.launch({
@@ -160,47 +165,61 @@ async function launchBrowser() {
   }
 }
 
-/**
- * Refund-safe gating:
- * If the cookie contains a sessionId, we re-check Stripe and deny if fully refunded.
- */
-async function isSessionFullyRefunded(sessionId: string): Promise<boolean> {
+// Stripe Checkout Session has no "refunded" field; refund truth is on Charge / Refund objects.
+// We'll use Charge.amount_refunded and compare against PaymentIntent.amount_received/amount.
+async function isSessionRefundedOrRevoked(sessionId: string): Promise<boolean> {
   const secretKey = (process.env.STRIPE_SECRET_KEY || "").trim();
   if (!secretKey) {
-    // If Stripe key missing, fail closed in production, open in dev.
-    if (process.env.NODE_ENV === "production") return true;
+    // If Stripe isn't configured, do NOT falsely deny paid users.
+    // (But refunds/revokes can't be checked without Stripe.)
     return false;
   }
 
-  const stripe = new Stripe(secretKey);
-
-  const session = await stripe.checkout.sessions.retrieve(sessionId);
-  const pi = session.payment_intent;
-
-  if (!pi) return false;
-
-  const paymentIntentId = typeof pi === "string" ? pi : pi.id;
-  if (!paymentIntentId) return false;
-
-  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
-    expand: ["charges.data"],
+  const stripe = new Stripe(secretKey, {
+    apiVersion: "2024-06-20",
   });
 
-  // Stripe logic: fully refunded if amount_refunded >= amount_received/amount
-  const amountRefunded = paymentIntent.amount_refunded || 0;
-  const amountBase = paymentIntent.amount_received || paymentIntent.amount || 0;
+  const session = await stripe.checkout.sessions.retrieve(sessionId, {
+    expand: ["payment_intent"],
+  });
 
-  if (amountBase > 0 && amountRefunded >= amountBase) return true;
+  // Server-truth revoke flag
+  const revoked = session.metadata?.cvcraft_revoked === "1";
+  if (revoked) return true;
 
-  // Extra safety: if any charge is fully refunded
-  const charges = paymentIntent.charges?.data || [];
-  for (const ch of charges) {
-    // `refunded` is true when fully refunded
-    if ((ch as any).refunded === true) return true;
-    // or amount_refunded equals amount
-    const ar = (ch as any).amount_refunded ?? 0;
-    const amt = (ch as any).amount ?? 0;
-    if (amt > 0 && ar >= amt) return true;
+  // PaymentIntent can be expanded object or string
+  const pi = session.payment_intent;
+
+  let paymentIntentId: string | null = null;
+
+  if (pi && typeof pi === "object" && "id" in pi) {
+    paymentIntentId = (pi as Stripe.PaymentIntent).id;
+  } else if (typeof pi === "string" && pi) {
+    paymentIntentId = pi;
+  }
+
+  if (!paymentIntentId) return false;
+
+  // IMPORTANT: Expand charges so we can read amount_refunded from Charge (not PaymentIntent)
+  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+    expand: ["charges"],
+  });
+
+  const charge = paymentIntent.charges?.data?.[0] ?? null;
+
+  // amount_refunded exists on Charge
+  const amountRefunded = charge?.amount_refunded ?? 0;
+
+  // Base amount: prefer amount_received; fallback to charge.amount; then amount
+  const amountBase =
+    paymentIntent.amount_received ??
+    charge?.amount ??
+    paymentIntent.amount ??
+    0;
+
+  // Fully refunded if refunded >= base (and base > 0)
+  if (amountBase > 0 && amountRefunded >= amountBase) {
+    return true;
   }
 
   return false;
@@ -213,26 +232,26 @@ export async function POST(req: NextRequest) {
     const access = readAccessCookieValue(cookie);
 
     if (!access || access.paid !== true) {
-      return NextResponse.json(
+      return Response.json(
         { ok: false, error: "Access required. Please purchase a 30-day pass to export PDFs." },
         { status: 403 }
       );
     }
 
-    // Expiry validation (lib already enforces; this is extra-safe)
+    // Extra safety (readAccessCookieValue already checks expiry)
     if (typeof access.expiresAt === "number" && Date.now() > access.expiresAt) {
-      return NextResponse.json(
+      return Response.json(
         { ok: false, error: "Access expired. Please purchase a new 30-day pass." },
         { status: 403 }
       );
     }
 
-    // ✅ Refund-safe check (if we have a sessionId)
+    // ✅ Refund/revoke-safe: if we have a sessionId, validate server-truth
     if (access.sessionId) {
-      const refunded = await isSessionFullyRefunded(access.sessionId);
-      if (refunded) {
-        return NextResponse.json(
-          { ok: false, error: "This purchase was refunded, so access is no longer active." },
+      const blocked = await isSessionRefundedOrRevoked(access.sessionId);
+      if (blocked) {
+        return Response.json(
+          { ok: false, error: "Access is no longer active (refunded or revoked)." },
           { status: 403 }
         );
       }
@@ -242,7 +261,7 @@ export async function POST(req: NextRequest) {
     const html = body.html?.trim();
 
     if (!html) {
-      return NextResponse.json({ ok: false, error: "Missing html in request body" }, { status: 400 });
+      return Response.json({ ok: false, error: "Missing html in request body" }, { status: 400 });
     }
 
     const browser = await launchBrowser();
@@ -250,10 +269,7 @@ export async function POST(req: NextRequest) {
     try {
       const page = await browser.newPage();
 
-      // Ensure print CSS is respected
       await page.emulateMediaType("screen");
-
-      // More reliable than "load" alone for local + Vercel
       await page.setContent(html, { waitUntil: ["load", "networkidle0"] });
 
       const pdfUint8 = await page.pdf({
@@ -267,7 +283,7 @@ export async function POST(req: NextRequest) {
         pdfUint8.byteOffset + pdfUint8.byteLength
       );
 
-      return new NextResponse(ab as unknown as BodyInit, {
+      return new Response(ab as unknown as BodyInit, {
         status: 200,
         headers: {
           "Content-Type": "application/pdf",
@@ -280,7 +296,7 @@ export async function POST(req: NextRequest) {
     }
   } catch (err) {
     console.error("PDF export failed:", err);
-    return NextResponse.json(
+    return Response.json(
       {
         ok: false,
         error: "PDF export failed",
