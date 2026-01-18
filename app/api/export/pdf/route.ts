@@ -1,5 +1,5 @@
 // app/api/export/pdf/route.ts
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import chromium from "@sparticuz/chromium";
 import puppeteerCore from "puppeteer-core";
 import Stripe from "stripe";
@@ -93,9 +93,7 @@ async function tryFindLocalChromeExecutable(): Promise<string | null> {
 }
 
 async function launchBrowser() {
-  // ------------------------------
   // PROD (Vercel): puppeteer-core + @sparticuz/chromium
-  // ------------------------------
   if (isVercelLike()) {
     const executablePath = await chromium.executablePath();
     if (!executablePath) throw new Error("Chromium executablePath() returned empty on Vercel.");
@@ -114,12 +112,10 @@ async function launchBrowser() {
     });
   }
 
-  // ------------------------------
   // LOCAL DEV:
-  // 1) Prefer full puppeteer if installed
+  // 1) Prefer full puppeteer if installed (brings its own Chromium)
   // 2) Else, try installed Chrome/Edge automatically
   // 3) Else, fall back to explicit env path
-  // ------------------------------
   try {
     const puppeteer = await import("puppeteer");
     return puppeteer.default.launch({
@@ -164,33 +160,50 @@ async function launchBrowser() {
   }
 }
 
-async function ensureNotRevokedByStripe(sessionId: string) {
-  const secretKey = process.env.STRIPE_SECRET_KEY;
-
-  // In production, STRIPE_SECRET_KEY should always exist
+/**
+ * Refund-safe gating:
+ * If the cookie contains a sessionId, we re-check Stripe and deny if fully refunded.
+ */
+async function isSessionFullyRefunded(sessionId: string): Promise<boolean> {
+  const secretKey = (process.env.STRIPE_SECRET_KEY || "").trim();
   if (!secretKey) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("Missing STRIPE_SECRET_KEY (required for revoke enforcement).");
-    }
-    // Dev fallback: if no key, we can't check Stripe, so allow
-    return { ok: true as const };
+    // If Stripe key missing, fail closed in production, open in dev.
+    if (process.env.NODE_ENV === "production") return true;
+    return false;
   }
 
   const stripe = new Stripe(secretKey);
 
   const session = await stripe.checkout.sessions.retrieve(sessionId);
+  const pi = session.payment_intent;
 
-  // If session is not paid, deny
-  if (session.payment_status !== "paid") {
-    return { ok: false as const, reason: "not_paid" as const };
+  if (!pi) return false;
+
+  const paymentIntentId = typeof pi === "string" ? pi : pi.id;
+  if (!paymentIntentId) return false;
+
+  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+    expand: ["charges.data"],
+  });
+
+  // Stripe logic: fully refunded if amount_refunded >= amount_received/amount
+  const amountRefunded = paymentIntent.amount_refunded || 0;
+  const amountBase = paymentIntent.amount_received || paymentIntent.amount || 0;
+
+  if (amountBase > 0 && amountRefunded >= amountBase) return true;
+
+  // Extra safety: if any charge is fully refunded
+  const charges = paymentIntent.charges?.data || [];
+  for (const ch of charges) {
+    // `refunded` is true when fully refunded
+    if ((ch as any).refunded === true) return true;
+    // or amount_refunded equals amount
+    const ar = (ch as any).amount_refunded ?? 0;
+    const amt = (ch as any).amount ?? 0;
+    if (amt > 0 && ar >= amt) return true;
   }
 
-  // If we have a revoke flag, deny
-  if (session.metadata?.cvcraft_revoked === "1") {
-    return { ok: false as const, reason: "revoked" as const };
-  }
-
-  return { ok: true as const };
+  return false;
 }
 
 export async function POST(req: NextRequest) {
@@ -200,32 +213,26 @@ export async function POST(req: NextRequest) {
     const access = readAccessCookieValue(cookie);
 
     if (!access || access.paid !== true) {
-      return Response.json(
+      return NextResponse.json(
         { ok: false, error: "Access required. Please purchase a 30-day pass to export PDFs." },
         { status: 403 }
       );
     }
 
-    // Extra expiry check (safe)
+    // Expiry validation (lib already enforces; this is extra-safe)
     if (typeof access.expiresAt === "number" && Date.now() > access.expiresAt) {
-      return Response.json(
+      return NextResponse.json(
         { ok: false, error: "Access expired. Please purchase a new 30-day pass." },
         { status: 403 }
       );
     }
 
-    // ✅ Refund/revoke enforcement (if we know the Checkout Session ID)
+    // ✅ Refund-safe check (if we have a sessionId)
     if (access.sessionId) {
-      const check = await ensureNotRevokedByStripe(access.sessionId);
-      if (!check.ok) {
-        return Response.json(
-          {
-            ok: false,
-            error:
-              check.reason === "revoked"
-                ? "Access was revoked (refund issued). Please purchase again if needed."
-                : "Payment not active for this session.",
-          },
+      const refunded = await isSessionFullyRefunded(access.sessionId);
+      if (refunded) {
+        return NextResponse.json(
+          { ok: false, error: "This purchase was refunded, so access is no longer active." },
           { status: 403 }
         );
       }
@@ -235,7 +242,7 @@ export async function POST(req: NextRequest) {
     const html = body.html?.trim();
 
     if (!html) {
-      return Response.json({ ok: false, error: "Missing html in request body" }, { status: 400 });
+      return NextResponse.json({ ok: false, error: "Missing html in request body" }, { status: 400 });
     }
 
     const browser = await launchBrowser();
@@ -246,6 +253,7 @@ export async function POST(req: NextRequest) {
       // Ensure print CSS is respected
       await page.emulateMediaType("screen");
 
+      // More reliable than "load" alone for local + Vercel
       await page.setContent(html, { waitUntil: ["load", "networkidle0"] });
 
       const pdfUint8 = await page.pdf({
@@ -259,7 +267,7 @@ export async function POST(req: NextRequest) {
         pdfUint8.byteOffset + pdfUint8.byteLength
       );
 
-      return new Response(ab as unknown as BodyInit, {
+      return new NextResponse(ab as unknown as BodyInit, {
         status: 200,
         headers: {
           "Content-Type": "application/pdf",
@@ -272,7 +280,7 @@ export async function POST(req: NextRequest) {
     }
   } catch (err) {
     console.error("PDF export failed:", err);
-    return Response.json(
+    return NextResponse.json(
       {
         ok: false,
         error: "PDF export failed",

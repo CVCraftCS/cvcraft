@@ -21,13 +21,16 @@ export function getAccessCookieName() {
   return COOKIE_NAME;
 }
 
+/**
+ * Payload stored inside the signed cookie.
+ * NOTE: sessionId enables Stripe re-checks (refund revocation).
+ */
 export type AccessPayload = {
   paid: boolean;
   expiresAt: number;
 
-  // Optional: allows server-side checks against Stripe later (refund/revoke)
+  // Added for refund-safe gating (optional for backwards compatibility)
   sessionId?: string;
-  customerEmail?: string;
 };
 
 function hmacSha256Hex(input: string) {
@@ -50,11 +53,9 @@ function toBase64Url(str: string) {
  * (Backwards compatible with older cookies you may have already set.)
  */
 function fromBase64UrlOrBase64(input: string) {
-  // Try base64url -> base64
   const base64 = input.replace(/-/g, "+").replace(/_/g, "/");
   const padLen = (4 - (base64.length % 4)) % 4;
   const padded = base64 + "=".repeat(padLen);
-
   return Buffer.from(padded, "base64").toString("utf8");
 }
 
@@ -99,9 +100,8 @@ export function readAccessCookieValue(cookie?: string): AccessPayload | null {
     if (typeof payload.expiresAt !== "number") return null;
     if (Date.now() > payload.expiresAt) return null;
 
-    // Optional fields (safe validation)
-    if (payload.sessionId && typeof payload.sessionId !== "string") return null;
-    if (payload.customerEmail && typeof payload.customerEmail !== "string") return null;
+    // sessionId optional (older cookies won’t have it)
+    if (payload.sessionId != null && typeof payload.sessionId !== "string") return null;
 
     return payload;
   } catch {
@@ -118,8 +118,7 @@ export function getAccessFromRequest(req: any): AccessPayload | null {
   try {
     // NextRequest has req.cookies.get(name)?.value
     const direct =
-      req?.cookies?.get?.(COOKIE_NAME)?.value ??
-      req?.cookies?.get?.(COOKIE_NAME);
+      req?.cookies?.get?.(COOKIE_NAME)?.value ?? req?.cookies?.get?.(COOKIE_NAME);
 
     if (typeof direct === "string" && direct) {
       return readAccessCookieValue(direct);
@@ -127,9 +126,7 @@ export function getAccessFromRequest(req: any): AccessPayload | null {
 
     // Fallback: parse Cookie header (Request-compatible)
     const cookieHeader =
-      req?.headers?.get?.("cookie") ??
-      req?.headers?.cookie ??
-      req?.headers?.Cookie;
+      req?.headers?.get?.("cookie") ?? req?.headers?.cookie ?? req?.headers?.Cookie;
 
     if (!cookieHeader || typeof cookieHeader !== "string") return null;
 

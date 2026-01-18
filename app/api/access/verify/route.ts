@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
 // ✅ IMPORTANT: Do NOT use "@/..." aliases in server routes (Vercel build can fail).
-// From app/api/access/verify/route.ts -> app/lib/access.ts is "../../../lib/access"
 import { makeAccessCookieValue, getAccessCookieName } from "../../../lib/access";
 
 export const runtime = "nodejs";
@@ -29,7 +28,6 @@ function formatDateTime(tsMs: number) {
 }
 
 function baseUrl() {
-  // Prefer explicit base URLs first (predictable in prod + dev)
   const raw =
     process.env.NEXT_PUBLIC_SITE_URL ||
     process.env.NEXT_PUBLIC_BASE_URL ||
@@ -51,7 +49,6 @@ function productDisplayName(product: string) {
 
 function getSessionIdFromUrl(req: NextRequest) {
   const url = new URL(req.url);
-  // Support both session_id and session.id (just in case anything sends the dotted variant)
   const sid =
     url.searchParams.get("session_id")?.trim() ||
     url.searchParams.get("session.id")?.trim() ||
@@ -62,42 +59,22 @@ function getSessionIdFromUrl(req: NextRequest) {
 function getCookieDomainForHost(host: string, isProd: boolean) {
   if (!isProd) return undefined;
 
-  // Optional override if you ever need it:
-  // ACCESS_COOKIE_DOMAIN=.cvcraftclassroom.com
   const envDomain = (process.env.ACCESS_COOKIE_DOMAIN || "").trim();
   if (envDomain) return envDomain;
 
-  // Fix www/root mismatch: allow cookie to be valid for both
-  // www.cvcraftclassroom.com + cvcraftclassroom.com
   const h = (host || "").toLowerCase();
+  if (h === "cvcraftclassroom.com" || h === "www.cvcraftclassroom.com") return ".cvcraftclassroom.com";
+  if (h.endsWith(".cvcraftclassroom.com")) return ".cvcraftclassroom.com";
 
-  if (h === "cvcraftclassroom.com" || h === "www.cvcraftclassroom.com") {
-    return ".cvcraftclassroom.com";
-  }
-  if (h.endsWith(".cvcraftclassroom.com")) {
-    return ".cvcraftclassroom.com";
-  }
-
-  // Otherwise leave undefined so the browser scopes it to the current host
   return undefined;
 }
 
-async function sendReceiptEmail(args: {
-  to: string;
-  product: string;
-  expiresAtMs: number;
-}) {
+async function sendReceiptEmail(args: { to: string; product: string; expiresAtMs: number }) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    return {
-      ok: false as const,
-      skipped: true as const,
-      reason: "missing_resend_api_key",
-    };
+    return { ok: false as const, skipped: true as const, reason: "missing_resend_api_key" };
   }
 
-  // ✅ With your verified domain, set this in .env.local / Vercel env vars:
-  // RESEND_FROM="CVCraft <no-reply@cvcraftclassroom.com>"
   const from = process.env.RESEND_FROM || "CVCraft <onboarding@resend.dev>";
   const replyTo = process.env.RESEND_REPLY_TO || SUPPORT_EMAIL;
 
@@ -107,10 +84,8 @@ async function sendReceiptEmail(args: {
   const site = baseUrl();
   const manageUrl = `${site}/cv`;
 
-  // ✅ Less "spammy" subject (better deliverability)
   const subject = "CVCraft — Payment received. Your access is now active";
 
-  // ✅ Plain text (deliverability + accessibility)
   const text = `Hi,
 
 Thanks for your purchase — your CVCraft access is now active.
@@ -131,7 +106,6 @@ If anything doesn’t look right, just reply to this email and we’ll help.
 — The CVCraft Team
 ${SUPPORT_EMAIL}`;
 
-  // ✅ Clean, professional HTML (email-safe)
   const html = `
 <div style="font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; line-height: 1.5; color: #0f172a; background: #ffffff; padding: 0; margin: 0;">
   <div style="max-width: 560px; margin: 0 auto; padding: 24px;">
@@ -200,56 +174,29 @@ ${SUPPORT_EMAIL}`;
 
   if (!resp.ok) {
     const errText = await resp.text().catch(() => "");
-    return {
-      ok: false as const,
-      skipped: false as const,
-      reason: "resend_failed",
-      detail: errText,
-    };
+    return { ok: false as const, skipped: false as const, reason: "resend_failed", detail: errText };
   }
 
   return { ok: true as const, skipped: false as const };
 }
 
-async function verifyAndRespond(opts: {
-  req: NextRequest;
-  sessionId: string;
-  productHint?: string | null;
-}) {
+async function verifyAndRespond(opts: { req: NextRequest; sessionId: string; productHint?: string | null }) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   if (!secretKey) {
-    return NextResponse.json(
-      { ok: false, error: "Missing STRIPE_SECRET_KEY" },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, error: "Missing STRIPE_SECRET_KEY" }, { status: 500 });
   }
 
   const stripe = new Stripe(secretKey);
 
-  // Verify checkout session
   const session = await stripe.checkout.sessions.retrieve(opts.sessionId);
 
-  // ✅ HARD REVOKE CHECK (refund/admin revoke)
-  if (session.metadata?.cvcraft_revoked === "1") {
-    return NextResponse.json(
-      { ok: false, error: "Access revoked" },
-      { status: 403 }
-    );
-  }
-
-  // Must be fully paid
   if (session.payment_status !== "paid") {
     return NextResponse.json(
-      {
-        ok: false,
-        error: "Payment not completed",
-        payment_status: session.payment_status,
-      },
+      { ok: false, error: "Payment not completed", payment_status: session.payment_status },
       { status: 403 }
     );
   }
 
-  // Extra safety
   if (session.status && session.status !== "complete") {
     return NextResponse.json(
       { ok: false, error: "Checkout session not complete", status: session.status },
@@ -262,28 +209,19 @@ async function verifyAndRespond(opts: {
   const expiresAt = Date.now() + maxAgeSeconds * 1000;
 
   const cookieName = getAccessCookieName();
+
+  // ✅ Store sessionId in cookie so we can block refunds later (export/status can re-check)
+  const cookieValue = makeAccessCookieValue({ paid: true, expiresAt, sessionId: opts.sessionId });
+
   const isProd = process.env.NODE_ENV === "production";
 
-  // ---- Email confirmation (idempotent) ----
   const customerEmail = session.customer_details?.email || null;
 
-  // Determine product (prefer server-truth: session metadata; fallback to hint)
   const product =
     (session.metadata?.product as string) ||
     (opts.productHint as string) ||
     "access_pass";
 
-  // ✅ Ensure product is stored on the session (helps future checks/analytics)
-  if (!session.metadata?.product && product) {
-    try {
-      const merged = { ...(session.metadata || {}), product };
-      await stripe.checkout.sessions.update(opts.sessionId, { metadata: merged });
-    } catch {
-      // non-fatal
-    }
-  }
-
-  // Prevent duplicate sends using Stripe session metadata
   const alreadySent = session.metadata?.cvcraft_email_sent === "1";
 
   let emailResult:
@@ -293,55 +231,38 @@ async function verifyAndRespond(opts: {
     | null = null;
 
   if (customerEmail && !alreadySent) {
-    emailResult = await sendReceiptEmail({
-      to: customerEmail,
-      product,
-      expiresAtMs: expiresAt,
-    });
+    emailResult = await sendReceiptEmail({ to: customerEmail, product, expiresAtMs: expiresAt });
 
-    // Mark as sent in Stripe metadata so we never resend (even if verify is hit again)
     if (emailResult.ok) {
       try {
         const merged = { ...(session.metadata || {}), cvcraft_email_sent: "1" };
         await stripe.checkout.sessions.update(opts.sessionId, { metadata: merged });
       } catch (e) {
-        // Not fatal — access cookie is priority
         console.warn("Failed to mark email as sent in Stripe metadata:", e);
       }
     }
   }
-
-  // ✅ COOKIE NOW INCLUDES sessionId so export/pdf can enforce revoke/refund
-  const cookieValue = makeAccessCookieValue({
-    paid: true,
-    expiresAt,
-    sessionId: opts.sessionId,
-    customerEmail: customerEmail || undefined,
-  });
 
   const res = NextResponse.json(
     {
       ok: true,
       expiresAt,
       customerEmail,
-      sessionId: opts.sessionId,
-      email:
-        emailResult
-          ? emailResult.ok
-            ? "sent"
-            : emailResult.skipped
-            ? `skipped:${emailResult.reason}`
-            : `failed:${emailResult.reason}`
-          : alreadySent
-          ? "already_sent"
-          : customerEmail
-          ? "not_sent"
-          : "no_email",
+      email: emailResult
+        ? emailResult.ok
+          ? "sent"
+          : emailResult.skipped
+          ? `skipped:${emailResult.reason}`
+          : `failed:${emailResult.reason}`
+        : alreadySent
+        ? "already_sent"
+        : customerEmail
+        ? "not_sent"
+        : "no_email",
     },
     { status: 200 }
   );
 
-  // ✅ Reliable cookie set (Next.js App Router) + ✅ domain fix for www/root
   const host = opts.req.headers.get("host") || "";
   const cookieDomain = getCookieDomainForHost(host, isProd);
 
@@ -352,7 +273,7 @@ async function verifyAndRespond(opts: {
     sameSite: "lax",
     path: "/",
     maxAge: maxAgeSeconds,
-    secure: isProd, // don't set Secure on localhost
+    secure: isProd,
     ...(cookieDomain ? { domain: cookieDomain } : {}),
   });
 
@@ -375,11 +296,7 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     console.error("Access verify (GET) failed:", err);
     return NextResponse.json(
-      {
-        ok: false,
-        error: "Access verify failed",
-        message: err instanceof Error ? err.message : String(err),
-      },
+      { ok: false, error: "Access verify failed", message: err instanceof Error ? err.message : String(err) },
       { status: 500 }
     );
   }
@@ -400,11 +317,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("Access verify (POST) failed:", err);
     return NextResponse.json(
-      {
-        ok: false,
-        error: "Access verify failed",
-        message: err instanceof Error ? err.message : String(err),
-      },
+      { ok: false, error: "Access verify failed", message: err instanceof Error ? err.message : String(err) },
       { status: 500 }
     );
   }
