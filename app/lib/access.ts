@@ -21,15 +21,14 @@ export function getAccessCookieName() {
   return COOKIE_NAME;
 }
 
-/**
- * Payload stored inside the signed cookie.
- * NOTE: sessionId enables Stripe re-checks (refund revocation).
- */
 export type AccessPayload = {
   paid: boolean;
   expiresAt: number;
 
-  // Added for refund-safe gating (optional for backwards compatibility)
+  /**
+   * Optional: ties access to a specific Stripe Checkout Session.
+   * Enables refund/revoke checks server-side.
+   */
   sessionId?: string;
 };
 
@@ -100,7 +99,7 @@ export function readAccessCookieValue(cookie?: string): AccessPayload | null {
     if (typeof payload.expiresAt !== "number") return null;
     if (Date.now() > payload.expiresAt) return null;
 
-    // sessionId optional (older cookies won’t have it)
+    // sessionId is optional for backwards compatibility
     if (payload.sessionId != null && typeof payload.sessionId !== "string") return null;
 
     return payload;
@@ -118,7 +117,8 @@ export function getAccessFromRequest(req: any): AccessPayload | null {
   try {
     // NextRequest has req.cookies.get(name)?.value
     const direct =
-      req?.cookies?.get?.(COOKIE_NAME)?.value ?? req?.cookies?.get?.(COOKIE_NAME);
+      req?.cookies?.get?.(COOKIE_NAME)?.value ??
+      req?.cookies?.get?.(COOKIE_NAME);
 
     if (typeof direct === "string" && direct) {
       return readAccessCookieValue(direct);
@@ -126,7 +126,9 @@ export function getAccessFromRequest(req: any): AccessPayload | null {
 
     // Fallback: parse Cookie header (Request-compatible)
     const cookieHeader =
-      req?.headers?.get?.("cookie") ?? req?.headers?.cookie ?? req?.headers?.Cookie;
+      req?.headers?.get?.("cookie") ??
+      req?.headers?.cookie ??
+      req?.headers?.Cookie;
 
     if (!cookieHeader || typeof cookieHeader !== "string") return null;
 

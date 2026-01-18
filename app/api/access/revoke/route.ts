@@ -1,6 +1,8 @@
 // app/api/access/revoke/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+
+// ✅ IMPORTANT: Do NOT use "@/..." aliases in server routes (Vercel build can fail).
 import { getAccessCookieName } from "../../../lib/access";
 
 export const runtime = "nodejs";
@@ -17,74 +19,86 @@ function getBearerToken(req: NextRequest) {
   return m?.[1]?.trim() || "";
 }
 
+function getCookieDomainForHost(host: string, isProd: boolean) {
+  if (!isProd) return undefined;
+
+  const envDomain = (process.env.ACCESS_COOKIE_DOMAIN || "").trim();
+  if (envDomain) return envDomain;
+
+  const h = (host || "").toLowerCase();
+  if (h === "cvcraftclassroom.com" || h === "www.cvcraftclassroom.com") return ".cvcraftclassroom.com";
+  if (h.endsWith(".cvcraftclassroom.com")) return ".cvcraftclassroom.com";
+
+  return undefined;
+}
+
+function clearCookie(res: NextResponse, req: NextRequest) {
+  const cookieName = getAccessCookieName();
+  const isProd = process.env.NODE_ENV === "production";
+
+  const host = req.headers.get("host") || "";
+  const domain = getCookieDomainForHost(host, isProd);
+
+  res.cookies.set({
+    name: cookieName,
+    value: "",
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+    secure: isProd,
+    maxAge: 0,
+    ...(domain ? { domain } : {}),
+  });
+
+  return res;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const adminToken = (process.env.ADMIN_REVOKE_TOKEN || "").trim();
     if (!adminToken) {
       return NextResponse.json(
-        { ok: false, error: "Missing ADMIN_REVOKE_TOKEN" },
+        { ok: false, error: "Missing ADMIN_REVOKE_TOKEN on server" },
         { status: 500 }
       );
     }
 
     const body = (await req.json().catch(() => ({}))) as Body;
 
-    const provided =
-      (body.token || "").trim() ||
-      getBearerToken(req) ||
-      "";
-
+    const provided = (body.token || "").trim() || getBearerToken(req) || "";
     if (!provided || provided !== adminToken) {
-      return NextResponse.json(
-        { ok: false, error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const sessionId = (body.session_id || "").trim();
     if (!sessionId) {
-      return NextResponse.json(
-        { ok: false, error: "Missing session_id" },
-        { status: 400 }
-      );
+      return NextResponse.json({ ok: false, error: "Missing session_id" }, { status: 400 });
     }
 
-    const stripeKey = (process.env.STRIPE_SECRET_KEY || "").trim();
-    if (!stripeKey) {
+    const secretKey = (process.env.STRIPE_SECRET_KEY || "").trim();
+    if (!secretKey) {
       return NextResponse.json(
         { ok: false, error: "Missing STRIPE_SECRET_KEY" },
         { status: 500 }
       );
     }
 
-    const stripe = new Stripe(stripeKey);
+    const stripe = new Stripe(secretKey);
 
-    // Mark session as revoked in Stripe metadata
+    // Mark session as revoked (server-truth)
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-    await stripe.checkout.sessions.update(sessionId, {
-      metadata: {
-        ...(session.metadata || {}),
-        cvcraft_revoked: "1",
-      },
-    });
+    const merged = { ...(session.metadata || {}), cvcraft_revoked: "1" };
+
+    await stripe.checkout.sessions.update(sessionId, { metadata: merged });
 
     const res = NextResponse.json(
       { ok: true, revoked: true, session_id: sessionId },
       { status: 200 }
     );
 
-    // Clear access cookie
-    res.cookies.set({
-      name: getAccessCookieName(),
-      value: "",
-      path: "/",
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 0,
-    });
-
     res.headers.set("Cache-Control", "no-store");
+    clearCookie(res, req);
+
     return res;
   } catch (err) {
     console.error("Revoke failed:", err);

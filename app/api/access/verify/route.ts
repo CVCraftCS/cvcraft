@@ -69,10 +69,39 @@ function getCookieDomainForHost(host: string, isProd: boolean) {
   return undefined;
 }
 
-async function sendReceiptEmail(args: { to: string; product: string; expiresAtMs: number }) {
+function clearAccessCookie(res: NextResponse, req: NextRequest) {
+  const cookieName = getAccessCookieName();
+  const isProd = process.env.NODE_ENV === "production";
+  const host = req.headers.get("host") || "";
+  const cookieDomain = getCookieDomainForHost(host, isProd);
+
+  res.cookies.set({
+    name: cookieName,
+    value: "",
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+    secure: isProd,
+    ...(cookieDomain ? { domain: cookieDomain } : {}),
+  });
+
+  res.headers.set("Cache-Control", "no-store");
+  return res;
+}
+
+async function sendReceiptEmail(args: {
+  to: string;
+  product: string;
+  expiresAtMs: number;
+}) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    return { ok: false as const, skipped: true as const, reason: "missing_resend_api_key" };
+    return {
+      ok: false as const,
+      skipped: true as const,
+      reason: "missing_resend_api_key",
+    };
   }
 
   const from = process.env.RESEND_FROM || "CVCraft <onboarding@resend.dev>";
@@ -109,11 +138,7 @@ ${SUPPORT_EMAIL}`;
   const html = `
 <div style="font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; line-height: 1.5; color: #0f172a; background: #ffffff; padding: 0; margin: 0;">
   <div style="max-width: 560px; margin: 0 auto; padding: 24px;">
-
-    <h2 style="margin: 0 0 12px; font-size: 20px; font-weight: 600;">
-      Payment received
-    </h2>
-
+    <h2 style="margin: 0 0 12px; font-size: 20px; font-weight: 600;">Payment received</h2>
     <p style="margin: 0 0 16px; font-size: 14px;">
       Thanks for your purchase — your <strong>CVCraft access is now active</strong>.
     </p>
@@ -152,7 +177,6 @@ ${SUPPORT_EMAIL}`;
         ${SUPPORT_EMAIL}
       </a>
     </p>
-
   </div>
 </div>`;
 
@@ -174,34 +198,102 @@ ${SUPPORT_EMAIL}`;
 
   if (!resp.ok) {
     const errText = await resp.text().catch(() => "");
-    return { ok: false as const, skipped: false as const, reason: "resend_failed", detail: errText };
+    return {
+      ok: false as const,
+      skipped: false as const,
+      reason: "resend_failed",
+      detail: errText,
+    };
   }
 
   return { ok: true as const, skipped: false as const };
 }
 
-async function verifyAndRespond(opts: { req: NextRequest; sessionId: string; productHint?: string | null }) {
+function isFullyRefunded(pi: Stripe.PaymentIntent | null): boolean {
+  if (!pi) return false;
+  const amountRefunded = (pi as any).amount_refunded ?? 0;
+  const amountBase = (pi as any).amount_received ?? (pi as any).amount ?? 0;
+  return amountBase > 0 && amountRefunded >= amountBase;
+}
+
+async function verifyAndRespond(opts: {
+  req: NextRequest;
+  sessionId: string;
+  productHint?: string | null;
+}) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   if (!secretKey) {
-    return NextResponse.json({ ok: false, error: "Missing STRIPE_SECRET_KEY" }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: "Missing STRIPE_SECRET_KEY" },
+      { status: 500 }
+    );
   }
 
   const stripe = new Stripe(secretKey);
 
-  const session = await stripe.checkout.sessions.retrieve(opts.sessionId);
+  // Verify checkout session (expand payment_intent for refund checks)
+  const sessionResp = await stripe.checkout.sessions.retrieve(opts.sessionId, {
+    expand: ["payment_intent"],
+  });
 
-  if (session.payment_status !== "paid") {
-    return NextResponse.json(
-      { ok: false, error: "Payment not completed", payment_status: session.payment_status },
+  const session = ("data" in sessionResp ? sessionResp.data : sessionResp) as Stripe.Checkout.Session;
+
+  // Server-truth revoke flag
+  if (session.metadata?.cvcraft_revoked === "1") {
+    const res = NextResponse.json(
+      { ok: false, error: "Access revoked" },
       { status: 403 }
     );
+    return clearAccessCookie(res, opts.req);
   }
 
+  // Must be fully paid
+  if (session.payment_status !== "paid") {
+    const res = NextResponse.json(
+      {
+        ok: false,
+        error: "Payment not completed",
+        payment_status: session.payment_status,
+      },
+      { status: 403 }
+    );
+    return clearAccessCookie(res, opts.req);
+  }
+
+  // Extra safety
   if (session.status && session.status !== "complete") {
-    return NextResponse.json(
+    const res = NextResponse.json(
       { ok: false, error: "Checkout session not complete", status: session.status },
       { status: 403 }
     );
+    return clearAccessCookie(res, opts.req);
+  }
+
+  // Refund safety (full refunds = no access)
+  const expandedPI = session.payment_intent as any;
+  let paymentIntent: Stripe.PaymentIntent | null = null;
+
+  if (expandedPI && typeof expandedPI === "object" && "id" in expandedPI) {
+    paymentIntent = expandedPI as Stripe.PaymentIntent;
+  } else if (typeof expandedPI === "string" && expandedPI) {
+    const piResp = await stripe.paymentIntents.retrieve(expandedPI);
+    paymentIntent = ((piResp as any).data ?? piResp) as Stripe.PaymentIntent;
+  }
+
+  if (isFullyRefunded(paymentIntent)) {
+    // Optionally mark the session revoked so future checks are instant
+    try {
+      const merged = { ...(session.metadata || {}), cvcraft_revoked: "1" };
+      await stripe.checkout.sessions.update(opts.sessionId, { metadata: merged });
+    } catch {
+      // ignore
+    }
+
+    const res = NextResponse.json(
+      { ok: false, error: "Payment refunded — access inactive" },
+      { status: 403 }
+    );
+    return clearAccessCookie(res, opts.req);
   }
 
   // 30-day access window
@@ -209,12 +301,15 @@ async function verifyAndRespond(opts: { req: NextRequest; sessionId: string; pro
   const expiresAt = Date.now() + maxAgeSeconds * 1000;
 
   const cookieName = getAccessCookieName();
-
-  // ✅ Store sessionId in cookie so we can block refunds later (export/status can re-check)
-  const cookieValue = makeAccessCookieValue({ paid: true, expiresAt, sessionId: opts.sessionId });
+  const cookieValue = makeAccessCookieValue({
+    paid: true,
+    expiresAt,
+    sessionId: opts.sessionId,
+  });
 
   const isProd = process.env.NODE_ENV === "production";
 
+  // ---- Email confirmation (idempotent) ----
   const customerEmail = session.customer_details?.email || null;
 
   const product =
@@ -231,14 +326,18 @@ async function verifyAndRespond(opts: { req: NextRequest; sessionId: string; pro
     | null = null;
 
   if (customerEmail && !alreadySent) {
-    emailResult = await sendReceiptEmail({ to: customerEmail, product, expiresAtMs: expiresAt });
+    emailResult = await sendReceiptEmail({
+      to: customerEmail,
+      product,
+      expiresAtMs: expiresAt,
+    });
 
     if (emailResult.ok) {
       try {
         const merged = { ...(session.metadata || {}), cvcraft_email_sent: "1" };
         await stripe.checkout.sessions.update(opts.sessionId, { metadata: merged });
-      } catch (e) {
-        console.warn("Failed to mark email as sent in Stripe metadata:", e);
+      } catch {
+        // not fatal
       }
     }
   }
@@ -248,17 +347,18 @@ async function verifyAndRespond(opts: { req: NextRequest; sessionId: string; pro
       ok: true,
       expiresAt,
       customerEmail,
-      email: emailResult
-        ? emailResult.ok
-          ? "sent"
-          : emailResult.skipped
-          ? `skipped:${emailResult.reason}`
-          : `failed:${emailResult.reason}`
-        : alreadySent
-        ? "already_sent"
-        : customerEmail
-        ? "not_sent"
-        : "no_email",
+      email:
+        emailResult
+          ? emailResult.ok
+            ? "sent"
+            : emailResult.skipped
+            ? `skipped:${emailResult.reason}`
+            : `failed:${emailResult.reason}`
+          : alreadySent
+          ? "already_sent"
+          : customerEmail
+          ? "not_sent"
+          : "no_email",
     },
     { status: 200 }
   );
@@ -296,7 +396,11 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     console.error("Access verify (GET) failed:", err);
     return NextResponse.json(
-      { ok: false, error: "Access verify failed", message: err instanceof Error ? err.message : String(err) },
+      {
+        ok: false,
+        error: "Access verify failed",
+        message: err instanceof Error ? err.message : String(err),
+      },
       { status: 500 }
     );
   }
@@ -317,7 +421,11 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("Access verify (POST) failed:", err);
     return NextResponse.json(
-      { ok: false, error: "Access verify failed", message: err instanceof Error ? err.message : String(err) },
+      {
+        ok: false,
+        error: "Access verify failed",
+        message: err instanceof Error ? err.message : String(err),
+      },
       { status: 500 }
     );
   }
