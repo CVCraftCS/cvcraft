@@ -1,5 +1,5 @@
 // app/api/export/pdf/route.ts
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import chromium from "@sparticuz/chromium";
 import puppeteerCore from "puppeteer-core";
 import Stripe from "stripe";
@@ -16,7 +16,10 @@ type Body = {
 };
 
 function safeFilename(name?: string) {
-  return (name || "CVCraft-CV.pdf").replace(/["\r\n]/g, "").trim() || "CVCraft-CV.pdf";
+  return (
+    (name || "CVCraft-CV.pdf").replace(/["\r\n]/g, "").trim() ||
+    "CVCraft-CV.pdf"
+  );
 }
 
 function isVercelLike() {
@@ -34,8 +37,8 @@ function isLinux() {
 }
 
 /**
- * Try common Chrome install locations for local dev.
- * This avoids “set env var” pain on Windows/Mac, and prevents ENOENT.
+ * Try common Chrome/Edge install locations for local dev.
+ * Avoids “set env var” pain and prevents ENOENT.
  */
 async function tryFindLocalChromeExecutable(): Promise<string | null> {
   try {
@@ -44,7 +47,8 @@ async function tryFindLocalChromeExecutable(): Promise<string | null> {
 
     if (isWindows()) {
       const programFiles = process.env.PROGRAMFILES || "C:\\Program Files";
-      const programFilesx86 = process.env["PROGRAMFILES(X86)"] || "C:\\Program Files (x86)";
+      const programFilesx86 =
+        process.env["PROGRAMFILES(X86)"] || "C:\\Program Files (x86)";
       const localAppData = process.env.LOCALAPPDATA;
 
       candidates.push(
@@ -99,7 +103,9 @@ async function launchBrowser() {
   // ------------------------------
   if (isVercelLike()) {
     const executablePath = await chromium.executablePath();
-    if (!executablePath) throw new Error("Chromium executablePath() returned empty on Vercel.");
+    if (!executablePath) {
+      throw new Error("Chromium executablePath() returned empty on Vercel.");
+    }
 
     return puppeteerCore.launch({
       args: [
@@ -116,62 +122,46 @@ async function launchBrowser() {
   }
 
   // ------------------------------
-  // LOCAL DEV:
-  // 1) Prefer full puppeteer if installed (brings its own Chromium)
-  // 2) Else, try installed Chrome/Edge automatically
-  // 3) Else, fall back to explicit env path
+  // LOCAL DEV: puppeteer-core + local Chrome/Edge
+  // (No reference to 'puppeteer' package — avoids Vercel build failures)
   // ------------------------------
-  try {
-    const puppeteer = await import("puppeteer");
-    return puppeteer.default.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
-  } catch (e) {
-    const found = await tryFindLocalChromeExecutable();
-    if (found) {
-      return puppeteerCore.launch({
-        headless: true,
-        executablePath: found,
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      });
-    }
-
-    const explicitPath =
-      process.env.PUPPETEER_EXECUTABLE_PATH ||
-      process.env.CHROME_PATH ||
-      process.env.GOOGLE_CHROME_BIN;
-
-    if (!explicitPath) {
-      throw new Error(
-        [
-          "Local PDF export needs a Chromium/Chrome executable.",
-          "Fix options:",
-          "1) npm i puppeteer   (recommended) — then restart dev server",
-          "or",
-          '2) set PUPPETEER_EXECUTABLE_PATH="C:\\\\Program Files\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe"',
-          "",
-          "Also checked common install paths for Chrome/Edge but none were found.",
-          "Original error: " + (e instanceof Error ? e.message : String(e)),
-        ].join("\n")
-      );
-    }
-
+  const found = await tryFindLocalChromeExecutable();
+  if (found) {
     return puppeteerCore.launch({
       headless: true,
-      executablePath: explicitPath,
+      executablePath: found,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
   }
+
+  const explicitPath =
+    process.env.PUPPETEER_EXECUTABLE_PATH ||
+    process.env.CHROME_PATH ||
+    process.env.GOOGLE_CHROME_BIN;
+
+  if (!explicitPath) {
+    throw new Error(
+      [
+        "Local PDF export needs a Chromium/Chrome executable.",
+        "Fix options:",
+        '1) Set PUPPETEER_EXECUTABLE_PATH="C:\\\\Program Files\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe"',
+        "2) Or install Chrome/Edge (we tried common install paths but none were found).",
+      ].join("\n")
+    );
+  }
+
+  return puppeteerCore.launch({
+    headless: true,
+    executablePath: explicitPath,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
 }
 
 // Stripe Checkout Session has no "refunded" field; refund truth is on Charge / Refund objects.
-// We will use stripe.charges.list({ payment_intent }) and read Charge.amount_refunded (typed-safe).
 async function isSessionRefundedOrRevoked(sessionId: string): Promise<boolean> {
   const secretKey = (process.env.STRIPE_SECRET_KEY || "").trim();
   if (!secretKey) {
     // If Stripe isn't configured, do NOT falsely deny paid users.
-    // (But refunds/revokes can't be checked without Stripe.)
     return false;
   }
 
@@ -189,11 +179,9 @@ async function isSessionRefundedOrRevoked(sessionId: string): Promise<boolean> {
   const revoked = session.metadata?.cvcraft_revoked === "1";
   if (revoked) return true;
 
-  // PaymentIntent can be expanded object or string
   const pi = session.payment_intent;
 
   let paymentIntentId: string | null = null;
-
   if (pi && typeof pi === "object" && "id" in pi) {
     paymentIntentId = (pi as Stripe.PaymentIntent).id;
   } else if (typeof pi === "string" && pi) {
@@ -202,24 +190,16 @@ async function isSessionRefundedOrRevoked(sessionId: string): Promise<boolean> {
 
   if (!paymentIntentId) return false;
 
-  // Retrieve PaymentIntent (for base amount). Do NOT expand charges — Stripe TS types may not include it.
   const piResp = await stripe.paymentIntents.retrieve(paymentIntentId);
   const piObj = ("data" in (piResp as any) ? (piResp as any).data : piResp) as Stripe.PaymentIntent;
 
-  // Typed-safe: list charges by payment_intent
   const charges = await stripe.charges.list({ payment_intent: paymentIntentId, limit: 1 });
   const charge = charges.data?.[0] ?? null;
 
-  // amount_refunded exists on Charge
   const amountRefunded = charge?.amount_refunded ?? 0;
-
-  // Base amount: prefer amount_received; fallback to amount; then charge.amount
   const amountBase = (piObj.amount_received ?? piObj.amount ?? charge?.amount ?? 0) as number;
 
-  // Fully refunded if refunded >= base (and base > 0)
-  if (amountBase > 0 && amountRefunded >= amountBase) {
-    return true;
-  }
+  if (amountBase > 0 && amountRefunded >= amountBase) return true;
 
   return false;
 }
@@ -231,7 +211,7 @@ export async function POST(req: NextRequest) {
     const access = readAccessCookieValue(cookie);
 
     if (!access || access.paid !== true) {
-      return Response.json(
+      return NextResponse.json(
         { ok: false, error: "Access required. Please purchase a 30-day pass to export PDFs." },
         { status: 403 }
       );
@@ -239,17 +219,17 @@ export async function POST(req: NextRequest) {
 
     // Extra safety (readAccessCookieValue already checks expiry)
     if (typeof access.expiresAt === "number" && Date.now() > access.expiresAt) {
-      return Response.json(
+      return NextResponse.json(
         { ok: false, error: "Access expired. Please purchase a new 30-day pass." },
         { status: 403 }
       );
     }
 
-    // ✅ Refund/revoke-safe: if we have a sessionId, validate server-truth
+    // ✅ Refund/revoke-safe: validate server-truth if we have a sessionId
     if (access.sessionId) {
       const blocked = await isSessionRefundedOrRevoked(access.sessionId);
       if (blocked) {
-        return Response.json(
+        return NextResponse.json(
           { ok: false, error: "Access is no longer active (refunded or revoked)." },
           { status: 403 }
         );
@@ -260,7 +240,7 @@ export async function POST(req: NextRequest) {
     const html = body.html?.trim();
 
     if (!html) {
-      return Response.json({ ok: false, error: "Missing html in request body" }, { status: 400 });
+      return NextResponse.json({ ok: false, error: "Missing html in request body" }, { status: 400 });
     }
 
     const browser = await launchBrowser();
@@ -295,7 +275,7 @@ export async function POST(req: NextRequest) {
     }
   } catch (err) {
     console.error("PDF export failed:", err);
-    return Response.json(
+    return NextResponse.json(
       {
         ok: false,
         error: "PDF export failed",

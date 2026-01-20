@@ -2,12 +2,11 @@
 const nextConfig = {
   reactStrictMode: true,
 
-  // 🔑 CRITICAL: allow Puppeteer + Chromium to load at runtime on Vercel
-  serverExternalPackages: ["puppeteer-core", "@sparticuz/chromium"],
-
   experimental: {
+    // ✅ Valid in Next 14 (keeps these deps from being bundled weirdly in server runtime)
     serverComponentsExternalPackages: ["puppeteer-core", "@sparticuz/chromium"],
   },
 };
 
 export default nextConfig;
+
