@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import PaywallModal from "../components/PaywallModal";
 
+// ✅ Single source of truth for template keys + labels
+import { normalizeTemplateKey, templateLabel as templateLabelFromLib } from "../lib/templates";
+
 const STORAGE_KEY = "cvcraft:lastResult";
 
 // Teacher Mode flag (set by cv.js)
@@ -22,23 +25,6 @@ const DEFAULT_SECTION_CONFIG = {
   qualifications: true,
   skills: true,
   references: false,
-};
-
-/**
- * ✅ Templates (10 total) — ALL PAID
- * Keys should match cv.js + any saved payloads.
- */
-const TEMPLATE_META = {
-  classic: { premium: true, name: "Classic" },
-  modern: { premium: true, name: "Modern" },
-  compact: { premium: true, name: "Compact" },
-  executive: { premium: true, name: "Executive" },
-  minimal: { premium: true, name: "Minimal" },
-  two_column: { premium: true, name: "Two-Column" },
-  technical: { premium: true, name: "Technical" },
-  graduate: { premium: true, name: "Graduate" },
-  academic: { premium: true, name: "Academic" },
-  bold: { premium: true, name: "Bold" },
 };
 
 function safeParse(jsonString) {
@@ -80,8 +66,12 @@ function escapeHtml(s) {
     .replaceAll("'", "&#039;");
 }
 
+/**
+ * ✅ Template label from src/lib/templates.ts
+ * (keeps everything consistent with cv.js and any saved payloads)
+ */
 function templateLabel(t) {
-  return TEMPLATE_META?.[t]?.name || "Classic";
+  return templateLabelFromLib(t);
 }
 
 function getTemplateUiClasses(t) {
@@ -697,7 +687,8 @@ export default function PreviewPage() {
       }).format(generatedAt)
     : "";
 
-  const template = input.template || "classic";
+  // ✅ Normalize template key so new templates always render cleanly
+  const template = normalizeTemplateKey(input.template || "classic");
   const ui = getTemplateUiClasses(template);
 
   const cfg =

@@ -109,7 +109,8 @@ export function getTemplateUiClasses(t: TemplateKey | string): TemplateUiClasses
         card:
           "rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200 font-sans border-l-8 border-slate-900",
         name: "text-3xl font-extrabold tracking-tight text-slate-900",
-        sectionTitle: "text-base font-extrabold uppercase tracking-wide text-slate-900",
+        sectionTitle:
+          "text-base font-extrabold uppercase tracking-wide text-slate-900",
         badge: "bg-slate-900 text-white ring-1 ring-slate-900/10",
         skillPill:
           "rounded-full bg-slate-900 px-3 py-1 text-sm text-white ring-1 ring-slate-900/10",
@@ -146,7 +147,8 @@ export function getTemplateUiClasses(t: TemplateKey | string): TemplateUiClasses
         card:
           "rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200 font-sans border-t-4 border-slate-200",
         name: "text-3xl font-extrabold tracking-tight text-slate-900",
-        sectionTitle: "text-sm font-extrabold uppercase tracking-widest text-slate-800",
+        sectionTitle:
+          "text-sm font-extrabold uppercase tracking-widest text-slate-800",
         body: "text-slate-700 leading-relaxed",
         meta: "text-sm text-slate-600",
         sectionBox: "bg-white ring-0",
@@ -199,7 +201,8 @@ export function getTemplateUiClasses(t: TemplateKey | string): TemplateUiClasses
         card:
           "rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200 font-sans border-t-8 border-black",
         name: "text-4xl font-black tracking-tight text-slate-900",
-        sectionTitle: "text-base font-black uppercase tracking-wide text-slate-900",
+        sectionTitle:
+          "text-base font-black uppercase tracking-wide text-slate-900",
         badge: "bg-black text-white ring-1 ring-black/10",
         skillPill:
           "rounded-full bg-black px-3 py-1 text-sm text-white ring-1 ring-black/10",

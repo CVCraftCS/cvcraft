@@ -3,6 +3,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import PaywallModal from "../components/PaywallModal";
 
+// ✅ Single source of truth for templates
+import {
+  TEMPLATE_META as TEMPLATE_META_LIB,
+  TEMPLATE_ORDER,
+} from "../lib/templates";
+
 const STORAGE_KEY = "cvcraft:lastResult";
 
 // Pricing + access (single 30-day pass model)
@@ -34,12 +40,21 @@ const TEACHER_MODE_DEFAULTS = {
   enableReferences: false,
 };
 
-// ---- Template meta (must match preview.js) ----
-const TEMPLATE_META = {
-  classic: { name: "Classic", premium: false },
-  modern: { name: "Modern", premium: true },
-  compact: { name: "Compact", premium: true },
-};
+// ---- Template meta (shared with preview via src/lib/templates.ts) ----
+// Product decision: "no free CV templates" — keep premium true for all.
+// NOTE: Users can still preview (paywall offers "preview anyway"); export is gated elsewhere.
+const TEMPLATE_META = (() => {
+  const out = {};
+  for (const key of TEMPLATE_ORDER) {
+    const meta = TEMPLATE_META_LIB?.[key] || {};
+    out[key] = {
+      ...meta,
+      name: meta?.name || meta?.title || String(key),
+      premium: true,
+    };
+  }
+  return out;
+})();
 
 // ---- helpers ----
 function safeParse(jsonString) {
@@ -183,7 +198,9 @@ function sectionLabel(key, region) {
   if (key === "summary") return "Professional Summary";
   if (key === "employment") return "Employment history";
   if (key === "qualifications")
-    return region === "US" ? "Education & Certifications" : "Qualifications & Certifications";
+    return region === "US"
+      ? "Education & Certifications"
+      : "Qualifications & Certifications";
   if (key === "skills") return "Skills";
   if (key === "references") return "References";
   return key;
@@ -214,8 +231,15 @@ function getPresetConfig(presetName, region) {
           employment: false,
           references: false,
         },
-        sectionOrder: ["summary", "skills", "qualifications", "employment", "references"],
-        notice: "Student Mode (US Résumé) applied — short, skills + education focused.",
+        sectionOrder: [
+          "summary",
+          "skills",
+          "qualifications",
+          "employment",
+          "references",
+        ],
+        notice:
+          "Student Mode (US Résumé) applied — short, skills + education focused.",
       };
     }
     return {
@@ -228,7 +252,13 @@ function getPresetConfig(presetName, region) {
         employment: false,
         references: def.referencesEnabled,
       },
-      sectionOrder: ["summary", "skills", "qualifications", "references", "employment"],
+      sectionOrder: [
+        "summary",
+        "skills",
+        "qualifications",
+        "references",
+        "employment",
+      ],
       notice: "Student Mode applied — ideal for school leavers and first jobs.",
     };
   }
@@ -245,7 +275,13 @@ function getPresetConfig(presetName, region) {
           employment: true,
           references: false,
         },
-        sectionOrder: ["summary", "skills", "qualifications", "employment", "references"],
+        sectionOrder: [
+          "summary",
+          "skills",
+          "qualifications",
+          "employment",
+          "references",
+        ],
         notice: "Apprenticeship Mode (US) applied — skills + education forward.",
       };
     }
@@ -259,7 +295,13 @@ function getPresetConfig(presetName, region) {
         employment: true,
         references: def.referencesEnabled,
       },
-      sectionOrder: ["summary", "skills", "qualifications", "employment", "references"],
+      sectionOrder: [
+        "summary",
+        "skills",
+        "qualifications",
+        "employment",
+        "references",
+      ],
       notice: "Apprenticeship Mode applied — skills + qualifications forward.",
     };
   }
@@ -276,8 +318,15 @@ function getPresetConfig(presetName, region) {
           qualifications: true,
           references: false,
         },
-        sectionOrder: ["summary", "employment", "skills", "qualifications", "references"],
-        notice: "Jobseeker Mode (US Résumé) applied — experience-forward, references hidden.",
+        sectionOrder: [
+          "summary",
+          "employment",
+          "skills",
+          "qualifications",
+          "references",
+        ],
+        notice:
+          "Jobseeker Mode (US Résumé) applied — experience-forward, references hidden.",
       };
     }
     return {
@@ -290,12 +339,165 @@ function getPresetConfig(presetName, region) {
         qualifications: true,
         references: def.referencesEnabled,
       },
-      sectionOrder: ["summary", "employment", "skills", "qualifications", "references"],
+      sectionOrder: [
+        "summary",
+        "employment",
+        "skills",
+        "qualifications",
+        "references",
+      ],
       notice: "Jobseeker Mode applied — best for general applications.",
     };
   }
 
   return null;
+}
+
+function templateThumbSrc(templateId) {
+  // ✅ Your generator writes: public/templates/<id>.png
+  // Add a cache-buster so refreshed thumbs show immediately
+  return `/templates/${templateId}.png?v=${Date.now()}`;
+}
+
+function TemplateCard({
+  id,
+  meta,
+  selected,
+  onSelect,
+  disabled,
+  teacherMode,
+  locked,
+  priceLabel,
+}) {
+  const title = meta?.title || meta?.name || id;
+  const desc =
+    meta?.tagline ||
+    meta?.description ||
+    "Click to select. You can preview and edit freely.";
+
+  return (
+    <button
+      type="button"
+      onClick={() => !disabled && onSelect(id)}
+      disabled={disabled}
+      className={[
+        "group relative w-full text-left rounded-2xl overflow-hidden border",
+        "bg-white/5 hover:bg-white/10 transition",
+        selected ? "border-white/60" : "border-white/10 hover:border-white/20",
+        disabled ? "opacity-60 cursor-not-allowed" : "cursor-pointer",
+      ].join(" ")}
+      aria-pressed={selected ? "true" : "false"}
+      title={
+        locked && !teacherMode ? `Premium template — unlock for ${priceLabel}` : undefined
+      }
+    >
+      {/* Thumbnail */}
+      <div className="relative aspect-[16/10] w-full overflow-hidden bg-black/20">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={templateThumbSrc(id)}
+          alt={`${title} template preview`}
+          loading="lazy"
+          className={[
+            "h-full w-full object-cover",
+            "transition-transform duration-200",
+            disabled ? "" : "group-hover:scale-[1.02]",
+          ].join(" ")}
+          onError={(e) => {
+            // Fallback if a thumb is missing
+            e.currentTarget.style.display = "none";
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/0" />
+
+        <div className="absolute top-3 left-3 flex items-center gap-2">
+          {selected ? (
+            <div className="rounded-full bg-white/90 text-black text-xs font-semibold px-3 py-1">
+              Selected
+            </div>
+          ) : null}
+
+          {locked && !teacherMode ? (
+            <div className="rounded-full bg-white/10 border border-white/20 text-white text-xs font-semibold px-3 py-1">
+              Premium preview
+            </div>
+          ) : null}
+        </div>
+
+        {teacherMode ? (
+          <div className="absolute top-3 right-3 rounded-full bg-white/10 border border-white/20 text-white text-xs font-semibold px-3 py-1">
+            Teacher Mode
+          </div>
+        ) : null}
+      </div>
+
+      {/* Text */}
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="text-white font-semibold leading-tight">{title}</h3>
+            <p className="text-white/70 text-sm mt-1 line-clamp-2">{desc}</p>
+
+            {locked && !teacherMode ? (
+              <div className="mt-2 text-xs text-white/60">
+                Export locked — unlock for {priceLabel}
+              </div>
+            ) : null}
+          </div>
+
+          {/* Optional: full-page preview */}
+          <a
+            href={`/thumbs/${encodeURIComponent(id)}`}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className={[
+              "shrink-0 rounded-xl px-3 py-2 text-xs font-semibold",
+              "bg-white/10 hover:bg-white/15 border border-white/15",
+              disabled ? "pointer-events-none opacity-60" : "",
+            ].join(" ")}
+            title="Open full preview in new tab"
+          >
+            Preview
+          </a>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function TemplateGrid({
+  templateOrder,
+  templateMeta,
+  selectedTemplate,
+  onSelectTemplate,
+  teacherMode,
+  teacherLocked,
+  paidAccess,
+  priceLabel,
+}) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+      {templateOrder.map((id) => {
+        const meta = templateMeta?.[id];
+        const locked = !teacherMode && !!meta?.premium && !paidAccess;
+
+        return (
+          <TemplateCard
+            key={id}
+            id={id}
+            meta={meta}
+            selected={selectedTemplate === id}
+            onSelect={onSelectTemplate}
+            disabled={!!teacherLocked}
+            teacherMode={teacherMode}
+            locked={locked}
+            priceLabel={priceLabel}
+          />
+        );
+      })}
+    </div>
+  );
 }
 
 export default function CVBuilderPage() {
@@ -371,14 +573,18 @@ export default function CVBuilderPage() {
   const [template, setTemplate] = useState("classic");
   const [sectionConfig, setSectionConfig] = useState(DEFAULT_SECTION_CONFIG);
   const [sectionOrder, setSectionOrder] = useState(DEFAULT_SECTION_ORDER);
-  const [referencesText, setReferencesText] = useState("References available on request.");
+  const [referencesText, setReferencesText] = useState(
+    "References available on request."
+  );
 
   // Safe modes
   const [studentSafeMode, setStudentSafeMode] = useState(false);
   const [teacherMode, setTeacherMode] = useState(false);
 
   // Teacher config + unlock
-  const [teacherConfig, setTeacherConfig] = useState({ ...TEACHER_MODE_DEFAULTS });
+  const [teacherConfig, setTeacherConfig] = useState({
+    ...TEACHER_MODE_DEFAULTS,
+  });
   const [teacherUnlocked, setTeacherUnlocked] = useState(false);
 
   // Preset feedback
@@ -437,7 +643,15 @@ export default function CVBuilderPage() {
         end: (j.end || "").trim(),
         bullets: parseBullets(j.bulletsText || ""),
       }))
-      .filter((j) => j.title || j.company || j.location || j.start || j.end || j.bullets.length);
+      .filter(
+        (j) =>
+          j.title ||
+          j.company ||
+          j.location ||
+          j.start ||
+          j.end ||
+          j.bullets.length
+      );
   }, [employmentHistory]);
 
   // Apply region defaults (references behaviour)
@@ -483,7 +697,7 @@ export default function CVBuilderPage() {
 
     const meta = TEMPLATE_META[nextTemplate] || { premium: false };
 
-    // Premium templates require the 30-day pass (paid access)
+    // Premium templates require the 30-day pass (paid access) — but preview is allowed via modal.
     if (meta.premium && !paidAccess) {
       setPendingTemplate(nextTemplate);
       openPaywall("template");
@@ -524,8 +738,8 @@ export default function CVBuilderPage() {
       setRegion(next.region);
       applyRegionDefaults(next.region);
 
-      // Template
-      setTemplate(next.template);
+      // Template (ensure it's valid)
+      setTemplate(TEMPLATE_META[next.template] ? next.template : "classic");
 
       // Sections baseline
       setSectionConfig((prev) => ({
@@ -589,7 +803,9 @@ export default function CVBuilderPage() {
 
   const unlockTeacherControlsWithPin = async () => {
     try {
-      const pin = window.prompt("Enter Teacher PIN to unlock teacher controls:");
+      const pin = window.prompt(
+        "Enter Teacher PIN to unlock teacher controls:"
+      );
       if (!pin) return;
       const ok = await verifyTeacherPin(pin);
       if (!ok) throw new Error("Incorrect PIN.");
@@ -618,7 +834,9 @@ export default function CVBuilderPage() {
 
   const handleDisableTeacherMode = async () => {
     try {
-      const pin = window.prompt("Enter Teacher PIN to disable Teacher Mode:");
+      const pin = window.prompt(
+        "Enter Teacher PIN to disable Teacher Mode:"
+      );
       if (!pin) return;
       await disableTeacherModeWithPin(pin);
     } catch (e) {
@@ -750,15 +968,20 @@ export default function CVBuilderPage() {
     setRegion(r);
     applyRegionDefaults(r);
 
-    setTemplate(input.template || "classic");
+    // Ensure stored template is valid against our template list
+    setTemplate(TEMPLATE_META[input.template] ? input.template : "classic");
 
     const incomingCfg =
-      input.sectionConfig && typeof input.sectionConfig === "object" ? input.sectionConfig : null;
+      input.sectionConfig && typeof input.sectionConfig === "object"
+        ? input.sectionConfig
+        : null;
     if (incomingCfg) {
       setSectionConfig({ ...DEFAULT_SECTION_CONFIG, ...incomingCfg });
     }
 
-    const incomingOrder = Array.isArray(input.sectionOrder) ? input.sectionOrder : null;
+    const incomingOrder = Array.isArray(input.sectionOrder)
+      ? input.sectionOrder
+      : null;
     if (incomingOrder && incomingOrder.length) {
       const known = DEFAULT_SECTION_ORDER;
       const cleaned = incomingOrder.filter((k) => known.includes(k));
@@ -777,7 +1000,9 @@ export default function CVBuilderPage() {
     setExperience(input.experience || "");
     setSkillsText(skillsToText(input.skills));
 
-    const incomingQ = Array.isArray(input.qualifications) ? input.qualifications : [];
+    const incomingQ = Array.isArray(input.qualifications)
+      ? input.qualifications
+      : [];
     if (incomingQ.length) {
       setQualifications(
         incomingQ.map((q, idx) => ({
@@ -790,7 +1015,9 @@ export default function CVBuilderPage() {
       );
     }
 
-    const incomingJobs = Array.isArray(input.employmentHistory) ? input.employmentHistory : [];
+    const incomingJobs = Array.isArray(input.employmentHistory)
+      ? input.employmentHistory
+      : [];
     if (incomingJobs.length) {
       setEmploymentHistory(
         incomingJobs.map((j, idx) => ({
@@ -800,7 +1027,9 @@ export default function CVBuilderPage() {
           location: j.location || "",
           start: j.start || "",
           end: j.end || "",
-          bulletsText: Array.isArray(j.bullets) ? j.bullets.join("\n") : j.bulletsText || "",
+          bulletsText: Array.isArray(j.bullets)
+            ? j.bullets.join("\n")
+            : j.bulletsText || "",
         }))
       );
     }
@@ -837,17 +1066,29 @@ export default function CVBuilderPage() {
     setExperience("");
     setSkillsText("");
 
-    setQualifications([{ id: "q-1", title: "", provider: "", year: "", grade: "" }]);
+    setQualifications([
+      { id: "q-1", title: "", provider: "", year: "", grade: "" },
+    ]);
 
     setEmploymentHistory([
-      { id: "job-1", title: "", company: "", location: "", start: "", end: "", bulletsText: "" },
+      {
+        id: "job-1",
+        title: "",
+        company: "",
+        location: "",
+        start: "",
+        end: "",
+        bulletsText: "",
+      },
     ]);
   };
 
   const clearSavedData = () => {
     if (typeof window === "undefined") return;
 
-    const ok = window.confirm("This will remove all saved information from this device. Continue?");
+    const ok = window.confirm(
+      "This will remove all saved information from this device. Continue?"
+    );
     if (!ok) return;
 
     localStorage.removeItem(STORAGE_KEY);
@@ -888,7 +1129,9 @@ export default function CVBuilderPage() {
     const experienceForAI = trimmedExperience || autoExperience;
 
     if (!experienceForAI) {
-      setErrorMsg("Please add either experience text OR at least one job in Employment History.");
+      setErrorMsg(
+        "Please add either experience text OR at least one job in Employment History."
+      );
       setIsLoading(false);
       return;
     }
@@ -899,7 +1142,8 @@ export default function CVBuilderPage() {
 
       sectionConfig,
       sectionOrder,
-      referencesText: (referencesText || "").trim() || regionDefaults(region).referencesText,
+      referencesText:
+        (referencesText || "").trim() || regionDefaults(region).referencesText,
 
       // force true if Teacher Mode (safety)
       studentSafeMode: studentSafeMode || teacherMode,
@@ -939,7 +1183,9 @@ export default function CVBuilderPage() {
 
       const resultText = data?.result;
       if (!resultText || typeof resultText !== "string") {
-        throw new Error("API returned no result text (expected { result: string }).");
+        throw new Error(
+          "API returned no result text (expected { result: string })."
+        );
       }
 
       const saved = {
@@ -994,14 +1240,14 @@ export default function CVBuilderPage() {
     });
   };
 
-  // Locked flags (keep logic, but we won't show padlock icons)
-  const modernLocked = !teacherMode && TEMPLATE_META.modern.premium && !paidAccess;
-  const compactLocked = !teacherMode && TEMPLATE_META.compact.premium && !paidAccess;
-
   // ✅ Hydration guard
   if (!mounted) {
-    return <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800" />;
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800" />
+    );
   }
+
+  const teacherLockedTemplate = teacherMode && isTeacherLocked("template");
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white px-6 py-12">
@@ -1086,12 +1332,14 @@ export default function CVBuilderPage() {
 
         <h1 className="text-4xl font-bold mb-2">Build your {labelDoc}</h1>
         <p className="text-slate-300 mb-6">
-          Add your details, build your history, and generate a recruiter-ready {labelDoc}.
+          Add your details, build your history, and generate a recruiter-ready{" "}
+          {labelDoc}.
         </p>
 
         {teacherMode ? (
           <div className="mb-4 rounded-2xl bg-emerald-950/40 border border-emerald-400/30 px-4 py-3 text-emerald-100">
-            🔒 Teacher Mode is active. Student Safe Mode is locked ON and no data is saved to this device.
+            🔒 Teacher Mode is active. Student Safe Mode is locked ON and no data
+            is saved to this device.
           </div>
         ) : null}
 
@@ -1100,12 +1348,15 @@ export default function CVBuilderPage() {
           <div className="mb-8 rounded-2xl bg-emerald-950/30 border border-emerald-400/20 p-6 space-y-4">
             <h2 className="text-lg font-semibold">Teacher controls</h2>
             <p className="text-sm text-emerald-100/90">
-              These settings are teacher-only (PIN unlocked). They do not disable safety features.
+              These settings are teacher-only (PIN unlocked). They do not
+              disable safety features.
             </p>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-semibold mb-2">Classroom region</label>
+                <label className="block text-sm font-semibold mb-2">
+                  Classroom region
+                </label>
                 <select
                   value={teacherConfig.region}
                   onChange={(e) => teacherSetRegion(e.target.value)}
@@ -1133,7 +1384,9 @@ export default function CVBuilderPage() {
                     : "bg-white/5 text-white ring-white/10 hover:bg-white/10"
                 }`}
               >
-                {teacherConfig.enableEmployment ? "✓ Employment enabled" : "Employment disabled"}
+                {teacherConfig.enableEmployment
+                  ? "✓ Employment enabled"
+                  : "Employment disabled"}
               </button>
 
               <button
@@ -1145,12 +1398,15 @@ export default function CVBuilderPage() {
                     : "bg-white/5 text-white ring-white/10 hover:bg-white/10"
                 }`}
               >
-                {teacherConfig.enableReferences ? "✓ References enabled" : "References disabled"}
+                {teacherConfig.enableReferences
+                  ? "✓ References enabled"
+                  : "References disabled"}
               </button>
             </div>
 
             <div className="text-xs text-emerald-100/80">
-              Safety note: Student Safe Mode remains locked ON and local storage remains disabled in Teacher Mode.
+              Safety note: Student Safe Mode remains locked ON and local storage
+              remains disabled in Teacher Mode.
             </div>
           </div>
         ) : null}
@@ -1161,12 +1417,15 @@ export default function CVBuilderPage() {
           <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-3">
             <h2 className="text-lg font-semibold">Region</h2>
             <p className="text-sm text-slate-300">
-              Adjusts wording and default conventions (CV vs Résumé, references norms, headings).
+              Adjusts wording and default conventions (CV vs Résumé, references
+              norms, headings).
             </p>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-semibold mb-2">Select region</label>
+                <label className="block text-sm font-semibold mb-2">
+                  Select region
+                </label>
                 <select
                   value={region}
                   onChange={(e) => {
@@ -1177,7 +1436,9 @@ export default function CVBuilderPage() {
                   }}
                   disabled={teacherMode && isTeacherLocked("region")}
                   className={`w-full rounded-xl px-4 py-3 text-black ${
-                    teacherMode && isTeacherLocked("region") ? "opacity-70 cursor-not-allowed" : ""
+                    teacherMode && isTeacherLocked("region")
+                      ? "opacity-70 cursor-not-allowed"
+                      : ""
                   }`}
                 >
                   <option value="UK">United Kingdom (UK)</option>
@@ -1198,9 +1459,12 @@ export default function CVBuilderPage() {
 
           {/* Presets */}
           <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-4">
-            <h2 className="text-lg font-semibold">Quick start presets (region-aware)</h2>
+            <h2 className="text-lg font-semibold">
+              Quick start presets (region-aware)
+            </h2>
             <p className="text-sm text-slate-300">
-              One-click setup for common use cases. These adapt to {region} conventions.
+              One-click setup for common use cases. These adapt to {region}{" "}
+              conventions.
             </p>
 
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -1209,7 +1473,9 @@ export default function CVBuilderPage() {
                 onClick={() => applyPreset("student")}
                 disabled={teacherMode && isTeacherLocked("presets")}
                 className={`rounded-2xl bg-white text-slate-900 p-4 text-left font-semibold hover:bg-slate-100 transition ${
-                  teacherMode && isTeacherLocked("presets") ? "opacity-60 cursor-not-allowed" : ""
+                  teacherMode && isTeacherLocked("presets")
+                    ? "opacity-60 cursor-not-allowed"
+                    : ""
                 }`}
               >
                 Student Mode
@@ -1223,7 +1489,9 @@ export default function CVBuilderPage() {
                 onClick={() => applyPreset("apprenticeship")}
                 disabled={teacherMode && isTeacherLocked("presets")}
                 className={`rounded-2xl bg-white text-slate-900 p-4 text-left font-semibold hover:bg-slate-100 transition ${
-                  teacherMode && isTeacherLocked("presets") ? "opacity-60 cursor-not-allowed" : ""
+                  teacherMode && isTeacherLocked("presets")
+                    ? "opacity-60 cursor-not-allowed"
+                    : ""
                 }`}
               >
                 Apprenticeship Mode
@@ -1237,7 +1505,9 @@ export default function CVBuilderPage() {
                 onClick={() => applyPreset("jobseeker")}
                 disabled={teacherMode && isTeacherLocked("presets")}
                 className={`rounded-2xl bg-white text-slate-900 p-4 text-left font-semibold hover:bg-slate-100 transition ${
-                  teacherMode && isTeacherLocked("presets") ? "opacity-60 cursor-not-allowed" : ""
+                  teacherMode && isTeacherLocked("presets")
+                    ? "opacity-60 cursor-not-allowed"
+                    : ""
                 }`}
               >
                 Jobseeker Mode
@@ -1261,8 +1531,9 @@ export default function CVBuilderPage() {
             </h2>
 
             <p className="text-sm text-amber-100">
-              Prevents personal information from being stored on shared computers. When enabled, data is
-              saved temporarily for preview, then cleared automatically after PDF download/print.
+              Prevents personal information from being stored on shared
+              computers. When enabled, data is saved temporarily for preview,
+              then cleared automatically after PDF download/print.
             </p>
 
             <button
@@ -1276,74 +1547,37 @@ export default function CVBuilderPage() {
                 studentSafeMode || teacherMode
                   ? "bg-amber-400 text-amber-950 ring-amber-400"
                   : "bg-white/5 text-white ring-white/10 hover:bg-white/10"
-              } ${teacherMode && isTeacherLocked("studentSafeMode") ? "opacity-60 cursor-not-allowed" : ""}`}
+              } ${
+                teacherMode && isTeacherLocked("studentSafeMode")
+                  ? "opacity-60 cursor-not-allowed"
+                  : ""
+              }`}
               aria-pressed={studentSafeMode || teacherMode ? "true" : "false"}
               title={teacherMode ? "Locked in Teacher Mode" : undefined}
             >
-              {studentSafeMode || teacherMode ? "✓ Enabled" : "Enable Student Safe Mode"}
+              {studentSafeMode || teacherMode
+                ? "✓ Enabled"
+                : "Enable Student Safe Mode"}
             </button>
           </div>
 
-          {/* Template selector */}
+          {/* Template selector (PNG thumbs + preview style) */}
           <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-4">
             <h2 className="text-lg font-semibold">{labelDoc} template</h2>
             <p className="text-sm text-slate-300">
               Choose a style. This affects both the preview and the PDF.
             </p>
 
-            <div className="grid gap-3 sm:grid-cols-3">
-              <button
-                type="button"
-                onClick={() => requestTemplateChange("classic")}
-                disabled={teacherMode && isTeacherLocked("template")}
-                className={`rounded-2xl p-4 text-left ring-1 transition ${
-                  template === "classic"
-                    ? "bg-white text-slate-900 ring-white"
-                    : "bg-white/5 text-white ring-white/10 hover:bg-white/10"
-                } ${teacherMode && isTeacherLocked("template") ? "opacity-60 cursor-not-allowed" : ""}`}
-              >
-                <div className="font-semibold">Classic</div>
-                <div className={`${template === "classic" ? "text-slate-700" : "text-slate-300"} text-sm mt-1`}>
-                  Traditional, safe, recruiter-friendly.
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => requestTemplateChange("modern")}
-                disabled={teacherMode && isTeacherLocked("template")}
-                className={`rounded-2xl p-4 text-left ring-1 transition ${
-                  template === "modern"
-                    ? "bg-white text-slate-900 ring-white"
-                    : "bg-white/5 text-white ring-white/10 hover:bg-white/10"
-                } ${teacherMode && isTeacherLocked("template") ? "opacity-60 cursor-not-allowed" : ""}`}
-                aria-disabled={teacherMode && isTeacherLocked("template")}
-                title={modernLocked ? `Premium template — unlock for ${ACCESS_PRICE_LABEL}` : undefined}
-              >
-                <div className="font-semibold">Modern</div>
-                <div className={`${template === "modern" ? "text-slate-700" : "text-slate-300"} text-sm mt-1`}>
-                  Cleaner typography, stronger hierarchy.
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => requestTemplateChange("compact")}
-                disabled={teacherMode && isTeacherLocked("template")}
-                className={`rounded-2xl p-4 text-left ring-1 transition ${
-                  template === "compact"
-                    ? "bg-white text-slate-900 ring-white"
-                    : "bg-white/5 text-white ring-white/10 hover:bg-white/10"
-                } ${teacherMode && isTeacherLocked("template") ? "opacity-60 cursor-not-allowed" : ""}`}
-                aria-disabled={teacherMode && isTeacherLocked("template")}
-                title={compactLocked ? `Premium template — unlock for ${ACCESS_PRICE_LABEL}` : undefined}
-              >
-                <div className="font-semibold">Compact</div>
-                <div className={`${template === "compact" ? "text-slate-700" : "text-slate-300"} text-sm mt-1`}>
-                  Tighter spacing for 1-page outputs.
-                </div>
-              </button>
-            </div>
+            <TemplateGrid
+              templateOrder={TEMPLATE_ORDER}
+              templateMeta={TEMPLATE_META}
+              selectedTemplate={template}
+              onSelectTemplate={requestTemplateChange}
+              teacherMode={teacherMode}
+              teacherLocked={teacherLockedTemplate}
+              paidAccess={paidAccess}
+              priceLabel={ACCESS_PRICE_LABEL}
+            />
           </div>
 
           {/* Section builder */}
@@ -1368,7 +1602,11 @@ export default function CVBuilderPage() {
                         sectionConfig[key]
                           ? "bg-white text-slate-900 ring-white"
                           : "bg-white/5 text-white ring-white/10 hover:bg-white/10"
-                      } ${teacherMode && isTeacherLocked("sectionToggles") ? "opacity-60 cursor-not-allowed" : ""}`}
+                      } ${
+                        teacherMode && isTeacherLocked("sectionToggles")
+                          ? "opacity-60 cursor-not-allowed"
+                          : ""
+                      }`}
                       aria-pressed={sectionConfig[key] ? "true" : "false"}
                       title={teacherMode ? "Locked in Teacher Mode" : undefined}
                     >
@@ -1376,7 +1614,9 @@ export default function CVBuilderPage() {
                     </button>
 
                     <div>
-                      <div className="font-semibold">{sectionLabel(key, region)}</div>
+                      <div className="font-semibold">
+                        {sectionLabel(key, region)}
+                      </div>
                       {key === "references" ? (
                         <div className="text-xs text-slate-300">
                           Region note: US résumés usually hide references.
@@ -1391,7 +1631,9 @@ export default function CVBuilderPage() {
                       onClick={() => moveSection(key, "up")}
                       disabled={teacherMode && isTeacherLocked("ordering")}
                       className={`rounded-xl bg-white/5 px-3 py-2 text-sm font-semibold ring-1 ring-white/10 hover:bg-white/10 ${
-                        teacherMode && isTeacherLocked("ordering") ? "opacity-60 cursor-not-allowed" : ""
+                        teacherMode && isTeacherLocked("ordering")
+                          ? "opacity-60 cursor-not-allowed"
+                          : ""
                       }`}
                       title={teacherMode ? "Locked in Teacher Mode" : "Move up"}
                     >
@@ -1402,9 +1644,13 @@ export default function CVBuilderPage() {
                       onClick={() => moveSection(key, "down")}
                       disabled={teacherMode && isTeacherLocked("ordering")}
                       className={`rounded-xl bg-white/5 px-3 py-2 text-sm font-semibold ring-1 ring-white/10 hover:bg-white/10 ${
-                        teacherMode && isTeacherLocked("ordering") ? "opacity-60 cursor-not-allowed" : ""
+                        teacherMode && isTeacherLocked("ordering")
+                          ? "opacity-60 cursor-not-allowed"
+                          : ""
                       }`}
-                      title={teacherMode ? "Locked in Teacher Mode" : "Move down"}
+                      title={
+                        teacherMode ? "Locked in Teacher Mode" : "Move down"
+                      }
                     >
                       ↓
                     </button>
@@ -1412,7 +1658,9 @@ export default function CVBuilderPage() {
 
                   {key === "references" && sectionConfig.references ? (
                     <div className="sm:col-span-2 w-full">
-                      <label className="block text-sm font-semibold mb-2">References text</label>
+                      <label className="block text-sm font-semibold mb-2">
+                        References text
+                      </label>
                       <input
                         value={referencesText}
                         onChange={(e) => setReferencesText(e.target.value)}
@@ -1430,13 +1678,15 @@ export default function CVBuilderPage() {
           <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-3">
             <h2 className="text-lg font-semibold">Personal details</h2>
             <p className="text-sm text-slate-300">
-              Saved locally in your browser (not uploaded). If you are using this service on a shared computer,
-              enable “Student Safe Mode”.
+              Saved locally in your browser (not uploaded). If you are using
+              this service on a shared computer, enable “Student Safe Mode”.
             </p>
 
             <div className="space-y-5 pt-2">
               <div>
-                <label className="block text-sm font-semibold mb-2">Full name</label>
+                <label className="block text-sm font-semibold mb-2">
+                  Full name
+                </label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -1448,7 +1698,9 @@ export default function CVBuilderPage() {
 
               <div className="grid gap-5 md:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-semibold mb-2">Email</label>
+                  <label className="block text-sm font-semibold mb-2">
+                    Email
+                  </label>
                   <input
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -1459,7 +1711,9 @@ export default function CVBuilderPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold mb-2">Phone</label>
+                  <label className="block text-sm font-semibold mb-2">
+                    Phone
+                  </label>
                   <input
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
@@ -1470,7 +1724,9 @@ export default function CVBuilderPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold mb-2">Location</label>
+                <label className="block text-sm font-semibold mb-2">
+                  Location
+                </label>
                 <input
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
@@ -1485,9 +1741,12 @@ export default function CVBuilderPage() {
           <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold">{sectionLabel("qualifications", region)}</h2>
+                <h2 className="text-lg font-semibold">
+                  {sectionLabel("qualifications", region)}
+                </h2>
                 <p className="text-sm text-slate-300">
-                  Add any qualifications, courses, licences, or certificates (optional).
+                  Add any qualifications, courses, licences, or certificates
+                  (optional).
                 </p>
               </div>
 
@@ -1513,9 +1772,14 @@ export default function CVBuilderPage() {
 
             <div className="space-y-4">
               {qualifications.map((q, idx) => (
-                <div key={q.id} className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4 space-y-4">
+                <div
+                  key={q.id}
+                  className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4 space-y-4"
+                >
                   <div className="flex items-center justify-between">
-                    <div className="text-sm font-semibold text-slate-200">Item {idx + 1}</div>
+                    <div className="text-sm font-semibold text-slate-200">
+                      Item {idx + 1}
+                    </div>
 
                     <button
                       type="button"
@@ -1524,7 +1788,15 @@ export default function CVBuilderPage() {
                           const next = (prev || []).filter((x) => x.id !== q.id);
                           return next.length
                             ? next
-                            : [{ id: "q-1", title: "", provider: "", year: "", grade: "" }];
+                            : [
+                                {
+                                  id: "q-1",
+                                  title: "",
+                                  provider: "",
+                                  year: "",
+                                  grade: "",
+                                },
+                              ];
                         });
                       }}
                       className="text-sm text-slate-300 hover:text-white underline underline-offset-4"
@@ -1536,13 +1808,17 @@ export default function CVBuilderPage() {
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="md:col-span-2">
                       <label className="block text-sm font-semibold mb-2">
-                        {region === "US" ? "Education / Certificate" : "Qualification / Certificate"}
+                        {region === "US"
+                          ? "Education / Certificate"
+                          : "Qualification / Certificate"}
                       </label>
                       <input
                         value={q.title}
                         onChange={(e) =>
                           setQualifications((prev) =>
-                            (prev || []).map((x) => (x.id === q.id ? { ...x, title: e.target.value } : x))
+                            (prev || []).map((x) =>
+                              x.id === q.id ? { ...x, title: e.target.value } : x
+                            )
                           )
                         }
                         placeholder={
@@ -1555,26 +1831,40 @@ export default function CVBuilderPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold mb-2">School / College / Provider</label>
+                      <label className="block text-sm font-semibold mb-2">
+                        School / College / Provider
+                      </label>
                       <input
                         value={q.provider}
                         onChange={(e) =>
                           setQualifications((prev) =>
-                            (prev || []).map((x) => (x.id === q.id ? { ...x, provider: e.target.value } : x))
+                            (prev || []).map((x) =>
+                              x.id === q.id
+                                ? { ...x, provider: e.target.value }
+                                : x
+                            )
                           )
                         }
-                        placeholder={region === "US" ? "e.g. Lincoln High School" : "e.g. College Name"}
+                        placeholder={
+                          region === "US"
+                            ? "e.g. Lincoln High School"
+                            : "e.g. College Name"
+                        }
                         className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold mb-2">Year</label>
+                      <label className="block text-sm font-semibold mb-2">
+                        Year
+                      </label>
                       <input
                         value={q.year}
                         onChange={(e) =>
                           setQualifications((prev) =>
-                            (prev || []).map((x) => (x.id === q.id ? { ...x, year: e.target.value } : x))
+                            (prev || []).map((x) =>
+                              x.id === q.id ? { ...x, year: e.target.value } : x
+                            )
                           )
                         }
                         placeholder="e.g. 2025"
@@ -1584,15 +1874,25 @@ export default function CVBuilderPage() {
                     </div>
 
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-semibold mb-2">Grade / Result (optional)</label>
+                      <label className="block text-sm font-semibold mb-2">
+                        Grade / Result (optional)
+                      </label>
                       <input
                         value={q.grade}
                         onChange={(e) =>
                           setQualifications((prev) =>
-                            (prev || []).map((x) => (x.id === q.id ? { ...x, grade: e.target.value } : x))
+                            (prev || []).map((x) =>
+                              x.id === q.id
+                                ? { ...x, grade: e.target.value }
+                                : x
+                            )
                           )
                         }
-                        placeholder={region === "US" ? "e.g. GPA 3.6, Honors" : "e.g. Grade 6, Pass"}
+                        placeholder={
+                          region === "US"
+                            ? "e.g. GPA 3.6, Honors"
+                            : "e.g. Grade 6, Pass"
+                        }
                         className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
                       />
                     </div>
@@ -1608,7 +1908,8 @@ export default function CVBuilderPage() {
               <div>
                 <h2 className="text-lg font-semibold">Employment history</h2>
                 <p className="text-sm text-slate-300">
-                  Add roles one-by-one. If you fill this in, you can leave the “Experience text” box empty.
+                  Add roles one-by-one. If you fill this in, you can leave the
+                  “Experience text” box empty.
                 </p>
               </div>
 
@@ -1636,9 +1937,14 @@ export default function CVBuilderPage() {
 
             <div className="space-y-4">
               {employmentHistory.map((j, idx) => (
-                <div key={j.id} className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4 space-y-4">
+                <div
+                  key={j.id}
+                  className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4 space-y-4"
+                >
                   <div className="flex items-center justify-between">
-                    <div className="text-sm font-semibold text-slate-200">Role {idx + 1}</div>
+                    <div className="text-sm font-semibold text-slate-200">
+                      Role {idx + 1}
+                    </div>
 
                     <button
                       type="button"
@@ -1668,12 +1974,16 @@ export default function CVBuilderPage() {
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <label className="block text-sm font-semibold mb-2">Job title</label>
+                      <label className="block text-sm font-semibold mb-2">
+                        Job title
+                      </label>
                       <input
                         value={j.title}
                         onChange={(e) =>
                           setEmploymentHistory((prev) =>
-                            (prev || []).map((x) => (x.id === j.id ? { ...x, title: e.target.value } : x))
+                            (prev || []).map((x) =>
+                              x.id === j.id ? { ...x, title: e.target.value } : x
+                            )
                           )
                         }
                         placeholder="e.g. Retail Assistant"
@@ -1682,12 +1992,18 @@ export default function CVBuilderPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold mb-2">Company</label>
+                      <label className="block text-sm font-semibold mb-2">
+                        Company
+                      </label>
                       <input
                         value={j.company}
                         onChange={(e) =>
                           setEmploymentHistory((prev) =>
-                            (prev || []).map((x) => (x.id === j.id ? { ...x, company: e.target.value } : x))
+                            (prev || []).map((x) =>
+                              x.id === j.id
+                                ? { ...x, company: e.target.value }
+                                : x
+                            )
                           )
                         }
                         placeholder="e.g. Tesco"
@@ -1696,12 +2012,18 @@ export default function CVBuilderPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold mb-2">Location (optional)</label>
+                      <label className="block text-sm font-semibold mb-2">
+                        Location (optional)
+                      </label>
                       <input
                         value={j.location}
                         onChange={(e) =>
                           setEmploymentHistory((prev) =>
-                            (prev || []).map((x) => (x.id === j.id ? { ...x, location: e.target.value } : x))
+                            (prev || []).map((x) =>
+                              x.id === j.id
+                                ? { ...x, location: e.target.value }
+                                : x
+                            )
                           )
                         }
                         placeholder={
@@ -1717,12 +2039,18 @@ export default function CVBuilderPage() {
 
                     <div className="grid gap-4 grid-cols-2">
                       <div>
-                        <label className="block text-sm font-semibold mb-2">Start</label>
+                        <label className="block text-sm font-semibold mb-2">
+                          Start
+                        </label>
                         <input
                           value={j.start}
                           onChange={(e) =>
                             setEmploymentHistory((prev) =>
-                              (prev || []).map((x) => (x.id === j.id ? { ...x, start: e.target.value } : x))
+                              (prev || []).map((x) =>
+                                x.id === j.id
+                                  ? { ...x, start: e.target.value }
+                                  : x
+                              )
                             )
                           }
                           placeholder="e.g. 2024"
@@ -1731,12 +2059,18 @@ export default function CVBuilderPage() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-semibold mb-2">End</label>
+                        <label className="block text-sm font-semibold mb-2">
+                          End
+                        </label>
                         <input
                           value={j.end}
                           onChange={(e) =>
                             setEmploymentHistory((prev) =>
-                              (prev || []).map((x) => (x.id === j.id ? { ...x, end: e.target.value } : x))
+                              (prev || []).map((x) =>
+                                x.id === j.id
+                                  ? { ...x, end: e.target.value }
+                                  : x
+                              )
                             )
                           }
                           placeholder="e.g. Present"
@@ -1753,7 +2087,11 @@ export default function CVBuilderPage() {
                         value={j.bulletsText}
                         onChange={(e) =>
                           setEmploymentHistory((prev) =>
-                            (prev || []).map((x) => (x.id === j.id ? { ...x, bulletsText: e.target.value } : x))
+                            (prev || []).map((x) =>
+                              x.id === j.id
+                                ? { ...x, bulletsText: e.target.value }
+                                : x
+                            )
                           )
                         }
                         placeholder={`For example:
@@ -1771,7 +2109,9 @@ Worked as part of a team under pressure`}
 
           {/* Remaining inputs */}
           <div>
-            <label className="block text-sm font-semibold mb-2">Target role title</label>
+            <label className="block text-sm font-semibold mb-2">
+              Target role title
+            </label>
             <input
               value={role}
               onChange={(e) => setRole(e.target.value)}
@@ -1794,7 +2134,9 @@ Worked as part of a team under pressure`}
           </div>
 
           <div>
-            <label className="block text-sm font-semibold mb-2">Skills (one per line, optional)</label>
+            <label className="block text-sm font-semibold mb-2">
+              Skills (one per line, optional)
+            </label>
             <textarea
               value={skillsText}
               onChange={(e) => setSkillsText(e.target.value)}
