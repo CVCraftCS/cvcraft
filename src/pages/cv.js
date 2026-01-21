@@ -9,11 +9,18 @@ import {
   TEMPLATE_ORDER,
 } from "../lib/templates";
 
+// 🌍 Languages (Phase 1: en-GB / en-US / en-AU)
+import { LANGUAGES } from "../lib/languages";
+import { safeLang, getBrowserLang } from "../lib/i18n";
+
 const STORAGE_KEY = "cvcraft:lastResult";
 
 // Pricing + access (single 30-day pass model)
 const ACCESS_PRICE_LABEL = "£9.99";
 const PRICING_PATH = "/pricing";
+
+// ---- Language (session-only) ----
+const LANGUAGE_SESSION_KEY = "cvcraft:lang";
 
 // ---- Teacher Mode ----
 const TEACHER_MODE_SESSION_KEY = "cvcraft:teacherMode";
@@ -177,6 +184,19 @@ function regionDefaults(region) {
   };
 }
 
+// ✅ Language ↔ Region mapping (Phase 1)
+function langToRegion(code) {
+  if (code === "en-US") return "US";
+  if (code === "en-AU") return "AU";
+  return "UK";
+}
+
+function regionToLang(region) {
+  if (region === "US") return "en-US";
+  if (region === "AU") return "en-AU";
+  return "en-GB";
+}
+
 // ---- section config defaults (must match preview.js) ----
 const DEFAULT_SECTION_ORDER = [
   "summary",
@@ -194,8 +214,12 @@ const DEFAULT_SECTION_CONFIG = {
   references: false,
 };
 
-function sectionLabel(key, region) {
-  if (key === "summary") return "Professional Summary";
+function sectionLabel(key, region, L) {
+  // Language-aware where it matters most
+  const summaryLabel =
+    L?.summaryLabel || (region === "UK" ? "Personal Statement" : "Professional Summary");
+
+  if (key === "summary") return summaryLabel;
   if (key === "employment") return "Employment history";
   if (key === "qualifications")
     return region === "US"
@@ -516,6 +540,39 @@ export default function CVBuilderPage() {
   // Keep track of a requested template via URL (eg /cv?template=modern)
   const [urlTemplateRequest, setUrlTemplateRequest] = useState(null);
 
+  // 🌍 Language
+  const [lang, setLang] = useState("en-GB");
+
+  // Language init + persist (session-only)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!mounted) return;
+
+    try {
+      const saved = sessionStorage.getItem(LANGUAGE_SESSION_KEY);
+      if (saved) {
+        setLang(safeLang(saved));
+      } else {
+        const b = getBrowserLang();
+        setLang(b);
+        sessionStorage.setItem(LANGUAGE_SESSION_KEY, b);
+      }
+    } catch {
+      setLang("en-GB");
+    }
+  }, [mounted]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!mounted) return;
+
+    try {
+      sessionStorage.setItem(LANGUAGE_SESSION_KEY, lang);
+    } catch {
+      // ignore
+    }
+  }, [mounted, lang]);
+
   const refreshPaidAccess = useCallback(async () => {
     if (typeof window === "undefined") return;
 
@@ -679,6 +736,36 @@ export default function CVBuilderPage() {
     return false;
   };
 
+  // Keep Region aligned with Language (Phase 1), without breaking Teacher locks
+  useEffect(() => {
+    if (!mounted) return;
+
+    const desiredRegion = langToRegion(lang);
+    if (desiredRegion === region) return;
+
+    // If teacher mode locks region, do not auto-change
+    if (teacherMode && isTeacherLocked("region")) return;
+
+    setRegion(desiredRegion);
+    applyRegionDefaults(desiredRegion);
+  }, [mounted, lang, region, teacherMode, applyRegionDefaults]);
+
+  // In Teacher Mode, keep language aligned to teacher region (clean classroom consistency)
+  useEffect(() => {
+    if (!mounted) return;
+    if (!teacherMode) return;
+
+    const desiredLang = regionToLang(teacherConfig?.region || region);
+    if (desiredLang === lang) return;
+
+    setLang(desiredLang);
+    try {
+      sessionStorage.setItem(LANGUAGE_SESSION_KEY, desiredLang);
+    } catch {
+      // ignore
+    }
+  }, [mounted, teacherMode, teacherConfig, region, lang]);
+
   // ---- Paywall helpers ----
   const openPaywall = (reason) => {
     setPaywallReason(reason);
@@ -737,6 +824,15 @@ export default function CVBuilderPage() {
       // Region + defaults
       setRegion(next.region);
       applyRegionDefaults(next.region);
+
+      // Sync language to teacher region (Phase 1)
+      const desiredLang = regionToLang(next.region);
+      setLang(desiredLang);
+      try {
+        sessionStorage.setItem(LANGUAGE_SESSION_KEY, desiredLang);
+      } catch {
+        // ignore
+      }
 
       // Template (ensure it's valid)
       setTemplate(TEMPLATE_META[next.template] ? next.template : "classic");
@@ -961,6 +1057,17 @@ export default function CVBuilderPage() {
 
     const input = saved.input;
 
+    // 🌍 Restore language if present
+    if (input.lang) {
+      const restored = safeLang(input.lang);
+      setLang(restored);
+      try {
+        sessionStorage.setItem(LANGUAGE_SESSION_KEY, restored);
+      } catch {
+        // ignore
+      }
+    }
+
     const safeModeOn = !!input.studentSafeMode;
     setStudentSafeMode(safeModeOn);
 
@@ -1137,6 +1244,9 @@ export default function CVBuilderPage() {
     }
 
     const payload = {
+      // 🌍 include language for preview + future i18n
+      lang,
+
       region,
       template,
 
@@ -1213,7 +1323,8 @@ export default function CVBuilderPage() {
     }
   }
 
-  const labelDoc = docLabel(region);
+  const L = (LANGUAGES && LANGUAGES[lang]) || LANGUAGES["en-GB"];
+  const labelDoc = L?.cvLabel || docLabel(region);
 
   // Teacher panel change handlers (teacher-only)
   const teacherSetRegion = (nextRegion) => {
@@ -1262,6 +1373,33 @@ export default function CVBuilderPage() {
           </button>
 
           <div className="flex items-center gap-4">
+            {/* 🌍 Language selector (session-only) */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-300">Language</span>
+              <select
+                value={lang}
+                onChange={(e) => {
+                  const nextLang = safeLang(e.target.value);
+                  setLang(nextLang);
+
+                  // Optional: align region unless teacher lock forbids it
+                  const desiredRegion = langToRegion(nextLang);
+                  if (!(teacherMode && isTeacherLocked("region"))) {
+                    setRegion(desiredRegion);
+                    applyRegionDefaults(desiredRegion);
+                  }
+                }}
+                className="rounded-xl px-3 py-2 text-black text-sm"
+                title="Language affects wording and conventions"
+              >
+                {Object.entries(LANGUAGES).map(([code, meta]) => (
+                  <option key={code} value={code}>
+                    {meta?.label || code}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {teacherUiAllowed ? (
               teacherMode ? (
                 <div className="flex items-center gap-3">
@@ -1433,6 +1571,15 @@ export default function CVBuilderPage() {
                     const next = e.target.value;
                     setRegion(next);
                     applyRegionDefaults(next);
+
+                    // Keep language aligned when user changes region manually
+                    const desiredLang = regionToLang(next);
+                    setLang(desiredLang);
+                    try {
+                      sessionStorage.setItem(LANGUAGE_SESSION_KEY, desiredLang);
+                    } catch {
+                      // ignore
+                    }
                   }}
                   disabled={teacherMode && isTeacherLocked("region")}
                   className={`w-full rounded-xl px-4 py-3 text-black ${
@@ -1615,7 +1762,7 @@ export default function CVBuilderPage() {
 
                     <div>
                       <div className="font-semibold">
-                        {sectionLabel(key, region)}
+                        {sectionLabel(key, region, L)}
                       </div>
                       {key === "references" ? (
                         <div className="text-xs text-slate-300">
@@ -1742,7 +1889,7 @@ export default function CVBuilderPage() {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold">
-                  {sectionLabel("qualifications", region)}
+                  {sectionLabel("qualifications", region, L)}
                 </h2>
                 <p className="text-sm text-slate-300">
                   Add any qualifications, courses, licences, or certificates

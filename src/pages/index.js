@@ -15,6 +15,12 @@ export default function Home() {
           </div>
 
           <nav className="flex items-center gap-5 text-sm">
+            <Link
+              href="/cover-letter"
+              className="text-slate-200 hover:text-white"
+            >
+              Cover letter (free)
+            </Link>
             <Link href="/pricing" className="text-slate-200 hover:text-white">
               Pricing
             </Link>
@@ -47,9 +53,9 @@ export default function Home() {
               </h1>
 
               <p className="mt-4 text-slate-300 text-lg leading-relaxed">
-                CVCraft turns a few simple inputs into a clean, recruiter-ready CV.
-                Perfect for jobseekers, and classroom-ready for teachers running
-                one-hour CV sessions.
+                CVCraft turns a few simple inputs into a clean, recruiter-ready
+                CV. Perfect for jobseekers, and classroom-ready for teachers
+                running one-hour CV sessions.
               </p>
 
               <div className="mt-7 flex flex-col sm:flex-row sm:items-center gap-3">
@@ -58,6 +64,13 @@ export default function Home() {
                   className="inline-flex items-center justify-center rounded-2xl bg-white px-6 py-4 font-semibold text-slate-950 hover:bg-slate-200 transition"
                 >
                   Build my CV
+                </Link>
+
+                <Link
+                  href="/cover-letter"
+                  className="inline-flex items-center justify-center rounded-2xl bg-white/5 ring-1 ring-white/10 px-6 py-4 font-semibold text-white hover:bg-white/10 transition"
+                >
+                  Free cover letter
                 </Link>
 
                 <Link
@@ -77,6 +90,9 @@ export default function Home() {
                 </span>
                 <span className="rounded-full bg-white/5 ring-1 ring-white/10 px-3 py-1">
                   Classroom-safe modes
+                </span>
+                <span className="rounded-full bg-white/5 ring-1 ring-white/10 px-3 py-1">
+                  Free cover letter generator
                 </span>
               </div>
             </div>
@@ -108,10 +124,28 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="mt-6 rounded-2xl bg-emerald-500/10 ring-1 ring-emerald-500/20 p-4">
+              <div className="mt-6 rounded-2xl bg-white/5 ring-1 ring-white/10 p-4">
+                <p className="text-sm text-slate-200">
+                  <span className="font-semibold text-white">
+                    Need a cover letter?
+                  </span>{" "}
+                  Generate one for free in under 2 minutes.
+                </p>
+                <div className="mt-3">
+                  <Link
+                    href="/cover-letter"
+                    className="text-sm font-semibold text-slate-200 hover:text-white underline underline-offset-4"
+                  >
+                    Open free cover letter generator →
+                  </Link>
+                </div>
+              </div>
+
+              <div className="mt-4 rounded-2xl bg-emerald-500/10 ring-1 ring-emerald-500/20 p-4">
                 <p className="text-sm text-slate-200">
                   <span className="font-semibold text-white">For schools:</span>{" "}
-                  run a one-hour session and students leave with a professional CV.
+                  run a one-hour session and students leave with a professional
+                  CV.
                 </p>
                 <div className="mt-3">
                   <Link
@@ -136,8 +170,8 @@ export default function Home() {
               <p className="mt-1 text-2xl font-bold">No subscriptions</p>
             </div>
             <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-5">
-              <p className="text-sm text-slate-300">Best for</p>
-              <p className="mt-1 text-2xl font-bold">Jobseekers + Schools</p>
+              <p className="text-sm text-slate-300">Free tool</p>
+              <p className="mt-1 text-2xl font-bold">Cover letter generator</p>
             </div>
           </div>
         </div>
@@ -156,8 +190,8 @@ export default function Home() {
           <div className="mt-6 grid gap-6 md:grid-cols-2 text-left">
             <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-6">
               <p className="text-slate-100 leading-relaxed">
-                “This is great — so efficient, easy to use and saved me hours, worth
-                the money alone just for the convenience.”
+                “This is great — so efficient, easy to use and saved me hours,
+                worth the money alone just for the convenience.”
               </p>
               <p className="mt-4 text-sm text-slate-300">— Danny</p>
             </div>
@@ -180,6 +214,12 @@ export default function Home() {
             © {new Date().getFullYear()} CVCraft. Built for speed. Built properly.
           </p>
           <div className="flex items-center gap-4 text-sm">
+            <Link
+              href="/cover-letter"
+              className="text-slate-300 hover:text-white"
+            >
+              Cover letter
+            </Link>
             <Link href="/pricing" className="text-slate-300 hover:text-white">
               Pricing
             </Link>

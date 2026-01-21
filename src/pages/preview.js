@@ -1,9 +1,16 @@
+// src/pages/preview.js
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import PaywallModal from "../components/PaywallModal";
 
 // ✅ Single source of truth for template keys + labels
-import { normalizeTemplateKey, templateLabel as templateLabelFromLib } from "../lib/templates";
+import {
+  normalizeTemplateKey,
+  templateLabel as templateLabelFromLib,
+} from "../lib/templates";
+
+// ✅ Languages (defensive import: supports whatever you exported in languages.ts)
+import * as LanguagesLib from "../lib/languages";
 
 const STORAGE_KEY = "cvcraft:lastResult";
 
@@ -45,7 +52,87 @@ function regionLocale(region) {
   return "en-GB";
 }
 
-function sectionLabel(key, region) {
+// ✅ Human-friendly region names (prettier than "UK/US/AU")
+function regionDisplay(region) {
+  const r = String(region || "").toUpperCase();
+  if (r === "UK") return "United Kingdom";
+  if (r === "US") return "United States";
+  if (r === "AU") return "Australia";
+  return region || "";
+}
+
+/**
+ * Language helpers (defensive)
+ * - Supports many possible export shapes from languages.ts
+ * - Falls back to region locale and built-in English strings
+ */
+function getLanguagesMap() {
+  return (
+    LanguagesLib?.LANGUAGES ||
+    LanguagesLib?.languages ||
+    LanguagesLib?.LANGUAGE_PACKS ||
+    {}
+  );
+}
+
+function safeNormalizeLangKey(raw, region) {
+  const normalizeFn =
+    LanguagesLib?.normalizeLanguageKey || LanguagesLib?.normalizeLangKey || null;
+
+  if (typeof normalizeFn === "function") {
+    try {
+      const out = normalizeFn(raw);
+      if (typeof out === "string" && out.trim()) return out.trim();
+    } catch {
+      // ignore
+    }
+  }
+
+  const s = String(raw || "").trim();
+  if (/^en-(gb|us|au)$/i.test(s)) {
+    const parts = s.split("-");
+    return `${parts[0].toLowerCase()}-${parts[1].toUpperCase()}`;
+  }
+
+  // fallback: match region default locale
+  return regionLocale(region);
+}
+
+function getLanguagePack(input, region) {
+  const map = getLanguagesMap();
+
+  const raw = input?.lang || input?.language || input?.locale || input?.i18n || "";
+
+  const key = safeNormalizeLangKey(raw, region);
+
+  const pack =
+    (map && map[key]) ||
+    (map && map[regionLocale(region)]) ||
+    (map && map["en-GB"]) ||
+    (map && map["en-US"]) ||
+    null;
+
+  // Locale used for dates etc
+  const locale =
+    pack?.locale || pack?.intlLocale || pack?.dateLocale || key || regionLocale(region);
+
+  // HTML lang attribute (best effort)
+  const htmlLang = pack?.htmlLang || pack?.lang || key || locale;
+
+  return { key, pack, locale, htmlLang };
+}
+
+// Small i18n getter: supports pack.ui.<key> or pack.<key>
+function t(L, key, fallback) {
+  const v = L?.ui?.[key] ?? L?.[key];
+  return typeof v === "string" && v.trim() ? v : fallback;
+}
+
+// Section label can come from language pack, otherwise region-aware fallback
+function sectionLabel(key, region, L) {
+  const fromPack = L?.sections?.[key] ?? L?.sectionLabels?.[key];
+  if (typeof fromPack === "string" && fromPack.trim()) return fromPack.trim();
+
   if (key === "summary") return "Professional Summary";
   if (key === "employment") return "Employment history";
   if (key === "qualifications")
@@ -70,8 +157,8 @@ function escapeHtml(s) {
  * ✅ Template label from src/lib/templates.ts
  * (keeps everything consistent with cv.js and any saved payloads)
  */
-function templateLabel(t) {
-  return templateLabelFromLib(t);
+function templateLabel(tpl) {
+  return templateLabelFromLib(tpl);
 }
 
 function getTemplateUiClasses(t) {
@@ -677,15 +764,15 @@ export default function PreviewPage() {
 
   const input = saved?.input || {};
   const region = input.region || "UK";
-  const labelDoc = docLabel(region);
 
-  const generatedAt = saved?.createdAt ? new Date(saved.createdAt) : null;
-  const generatedLabel = generatedAt
-    ? new Intl.DateTimeFormat(regionLocale(region), {
-        dateStyle: "medium",
-        timeStyle: "short",
-      }).format(generatedAt)
-    : "";
+  // ✅ Language pack (from input.lang) + html lang for PDF
+  const { pack: L, htmlLang } = useMemo(
+    () => getLanguagePack(input, region),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [input?.lang, input?.language, input?.locale, input?.i18n, region]
+  );
+
+  const labelDoc = docLabel(region);
 
   // ✅ Normalize template key so new templates always render cleanly
   const template = normalizeTemplateKey(input.template || "classic");
@@ -783,6 +870,9 @@ export default function PreviewPage() {
   /**
    * Build a clean, export-only HTML document (no UI labels like Template/Region/Tip)
    * Used for server PDF generation (/api/export/pdf)
+   *
+   * IMPORTANT:
+   * - Do NOT include any "Generated" timestamp in export output (human CV expectation).
    */
   const buildExportHtml = () => {
     const css = getPdfCss(template);
@@ -799,7 +889,7 @@ export default function PreviewPage() {
     const summaryHtml =
       cfg.summary && (sections.summary || "").trim()
         ? `<div class="section">
-             <h2>${escapeHtml(sectionLabel("summary", region))}</h2>
+             <h2>${escapeHtml(sectionLabel("summary", region, L))}</h2>
              <p>${escapeHtml(sections.summary).replaceAll("\n", "<br/>")}</p>
            </div>`
         : "";
@@ -807,7 +897,7 @@ export default function PreviewPage() {
     const jobsHtml =
       cfg.employment && employmentHistory.length
         ? `<div class="section">
-             <h2>${escapeHtml(sectionLabel("employment", region))}</h2>
+             <h2>${escapeHtml(sectionLabel("employment", region, L))}</h2>
              ${employmentHistory
                .map((j) => {
                  const titleLine = [j.title, j.company]
@@ -844,7 +934,7 @@ export default function PreviewPage() {
            </div>`
         : "";
 
-    const qualsHeading = escapeHtml(sectionLabel("qualifications", region));
+    const qualsHeading = escapeHtml(sectionLabel("qualifications", region, L));
     const qualsHtml =
       cfg.qualifications && qualifications.length
         ? `<div class="section">
@@ -852,12 +942,8 @@ export default function PreviewPage() {
              <ul class="list">
                ${qualifications
                  .map((q) => {
-                   const left = [q.title, q.provider]
-                     .filter(Boolean)
-                     .join(" — ");
-                   const right = [q.year, q.grade]
-                     .filter(Boolean)
-                     .join(" · ");
+                   const left = [q.title, q.provider].filter(Boolean).join(" — ");
+                   const right = [q.year, q.grade].filter(Boolean).join(" · ");
                    return `<li>${escapeHtml(left)}${
                      right
                        ? ` <span class="muted">(${escapeHtml(right)})</span>`
@@ -872,7 +958,7 @@ export default function PreviewPage() {
     const skillsHtml =
       cfg.skills && skillsForDisplay.length
         ? `<div class="section">
-             <h2>${escapeHtml(sectionLabel("skills", region))}</h2>
+             <h2>${escapeHtml(sectionLabel("skills", region, L))}</h2>
              <div class="pillRow">
                ${skillsForDisplay
                  .map((x) => `<span class="pill">${escapeHtml(x)}</span>`)
@@ -884,7 +970,7 @@ export default function PreviewPage() {
     const refsHtml =
       cfg.references && referencesText
         ? `<div class="section">
-             <h2>${escapeHtml(sectionLabel("references", region))}</h2>
+             <h2>${escapeHtml(sectionLabel("references", region, L))}</h2>
              <p>${escapeHtml(referencesText).replaceAll("\n", "<br/>")}</p>
            </div>`
         : "";
@@ -926,7 +1012,7 @@ export default function PreviewPage() {
     }
 
     return `<!doctype html>
-<html>
+<html lang="${escapeHtml(htmlLang || regionLocale(region))}">
 <head>
   <meta charset="utf-8" />
   <title>${escapeHtml(fullName)} - ${escapeHtml(labelDoc)}</title>
@@ -941,12 +1027,9 @@ export default function PreviewPage() {
         ${contactLine ? `<div>${contactLine}</div>` : ""}
         ${
           targetRole
-            ? `<div><b>Target Role:</b> ${escapeHtml(targetRole)}</div>`
-            : ""
-        }
-        ${
-          generatedLabel
-            ? `<div><b>Generated:</b> ${escapeHtml(generatedLabel)}</div>`
+            ? `<div><b>${escapeHtml(
+                t(L, "targetRoleLabel", "Target Role:")
+              )}</b> ${escapeHtml(targetRole)}</div>`
             : ""
         }
       </div>
@@ -971,7 +1054,9 @@ export default function PreviewPage() {
     if (requestExportUnlock()) return;
 
     if (!saved) {
-      alert(`No ${labelDoc} data found yet. Go back and generate one.`);
+      alert(
+        t(L, "noDataAlert", `No ${labelDoc} data found yet. Go back and generate one.`)
+      );
       return;
     }
 
@@ -1002,8 +1087,12 @@ export default function PreviewPage() {
 
         alert(
           [
-            "PDF download failed on this device.",
-            "Use “Print / Save PDF” instead (choose “Save as PDF”).",
+            t(L, "pdfFailed", "PDF download failed on this device."),
+            t(
+              L,
+              "pdfFailedHint",
+              "Use “Print / Save PDF” instead (choose “Save as PDF”)."
+            ),
             detail ? "Details: " + detail : "",
           ]
             .filter(Boolean)
@@ -1030,7 +1119,11 @@ export default function PreviewPage() {
     } catch (e) {
       console.warn("PDF export request crashed:", e);
       alert(
-        "PDF download failed. Use “Print / Save PDF” instead (choose “Save as PDF”)."
+        t(
+          L,
+          "pdfFailedFallback",
+          "PDF download failed. Use “Print / Save PDF” instead (choose “Save as PDF”)."
+        )
       );
     } finally {
       setExportBusy(false);
@@ -1045,7 +1138,9 @@ export default function PreviewPage() {
       if (!content) return null;
       return (
         <section>
-          <h2 className={ui.sectionTitle}>{sectionLabel("summary", region)}</h2>
+          <h2 className={ui.sectionTitle}>
+            {sectionLabel("summary", region, L)}
+          </h2>
           <p className={`mt-2 whitespace-pre-line ${ui.body}`}>{content}</p>
         </section>
       );
@@ -1056,7 +1151,7 @@ export default function PreviewPage() {
       return (
         <section>
           <h2 className={ui.sectionTitle}>
-            {sectionLabel("employment", region)}
+            {sectionLabel("employment", region, L)}
           </h2>
           <div className="mt-2 space-y-4">
             {employmentHistory.map((j, idx) => {
@@ -1071,7 +1166,7 @@ export default function PreviewPage() {
               return (
                 <div key={idx} className={`rounded-xl p-4 ${ui.sectionBox}`}>
                   <div className="font-semibold text-slate-900">
-                    {titleLine || "Role"}
+                    {titleLine || t(L, "roleFallback", "Role")}
                   </div>
                   {dateLine ? (
                     <div className={`mt-1 ${ui.meta}`}>{dateLine}</div>
@@ -1096,7 +1191,7 @@ export default function PreviewPage() {
       return (
         <section>
           <h2 className={ui.sectionTitle}>
-            {sectionLabel("qualifications", region)}
+            {sectionLabel("qualifications", region, L)}
           </h2>
           <ul className="mt-2 list-disc space-y-1 pl-6 text-slate-700">
             {qualifications.map((q, idx) => {
@@ -1105,9 +1200,7 @@ export default function PreviewPage() {
               return (
                 <li key={idx}>
                   {left}
-                  {right ? (
-                    <span className="text-slate-500"> ({right})</span>
-                  ) : null}
+                  {right ? <span className="text-slate-500"> ({right})</span> : null}
                 </li>
               );
             })}
@@ -1120,7 +1213,9 @@ export default function PreviewPage() {
       if (!skillsForDisplay.length) return null;
       return (
         <section>
-          <h2 className={ui.sectionTitle}>{sectionLabel("skills", region)}</h2>
+          <h2 className={ui.sectionTitle}>
+            {sectionLabel("skills", region, L)}
+          </h2>
           <div className="mt-3 flex flex-wrap gap-2">
             {skillsForDisplay.map((s, idx) => (
               <span key={idx} className={ui.skillPill}>
@@ -1138,7 +1233,7 @@ export default function PreviewPage() {
       return (
         <section>
           <h2 className={ui.sectionTitle}>
-            {sectionLabel("references", region)}
+            {sectionLabel("references", region, L)}
           </h2>
           <p className={`mt-2 whitespace-pre-line ${ui.body}`}>{txt}</p>
         </section>
@@ -1149,6 +1244,8 @@ export default function PreviewPage() {
   };
 
   const isTwoColumn = template === "two_column";
+  const regionPretty = regionDisplay(region);
+  const regionCode = String(region || "").toUpperCase();
 
   return (
     <div className={`min-h-screen px-6 py-10 ${ui.page}`}>
@@ -1157,17 +1254,23 @@ export default function PreviewPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 px-6">
           <div className="max-w-lg rounded-2xl bg-white p-8 text-center shadow-xl">
             <h2 className="text-2xl font-bold text-slate-900 mb-4">
-              Before you leave this computer
+              {t(L, "exitTitle", "Before you leave this computer")}
             </h2>
 
             <p className="text-slate-700 mb-6">
-              Your {labelDoc} has been downloaded and all personal information
-              has been removed from this device.
+              {t(
+                L,
+                "exitBody",
+                `Your ${labelDoc} has been downloaded and all personal information has been removed from this device.`
+              )}
             </p>
 
             <p className="text-sm text-slate-500 mb-6">
-              You may now safely close this window or return the computer to the
-              next student.
+              {t(
+                L,
+                "exitBody2",
+                "You may now safely close this window or return the computer to the next student."
+              )}
             </p>
 
             <button
@@ -1175,7 +1278,7 @@ export default function PreviewPage() {
               onClick={() => (window.location.href = "/")}
               className="rounded-xl bg-slate-900 px-6 py-3 font-semibold text-white hover:bg-slate-800"
             >
-              Return to start
+              {t(L, "returnToStart", "Return to start")}
             </button>
           </div>
         </div>
@@ -1188,7 +1291,7 @@ export default function PreviewPage() {
             href="/cv"
             className="text-sm text-slate-600 hover:text-slate-900"
           >
-            ← Back to builder
+            ← {t(L, "backToBuilder", "Back to builder")}
           </Link>
 
           <div className="flex gap-2">
@@ -1203,30 +1306,27 @@ export default function PreviewPage() {
               }`}
               title={
                 exportLocked
-                  ? "Purchase access to unlock export"
-                  : "Downloads a clean PDF (recommended)"
+                  ? t(L, "exportLockedTitle", "Purchase access to unlock export")
+                  : t(L, "downloadPdfTitle", "Downloads a clean PDF (recommended)")
               }
             >
               {exportBusy
-                ? "Preparing…"
-                : `Download PDF${exportLocked ? " 🔒" : ""}`}
+                ? t(L, "preparing", "Preparing…")
+                : `${t(L, "downloadPdf", "Download PDF")}${exportLocked ? " 🔒" : ""}`}
             </button>
 
             <button
               type="button"
               onClick={onPrint}
-              className={`rounded-lg px-4 py-2 text-sm font-semibold text-white transition ${
-                exportLocked
-                  ? "bg-slate-900 hover:bg-slate-800"
-                  : "bg-slate-900 hover:bg-slate-800"
-              }`}
+              className="rounded-lg px-4 py-2 text-sm font-semibold text-white transition bg-slate-900 hover:bg-slate-800"
               title={
                 exportLocked
-                  ? "Purchase access to unlock export"
-                  : "Uses browser print dialog"
+                  ? t(L, "exportLockedTitle", "Purchase access to unlock export")
+                  : t(L, "printTitle", "Uses browser print dialog")
               }
             >
-              Print / Save PDF{exportLocked ? " 🔒" : ""}
+              {t(L, "printSavePdf", "Print / Save PDF")}
+              {exportLocked ? " 🔒" : ""}
             </button>
           </div>
         </div>
@@ -1246,39 +1346,58 @@ export default function PreviewPage() {
             {/* Badge stays in print (part of CV styling) */}
             <div className={`rounded-xl px-4 py-3 ${ui.badge}`}>
               <div className="text-xs font-semibold uppercase tracking-wider">
-                Template
+                {t(L, "templateLabel", "Template")}
               </div>
               <div className="text-sm font-bold">{templateLabel(template)}</div>
+
               <div className="mt-2 text-xs font-semibold uppercase tracking-wider">
-                Region
+                {t(L, "regionLabel", "Region")}
               </div>
-              <div className="text-sm font-bold">{region}</div>
+
+              {/* ✅ Pretty region name (and keep code subtly) */}
+              <div className="text-sm font-bold">
+                {regionPretty || regionCode || "—"}
+                {regionCode ? (
+                  <span className="ml-2 font-semibold text-xs opacity-80">
+                    ({regionCode})
+                  </span>
+                ) : null}
+              </div>
             </div>
           </div>
 
           <div className="mt-4 space-y-1 text-sm text-slate-600">
             <div>
-              <span className="font-semibold text-slate-700">Target Role:</span>{" "}
+              <span className="font-semibold text-slate-700">
+                {t(L, "targetRoleLabel", "Target Role:")}
+              </span>{" "}
               {targetRole ? targetRole : "—"}
-            </div>
-            <div>
-              <span className="font-semibold text-slate-700">Generated:</span>{" "}
-              {generatedLabel ? generatedLabel : "—"}
             </div>
 
             {/* Notices should NOT print */}
             {safeModeActive ? (
               <div className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-amber-900 ring-1 ring-amber-200 print:hidden">
                 {teacherMode
-                  ? "Teacher Mode is enabled — data will be cleared after download/print."
-                  : "Student Safe Mode is enabled — data will be cleared after download/print."}
+                  ? t(
+                      L,
+                      "teacherModeNotice",
+                      "Teacher Mode is enabled — data will be cleared after download/print."
+                    )
+                  : t(
+                      L,
+                      "studentSafeModeNotice",
+                      "Student Safe Mode is enabled — data will be cleared after download/print."
+                    )}
               </div>
             ) : null}
 
             {exportLocked ? (
               <div className="mt-2 rounded-xl bg-slate-100 px-3 py-2 text-slate-800 ring-1 ring-slate-200 print:hidden">
-                Export is locked. Purchase access to download/print your{" "}
-                {labelDoc}.
+                {t(
+                  L,
+                  "exportLockedBody",
+                  `Export is locked. Purchase access to download/print your ${labelDoc}.`
+                )}
               </div>
             ) : null}
           </div>
@@ -1287,9 +1406,11 @@ export default function PreviewPage() {
 
           {!saved ? (
             <div className="print:hidden">
-              <h2 className="text-xl font-bold">{labelDoc} Preview</h2>
+              <h2 className="text-xl font-bold">
+                {t(L, "previewTitle", `${labelDoc} Preview`)}
+              </h2>
               <p className="mt-2 text-slate-600">
-                No {labelDoc} data found yet. Go back and generate one.
+                {t(L, "noDataBody", `No ${labelDoc} data found yet. Go back and generate one.`)}
               </p>
 
               <div className="mt-6">
@@ -1297,7 +1418,7 @@ export default function PreviewPage() {
                   href="/cv"
                   className="inline-block rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
                 >
-                  Back to builder
+                  {t(L, "backToBuilderBtn", "Back to builder")}
                 </Link>
               </div>
             </div>
@@ -1309,36 +1430,35 @@ export default function PreviewPage() {
                 {cfg.qualifications ? (
                   <div>{renderSection("qualifications")}</div>
                 ) : null}
-                {cfg.references ? (
-                  <div>{renderSection("references")}</div>
-                ) : null}
+                {cfg.references ? <div>{renderSection("references")}</div> : null}
               </div>
 
               <div className="md:col-span-8 space-y-8">
                 {cfg.summary ? <div>{renderSection("summary")}</div> : null}
-                {cfg.employment ? (
-                  <div>{renderSection("employment")}</div>
-                ) : null}
+                {cfg.employment ? <div>{renderSection("employment")}</div> : null}
 
                 <p className="text-sm text-slate-500 print:hidden">
-                  Tip: “Download PDF” uses your chosen toggles. Two-column uses a
-                  fixed column layout for clarity.
+                  {t(
+                    L,
+                    "tipTwoCol",
+                    "Tip: “Download PDF” uses your chosen toggles. Two-column uses a fixed column layout for clarity."
+                  )}
                 </p>
               </div>
             </div>
           ) : (
-            <div
-              className={`${
-                template === "compact" ? "space-y-6" : "space-y-8"
-              }`}
-            >
+            <div className={`${template === "compact" ? "space-y-6" : "space-y-8"}`}>
               {order.map((key) => (
                 <div key={key}>{renderSection(key)}</div>
               ))}
 
               {/* Tip should never print */}
               <p className="text-sm text-slate-500 print:hidden">
-                Tip: “Download PDF” uses your chosen section order and toggles.
+                {t(
+                  L,
+                  "tipDefault",
+                  "Tip: “Download PDF” uses your chosen section order and toggles."
+                )}
               </p>
             </div>
           )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 function safeLocalPath(path: string | null, fallback: string) {
@@ -14,12 +14,9 @@ type Status = "verifying" | "ok" | "error";
 
 export default function SuccessClient() {
   const router = useRouter();
-  const searchParams = useSearchParams() ?? new URLSearchParams();
+  const searchParams = useSearchParams();
 
-  const sessionId = useMemo(
-    () => searchParams.get("session_id") || "",
-    [searchParams]
-  );
+  const sessionId = useMemo(() => searchParams.get("session_id") || "", [searchParams]);
 
   const product = useMemo(
     () => (searchParams.get("product") || "access_pass") as string,
@@ -35,24 +32,23 @@ export default function SuccessClient() {
   const [message, setMessage] = useState<string>("Verifying your payment…");
   const [detail, setDetail] = useState<string | null>(null);
 
-  // ✅ Prevent double-run in React Strict Mode (dev)
-  const didRun = useRef(false);
-
   useEffect(() => {
-    if (didRun.current) return;
-    didRun.current = true;
+    // IMPORTANT:
+    // Do NOT block double-run with a didRun ref.
+    // In React Strict Mode (dev), effects mount -> cleanup -> mount again.
+    // A "didRun" guard can prevent the second (real) run, leaving the UI stuck.
+    if (!sessionId) {
+      setStatus("error");
+      setMessage("We couldn’t verify your payment.");
+      setDetail("Missing session_id.");
+      return;
+    }
 
-    let cancelled = false;
+    const ac = new AbortController();
+    let redirected = false;
 
     async function run() {
       try {
-        if (!sessionId) {
-          setStatus("error");
-          setMessage("We couldn’t verify your payment.");
-          setDetail("Missing session_id.");
-          return;
-        }
-
         setStatus("verifying");
         setMessage("Verifying your payment…");
         setDetail(null);
@@ -62,17 +58,17 @@ export default function SuccessClient() {
           headers: { "Content-Type": "application/json" },
           credentials: "include",
           cache: "no-store",
+          signal: ac.signal,
           body: JSON.stringify({ session_id: sessionId, product }),
         });
 
-        const data = await res.json().catch(() => ({}));
-
-        if (cancelled) return;
+        // Try parse JSON, but don't crash if it's not JSON
+        const data = await res.json().catch(() => ({} as any));
 
         if (!res.ok || !data?.ok) {
           setStatus("error");
           setMessage("Payment verification failed.");
-          setDetail(data?.message || data?.error || "Access verify failed.");
+          setDetail(data?.message || data?.error || `Access verify failed (${res.status}).`);
           return;
         }
 
@@ -80,12 +76,14 @@ export default function SuccessClient() {
         setMessage("Payment accepted ✅ Your access is now unlocked.");
         setDetail("Taking you back now…");
 
-        // Give the user a moment to see success state
-        await new Promise((r) => setTimeout(r, 1200));
-        if (cancelled) return;
+        // Small delay so Set-Cookie is definitely committed before navigation
+        await new Promise((r) => setTimeout(r, 650));
+        if (ac.signal.aborted) return;
 
+        redirected = true;
         router.replace(returnTo);
       } catch (e: any) {
+        if (ac.signal.aborted) return;
         setStatus("error");
         setMessage("Payment verification failed.");
         setDetail(e?.message || "Access verify failed.");
@@ -93,8 +91,14 @@ export default function SuccessClient() {
     }
 
     run();
+
     return () => {
-      cancelled = true;
+      // Abort fetch if Strict Mode remounts or user navigates away
+      ac.abort();
+
+      // If we were about to redirect but unmounted, do nothing.
+      // (router.replace will happen on the active mount)
+      void redirected;
     };
   }, [router, sessionId, product, returnTo]);
 
