@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-function safeLocalPath(path: string | null, fallback: string) {
+function safeLocalPath(path: string | null | undefined, fallback: string) {
   if (!path) return fallback;
   if (!path.startsWith("/")) return fallback;
   if (path.startsWith("//")) return fallback;
@@ -14,41 +14,35 @@ type Status = "verifying" | "ok" | "error";
 
 export default function SuccessClient() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams(); // can be treated as nullable by TS in some builds
 
-  const sessionId = useMemo(() => searchParams.get("session_id") || "", [searchParams]);
-
-  const product = useMemo(
-    () => (searchParams.get("product") || "access_pass") as string,
-    [searchParams]
-  );
-
-  const returnTo = useMemo(
-    () => safeLocalPath(searchParams.get("return"), "/cv"),
-    [searchParams]
-  );
+  // ✅ Null-safe reads (fixes Vercel build type error)
+  const sessionId = searchParams?.get("session_id") ?? "";
+  const product = (searchParams?.get("product") ?? "access_pass") as string;
+  const returnTo = safeLocalPath(searchParams?.get("return"), "/cv");
 
   const [status, setStatus] = useState<Status>("verifying");
   const [message, setMessage] = useState<string>("Verifying your payment…");
   const [detail, setDetail] = useState<string | null>(null);
 
-  useEffect(() => {
-    // IMPORTANT:
-    // Do NOT block double-run with a didRun ref.
-    // In React Strict Mode (dev), effects mount -> cleanup -> mount again.
-    // A "didRun" guard can prevent the second (real) run, leaving the UI stuck.
-    if (!sessionId) {
-      setStatus("error");
-      setMessage("We couldn’t verify your payment.");
-      setDetail("Missing session_id.");
-      return;
-    }
+  // ✅ Prevent double-run in React Strict Mode (dev)
+  const didRun = useRef(false);
 
-    const ac = new AbortController();
-    let redirected = false;
+  useEffect(() => {
+    if (didRun.current) return;
+    didRun.current = true;
+
+    let cancelled = false;
 
     async function run() {
       try {
+        if (!sessionId) {
+          setStatus("error");
+          setMessage("We couldn’t verify your payment.");
+          setDetail("Missing session_id.");
+          return;
+        }
+
         setStatus("verifying");
         setMessage("Verifying your payment…");
         setDetail(null);
@@ -58,17 +52,17 @@ export default function SuccessClient() {
           headers: { "Content-Type": "application/json" },
           credentials: "include",
           cache: "no-store",
-          signal: ac.signal,
           body: JSON.stringify({ session_id: sessionId, product }),
         });
 
-        // Try parse JSON, but don't crash if it's not JSON
-        const data = await res.json().catch(() => ({} as any));
+        const data = await res.json().catch(() => ({}));
+
+        if (cancelled) return;
 
         if (!res.ok || !data?.ok) {
           setStatus("error");
           setMessage("Payment verification failed.");
-          setDetail(data?.message || data?.error || `Access verify failed (${res.status}).`);
+          setDetail(data?.message || data?.error || "Access verify failed.");
           return;
         }
 
@@ -76,14 +70,12 @@ export default function SuccessClient() {
         setMessage("Payment accepted ✅ Your access is now unlocked.");
         setDetail("Taking you back now…");
 
-        // Small delay so Set-Cookie is definitely committed before navigation
-        await new Promise((r) => setTimeout(r, 650));
-        if (ac.signal.aborted) return;
+        // Give the user a moment to see success state
+        await new Promise((r) => setTimeout(r, 1200));
+        if (cancelled) return;
 
-        redirected = true;
         router.replace(returnTo);
       } catch (e: any) {
-        if (ac.signal.aborted) return;
         setStatus("error");
         setMessage("Payment verification failed.");
         setDetail(e?.message || "Access verify failed.");
@@ -91,14 +83,8 @@ export default function SuccessClient() {
     }
 
     run();
-
     return () => {
-      // Abort fetch if Strict Mode remounts or user navigates away
-      ac.abort();
-
-      // If we were about to redirect but unmounted, do nothing.
-      // (router.replace will happen on the active mount)
-      void redirected;
+      cancelled = true;
     };
   }, [router, sessionId, product, returnTo]);
 
