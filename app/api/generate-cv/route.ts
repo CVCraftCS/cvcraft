@@ -10,11 +10,10 @@ type JobInput = {
   location?: string;
   start?: string;
   end?: string;
-  bullets?: string[]; // responsibilities/achievements
+  bullets?: string[];
 };
 
 type Body = {
-  // Flexible field names (your UI may send different ones)
   targetRoleTitle?: string;
   role?: string;
 
@@ -24,37 +23,50 @@ type Body = {
   skillsText?: string | string[];
   skills?: string | string[];
 
-  // Option A: structured employment history
   jobs?: JobInput[];
 
-  // Optional extras
   region?: string;
   template?: string;
   tone?: string;
 
-  // If the frontend posts everything inside one object
+  // ✅ Language hints (we now accept BOTH)
+  language?: string; // e.g. "es", "es-ES", "spanish"
+  lang?: string;     // e.g. "es-ES" (what your UI is likely sending)
+
   form?: Record<string, any>;
 };
 
 function normalizeSkills(v: unknown): string[] {
   if (!v) return [];
-  if (Array.isArray(v)) return v.map(String).map((s) => s.trim()).filter(Boolean);
+
+  if (Array.isArray(v)) {
+    return v.map(String).map((s) => s.trim()).filter(Boolean);
+  }
+
   if (typeof v === "string") {
-    return v
-      .split("\n")
-      .map((s) => s.trim())
+    const s = v.trim();
+    if (!s) return [];
+
+    // Support newline OR comma-separated OR bullet-ish
+    const parts = s.includes("\n")
+      ? s.split("\n")
+      : s.includes(",")
+      ? s.split(",")
+      : [s];
+
+    return parts
+      .map((x) => x.replace(/^[•\-*]\s+/, "").trim())
       .filter(Boolean);
   }
+
   return [];
 }
 
 function extractResponseText(d: any): string {
-  // Most common convenience property
   if (typeof d?.output_text === "string" && d.output_text.trim()) {
     return d.output_text.trim();
   }
 
-  // Fallback: walk output -> content -> text
   const out = d?.output;
   if (Array.isArray(out)) {
     const parts: string[] = [];
@@ -64,8 +76,9 @@ function extractResponseText(d: any): string {
 
       for (const c of content) {
         if (typeof c?.text === "string" && c.text.trim()) parts.push(c.text.trim());
-        if (typeof c?.output_text === "string" && c.output_text.trim())
+        if (typeof c?.output_text === "string" && c.output_text.trim()) {
           parts.push(c.output_text.trim());
+        }
       }
     }
     return parts.join("\n\n").trim();
@@ -100,8 +113,17 @@ function normalizeJobs(v: unknown): JobInput[] {
         ? j.bullets.map(String).map((s) => s.trim()).filter(Boolean)
         : undefined,
     }))
-    // keep only entries that have at least something
-    .filter((j) => !!(j.title || j.company || j.location || j.start || j.end || (j.bullets && j.bullets.length)));
+    .filter(
+      (j) =>
+        !!(
+          j.title ||
+          j.company ||
+          j.location ||
+          j.start ||
+          j.end ||
+          (j.bullets && j.bullets.length)
+        )
+    );
 }
 
 function formatJobsForPrompt(jobs: JobInput[]): string {
@@ -113,7 +135,7 @@ function formatJobsForPrompt(jobs: JobInput[]): string {
         j.title ? `Title: ${j.title}` : `Title: [Job Title]`,
         j.company ? `Company: ${j.company}` : `Company: [Company]`,
         j.location ? `Location: ${j.location}` : `Location: [Location]`,
-        (j.start || j.end)
+        j.start || j.end
           ? `Dates: ${j.start ?? "[Start]"} – ${j.end ?? "[End/Present]"}`
           : `Dates: [Start] – [End/Present]`,
       ].join(" | ");
@@ -126,6 +148,45 @@ function formatJobsForPrompt(jobs: JobInput[]): string {
       return `JOB ${idx + 1}\n${header}\nBullets:\n${bullets}`;
     })
     .join("\n\n");
+}
+
+// ✅ Accept language from multiple locations and normalise
+function normalizeLanguage(v: unknown): "en" | "es-es" {
+  const raw = typeof v === "string" ? v.trim().toLowerCase() : "";
+  if (!raw) return "en";
+
+  if (
+    raw === "es" ||
+    raw === "es-es" ||
+    raw.startsWith("es-") ||
+    raw.startsWith("es_") ||
+    raw.includes("spanish") ||
+    raw.includes("español") ||
+    raw.includes("espanol")
+  ) {
+    return "es-es";
+  }
+
+  return "en";
+}
+
+function languageRules(lang: "en" | "es-es") {
+  if (lang === "es-es") {
+    return [
+      `LANGUAGE RULES (must follow):`,
+      `- Write all CV CONTENT in Spanish (Spain).`,
+      `- Professional, neutral European Spanish.`,
+      `- Do NOT translate proper nouns (people, company names, product names, certifications, tools).`,
+      `- Keep emails, URLs, IDs, and dates exactly as provided.`,
+      `- IMPORTANT: Keep the SECTION HEADINGS EXACTLY as specified below (in English).`,
+    ].join("\n");
+  }
+
+  return [
+    `LANGUAGE RULES (must follow):`,
+    `- Write all CV content in English.`,
+    `- IMPORTANT: Keep the SECTION HEADINGS EXACTLY as specified below.`,
+  ].join("\n");
 }
 
 export async function POST(req: NextRequest) {
@@ -149,42 +210,63 @@ export async function POST(req: NextRequest) {
     const experience = cleanMultiline(experienceRaw);
 
     const skills = normalizeSkills(
-      body.skillsText ?? body.skills ?? body.form?.skillsText ?? body.form?.skills
+      body.skillsText ??
+        body.skills ??
+        body.form?.skillsText ??
+        body.form?.skills
     );
 
-    // Option A structured jobs (either top-level jobs or within form.jobs)
     const jobs = normalizeJobs((body as any).jobs ?? body.form?.jobs);
 
     const region = (body.region ?? body.form?.region ?? "UK").toString();
     const template = (body.template ?? body.form?.template ?? "classic").toString();
     const tone = (body.tone ?? body.form?.tone ?? "professional").toString();
 
+    // ✅ CRITICAL FIX: accept both language and lang (top-level and inside form)
+    const lang = normalizeLanguage(
+      body.language ??
+        body.lang ??
+        body.form?.language ??
+        body.form?.lang ??
+        body.form?.locale
+    );
+
     if (!role) {
-      return NextResponse.json({ ok: false, error: "Missing target role title." }, { status: 400 });
+      return NextResponse.json(
+        { ok: false, error: "Missing target role title." },
+        { status: 400 }
+      );
     }
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ ok: false, error: "Server missing OPENAI_API_KEY." }, { status: 500 });
+      return NextResponse.json(
+        { ok: false, error: "Server missing OPENAI_API_KEY." },
+        { status: 500 }
+      );
     }
 
-    // Keep your default model here. You can override via Vercel env var OPENAI_MODEL.
     const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
 
     /**
-     * IMPORTANT CHANGE:
-     * We force a predictable section structure so the preview can reliably show "Experience" content.
-     * Specifically, we require an explicit "EXPERIENCE SUMMARY" section that MUST be based on the provided experience text.
+     * ✅ OUTPUT CONTRACT (IMPORTANT):
+     * We output stable markdown headings so preview.js can ALWAYS extract sections.
+     * The headings remain the same in all languages.
      *
-     * Option A:
-     * If structured jobs are provided, we use them for EMPLOYMENT HISTORY.
-     * If not, we output bracket placeholders (not "Details available on request").
+     * preview.js already knows how to parse:
+     * - "### Professional Summary"
+     * - "### Key Experience"
+     * - "### Skills"
+     *
+     * So we force those exact markers.
      */
     const prompt = [
       `You are CVCraft, an expert CV writer.`,
       `Write in a ${tone} tone.`,
       `Region: ${region}.`,
       `Template hint: ${template}.`,
+      ``,
+      languageRules(lang),
       ``,
       `TARGET ROLE: ${role}`,
       ``,
@@ -199,51 +281,29 @@ export async function POST(req: NextRequest) {
       ``,
       `TASK: Generate a strong, ATS-friendly CV tailored to the target role.`,
       ``,
-      `OUTPUT RULES (must follow exactly):`,
-      `- Return ONLY plain CV text (no JSON, no code, no markdown fences).`,
-      `- Use THESE EXACT HEADINGS in this order (even if some are short):`,
-      `  1) PROFILE`,
-      `  2) EXPERIENCE SUMMARY`,
-      `  3) KEY SKILLS`,
-      `  4) EMPLOYMENT HISTORY`,
-      `  5) EDUCATION`,
-      `  6) QUALIFICATIONS & CERTIFICATIONS`,
-      `  7) ADDITIONAL INFORMATION`,
+      `OUTPUT FORMAT (MUST follow exactly):`,
+      `- Return ONLY plain text (no JSON, no code blocks).`,
+      `- Use EXACTLY these headings, spelled exactly like this:`,
+      `  ### Professional Summary`,
+      `  ### Key Experience`,
+      `  ### Skills`,
+      `- Do not add extra headings.`,
       ``,
-      `- Under PROFILE:`,
-      `  - Write 2–4 lines as a professional profile tailored to the target role.`,
-      `  - You MAY draw from the user's experience text, but do not copy it verbatim.`,
+      `CONTENT RULES:`,
+      `- Under "### Professional Summary": write 2–4 lines tailored to the role. If Spanish is selected, write these lines in Spanish.`,
+      `- Under "### Key Experience": write 3–6 lines based on the user's experience text if available. If none is provided, use bracket placeholders like "[X years]" instead of inventing facts.`,
+      `- Under "### Skills":`,
+      `  - If skills were provided, output them as bullet points (one per line) and keep them close to the originals.`,
+      `  - If none were provided, infer only generic skills appropriate to the role (no fake tools/certs).`,
       ``,
-      `- Under EXPERIENCE SUMMARY:`,
-      `  - MUST be present.`,
-      `  - MUST be based on the user's provided experience text if available.`,
-      `  - Write 3–6 lines, slightly rewritten for clarity, preserving key facts.`,
-      `  - If no experience text was provided, use placeholders like "[X years]" and "[industry]" rather than inventing facts.`,
+      `EMPLOYMENT NOTE:`,
+      `- Do NOT include an "Employment History" section here. The UI already renders structured employmentHistory from the form.`,
+      `- (This avoids duplicate/conflicting job history and keeps preview consistent.)`,
       ``,
-      `- Under KEY SKILLS:`,
-      `  - Prefer using provided skills verbatim as bullets; if none were provided, infer only general skills without fabricating facts.`,
-      ``,
-      `- Under EMPLOYMENT HISTORY:`,
-      `  - If structured jobs were provided above, format each job as:`,
-      `    Job Title — Company`,
-      `    Location | Dates`,
-      `    • bullet`,
-      `    • bullet`,
-      `    (Improve wording of provided bullets for professionalism, but do NOT invent employers/dates.)`,
-      `  - If no structured jobs were provided, output 2–3 placeholder roles using bracket placeholders like:`,
-      `    [Job Title] — [Company]`,
-      `    [Location] | [Dates]`,
-      `    • [Responsibility/achievement]`,
-      `    • [Responsibility/achievement]`,
-      `  - Do NOT write "Details available on request".`,
-      ``,
-      `- Under EDUCATION and QUALIFICATIONS & CERTIFICATIONS:`,
-      `  - Do NOT invent schools/certifications.`,
-      `  - If missing, output bracket placeholders like:`,
-      `    [Qualification] — [Institution] ([Year])`,
-      `    [Certification] — [Provider] ([Year])`,
-      ``,
-      `- Use bullet points where appropriate.`,
+      `BULLET RULE:`,
+      `- Skills MUST be bullets, like:`,
+      `  - Skill one`,
+      `  - Skill two`,
     ].join("\n");
 
     const r = await fetch("https://api.openai.com/v1/responses", {
@@ -287,8 +347,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ✅ Frontend expects: { ok: true, result: string }
-    return NextResponse.json({ ok: true, result: outputText });
+    return NextResponse.json({
+      ok: true,
+      result: outputText,
+      language: lang, // helpful debug
+    });
   } catch (e: any) {
     return NextResponse.json(
       { ok: false, error: e?.message || "Unknown server error." },

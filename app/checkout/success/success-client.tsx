@@ -1,92 +1,98 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-
-function safeLocalPath(path: string | null | undefined, fallback: string) {
-  if (!path) return fallback;
-  if (!path.startsWith("/")) return fallback;
-  if (path.startsWith("//")) return fallback;
-  return path;
-}
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Status = "verifying" | "ok" | "error";
 
-export default function SuccessClient() {
-  const router = useRouter();
-  const searchParams = useSearchParams(); // can be treated as nullable by TS in some builds
+type Props = {
+  sessionId: string;
+  product: string;
+  returnTo: string;
+};
 
-  // ✅ Null-safe reads (fixes Vercel build type error)
-  const sessionId = searchParams?.get("session_id") ?? "";
-  const product = (searchParams?.get("product") ?? "access_pass") as string;
-  const returnTo = safeLocalPath(searchParams?.get("return"), "/cv");
+export default function SuccessClient({ sessionId, product, returnTo }: Props) {
+  const router = useRouter();
 
   const [status, setStatus] = useState<Status>("verifying");
   const [message, setMessage] = useState<string>("Verifying your payment…");
   const [detail, setDetail] = useState<string | null>(null);
 
-  // ✅ Prevent double-run in React Strict Mode (dev)
-  const didRun = useRef(false);
+  // prevent duplicate requests in dev strict mode
+  const didAutoRun = useRef(false);
 
-  useEffect(() => {
-    if (didRun.current) return;
-    didRun.current = true;
+  const prettySession = useMemo(() => {
+    if (!sessionId) return "(missing)";
+    return sessionId.length > 18 ? sessionId.slice(0, 18) + "…" : sessionId;
+  }, [sessionId]);
 
-    let cancelled = false;
-
-    async function run() {
-      try {
-        if (!sessionId) {
-          setStatus("error");
-          setMessage("We couldn’t verify your payment.");
-          setDetail("Missing session_id.");
-          return;
-        }
-
-        setStatus("verifying");
-        setMessage("Verifying your payment…");
-        setDetail(null);
-
-        const res = await fetch("/api/access/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          cache: "no-store",
-          body: JSON.stringify({ session_id: sessionId, product }),
-        });
-
-        const data = await res.json().catch(() => ({}));
-
-        if (cancelled) return;
-
-        if (!res.ok || !data?.ok) {
-          setStatus("error");
-          setMessage("Payment verification failed.");
-          setDetail(data?.message || data?.error || "Access verify failed.");
-          return;
-        }
-
-        setStatus("ok");
-        setMessage("Payment accepted ✅ Your access is now unlocked.");
-        setDetail("Taking you back now…");
-
-        // Give the user a moment to see success state
-        await new Promise((r) => setTimeout(r, 1200));
-        if (cancelled) return;
-
-        router.replace(returnTo);
-      } catch (e: any) {
-        setStatus("error");
-        setMessage("Payment verification failed.");
-        setDetail(e?.message || "Access verify failed.");
-      }
+  const runVerify = useCallback(async () => {
+    if (!sessionId) {
+      setStatus("error");
+      setMessage("We couldn’t verify your payment.");
+      setDetail("Missing session_id in the URL.");
+      return;
     }
 
-    run();
-    return () => {
-      cancelled = true;
-    };
-  }, [router, sessionId, product, returnTo]);
+    setStatus("verifying");
+    setMessage("Verifying your payment…");
+    setDetail(null);
+
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 15000); // 15s hard stop
+
+    try {
+      const res = await fetch("/api/access/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        cache: "no-store",
+        signal: ac.signal,
+        body: JSON.stringify({ session_id: sessionId, product }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data?.ok) {
+        setStatus("error");
+        setMessage("Payment verification failed.");
+        setDetail(String(data?.message || data?.error || `HTTP ${res.status}`));
+        return;
+      }
+
+      setStatus("ok");
+      setMessage("Payment accepted ✅ Your access is now unlocked.");
+      setDetail("Taking you back now…");
+
+      // small pause so user sees success
+      await new Promise((r) => setTimeout(r, 900));
+
+      // go back to where they wanted
+      router.replace(returnTo);
+    } catch (e: any) {
+      const aborted =
+        e?.name === "AbortError" || String(e?.message || "").toLowerCase().includes("abort");
+
+      setStatus("error");
+      setMessage(aborted ? "Verification timed out." : "Payment verification failed.");
+      setDetail(
+        aborted
+          ? "The server took too long to respond. Click Retry."
+          : String(e?.message || "Access verify failed.")
+      );
+    } finally {
+      clearTimeout(timeout);
+    }
+  }, [router, returnTo, sessionId, product]);
+
+  useEffect(() => {
+    if (didAutoRun.current) return;
+    didAutoRun.current = true;
+
+    // If this never runs, you’ll know hydration isn’t happening
+    // (but with props + no useSearchParams, this is very reliable)
+    runVerify();
+  }, [runVerify]);
 
   return (
     <div className="min-h-screen flex items-center justify-center px-6">
@@ -95,15 +101,29 @@ export default function SuccessClient() {
 
         <p className="mt-2 text-sm text-slate-300">{message}</p>
 
+        {/* tiny debug line — safe to keep in dev; remove later if you want */}
+        <p className="mt-2 text-xs text-slate-500">
+          session: {prettySession} • product: {product} • return: {returnTo}
+        </p>
+
         {detail ? <p className="mt-2 text-xs text-slate-400">{detail}</p> : null}
 
         {status === "error" ? (
           <div className="mt-4 space-y-3">
             <p className="text-sm text-slate-200">
-              If this keeps happening, go back to Pricing and try again.
+              If this keeps happening, your payment is likely fine — it’s just the verification step
+              failing to complete. Retry below.
             </p>
 
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={runVerify}
+                className="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
+              >
+                Retry verification
+              </button>
+
               <button
                 type="button"
                 onClick={() =>

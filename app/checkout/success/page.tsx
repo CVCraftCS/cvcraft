@@ -1,26 +1,42 @@
 // app/checkout/success/page.tsx
-import { Suspense } from "react";
 import SuccessClient from "./success-client";
 
 export const dynamic = "force-dynamic";
 
-function Loading() {
-  return (
-    <div className="min-h-screen flex items-center justify-center px-6">
-      <div className="max-w-md w-full rounded-2xl bg-slate-950 text-white ring-1 ring-white/10 shadow-2xl p-6">
-        <h1 className="text-xl font-semibold">Checkout</h1>
-        <p className="mt-2 text-sm text-slate-300">Verifying your payment…</p>
-      </div>
-    </div>
-  );
+type SP = Record<string, string | string[] | undefined>;
+
+function first(sp: SP, key: string): string {
+  const v = sp?.[key];
+  if (Array.isArray(v)) return v[0] ?? "";
+  return typeof v === "string" ? v : "";
 }
 
-export default function CheckoutSuccessPage() {
+function safeLocalPath(path: string, fallback: string) {
+  if (!path) return fallback;
+  if (!path.startsWith("/")) return fallback;
+  if (path.startsWith("//")) return fallback;
+  return path;
+}
+
+function normalizeProduct(p: string) {
+  // keep strict, but don’t break if someone passes weird stuff
+  const x = String(p || "").trim();
+  if (x === "access_pass" || x === "extension" || x === "second_role") return x;
+  return "access_pass";
+}
+
+export default function CheckoutSuccessPage({
+  searchParams,
+}: {
+  searchParams: SP;
+}) {
+  const sessionId = first(searchParams, "session_id");
+  const product = normalizeProduct(first(searchParams, "product") || "access_pass");
+  const returnTo = safeLocalPath(first(searchParams, "return") || "/cv", "/cv");
+
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      <Suspense fallback={<Loading />}>
-        <SuccessClient />
-      </Suspense>
+      <SuccessClient sessionId={sessionId} product={product} returnTo={returnTo} />
     </main>
   );
 }

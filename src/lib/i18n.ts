@@ -17,10 +17,16 @@ export function getBrowserLang(): LangCode {
   if (typeof window === "undefined") return DEFAULT_LANG;
 
   const nav = (navigator.language || "").toLowerCase();
-  // simple mapping; extend later
+
+  // ✅ Expanded mapping
   if (nav.startsWith("en-us")) return "en-US";
   if (nav.startsWith("en-au")) return "en-AU";
   if (nav.startsWith("en-gb")) return "en-GB";
   if (nav.startsWith("en")) return "en-GB";
+
+  if (nav.startsWith("es")) return "es-ES";
+  if (nav.startsWith("fr")) return "fr-FR";
+  if (nav.startsWith("de")) return "de-DE";
+
   return DEFAULT_LANG;
 }

@@ -9,14 +9,19 @@ import {
   templateLabel as templateLabelFromLib,
 } from "../lib/templates";
 
-// ✅ Languages (defensive import: supports whatever you exported in languages.ts)
-import * as LanguagesLib from "../lib/languages";
+// 🌍 Languages (Phase 1 wired; Phase 2 generation handled server-side)
+import { LANGUAGES, normalizeLangKey } from "../lib/languages";
 
 const STORAGE_KEY = "cvcraft:lastResult";
 
 // Teacher Mode flag (set by cv.js)
 const TEACHER_MODE_SESSION_KEY = "cvcraft:teacherMode";
 const TEACHER_PIN_SESSION_KEY = "cvcraft:teacherPinHash"; // optional cleanup
+const SCHOOL_ACCESS_SESSION_KEY = "cvcraft:schoolAccess"; // optional cleanup
+
+// Pricing + access (single 30-day pass model)
+const ACCESS_PRICE_LABEL = "£9.99";
+const PRICING_PATH = "/pricing";
 
 // defaults (must match builder)
 const DEFAULT_SECTION_ORDER = [
@@ -46,6 +51,7 @@ function docLabel(region) {
   return region === "US" ? "Résumé" : "CV";
 }
 
+// Locale for dates etc
 function regionLocale(region) {
   if (region === "US") return "en-US";
   if (region === "AU") return "en-AU";
@@ -61,79 +67,22 @@ function regionDisplay(region) {
   return region || "";
 }
 
-/**
- * Language helpers (defensive)
- * - Supports many possible export shapes from languages.ts
- * - Falls back to region locale and built-in English strings
- */
-function getLanguagesMap() {
-  return (
-    LanguagesLib?.LANGUAGES ||
-    LanguagesLib?.languages ||
-    LanguagesLib?.LANGUAGE_PACKS ||
-    {}
-  );
-}
-
-function safeNormalizeLangKey(raw, region) {
-  const normalizeFn =
-    LanguagesLib?.normalizeLanguageKey || LanguagesLib?.normalizeLangKey || null;
-
-  if (typeof normalizeFn === "function") {
-    try {
-      const out = normalizeFn(raw);
-      if (typeof out === "string" && out.trim()) return out.trim();
-    } catch {
-      // ignore
-    }
-  }
-
-  const s = String(raw || "").trim();
-  if (/^en-(gb|us|au)$/i.test(s)) {
-    const parts = s.split("-");
-    return `${parts[0].toLowerCase()}-${parts[1].toUpperCase()}`;
-  }
-
-  // fallback: match region default locale
-  return regionLocale(region);
-}
-
-function getLanguagePack(input, region) {
-  const map = getLanguagesMap();
-
-  const raw = input?.lang || input?.language || input?.locale || input?.i18n || "";
-
-  const key = safeNormalizeLangKey(raw, region);
-
-  const pack =
-    (map && map[key]) ||
-    (map && map[regionLocale(region)]) ||
-    (map && map["en-GB"]) ||
-    (map && map["en-US"]) ||
-    null;
-
-  // Locale used for dates etc
-  const locale =
-    pack?.locale || pack?.intlLocale || pack?.dateLocale || key || regionLocale(region);
-
-  // HTML lang attribute (best effort)
-  const htmlLang = pack?.htmlLang || pack?.lang || key || locale;
-
-  return { key, pack, locale, htmlLang };
-}
-
 // Small i18n getter: supports pack.ui.<key> or pack.<key>
 function t(L, key, fallback) {
   const v = L?.ui?.[key] ?? L?.[key];
   return typeof v === "string" && v.trim() ? v : fallback;
 }
 
-// Section label can come from language pack, otherwise region-aware fallback
+// Section label can come from language pack, otherwise region-aware fallback (match cv.js)
 function sectionLabel(key, region, L) {
   const fromPack = L?.sections?.[key] ?? L?.sectionLabels?.[key];
   if (typeof fromPack === "string" && fromPack.trim()) return fromPack.trim();
 
-  if (key === "summary") return "Professional Summary";
+  const summaryLabel =
+    L?.summaryLabel ||
+    (region === "UK" ? "Personal Statement" : "Professional Summary");
+
+  if (key === "summary") return summaryLabel;
   if (key === "employment") return "Employment history";
   if (key === "qualifications")
     return region === "US"
@@ -352,10 +301,28 @@ async function fetchPaidAccessStatus() {
 }
 
 /**
+ * Legacy/old default references lines that may be stored in input.referencesText.
+ * If we see these, we treat them as "not custom" and prefer the language pack default.
+ */
+function isLegacyDefaultReferencesText(text) {
+  const s = String(text || "").trim().toLowerCase();
+  if (!s) return true;
+  return (
+    s === "references available on request." ||
+    s === "references available upon request." ||
+    // tolerate missing period
+    s === "references available on request" ||
+    s === "references available upon request"
+  );
+}
+
+/**
  * Extract sections from markdown-ish output.
  * Supports both:
  *  - UI-friendly "### Professional Summary / ### Skills"
  *  - API output blocks like "PROFILE", "KEY SKILLS", "EMPLOYMENT HISTORY", etc.
+ *
+ * ✅ Updated: supports Spanish (Phase 2) headings too, so we don't lose content.
  *
  * SAFETY: Skills are bullet-only.
  */
@@ -370,17 +337,18 @@ function extractSections(markdownText) {
 
   if (!text) return out;
 
+  // Normalize common "pretty" headings into a consistent marker format
   const normalized = text
     .replace(/\r\n/g, "\n")
-    // Summary variants
+    // English Summary variants
     .replace(/\*\*Professional Summary:\*\*/gi, "### Professional Summary")
     .replace(/\*\*Summary:\*\*/gi, "### Professional Summary")
     .replace(/^###\s*Summary\s*$/gim, "### Professional Summary")
-    // Experience variants
+    // English Experience variants
     .replace(/\*\*Key Experience:\*\*/gi, "### Key Experience")
     .replace(/\*\*Experience:\*\*/gi, "### Key Experience")
     .replace(/^###\s*Experience\s*$/gim, "### Key Experience")
-    // Skills variants
+    // English Skills variants
     .replace(/\*\*Professional Skills:\*\*/gi, "### Skills")
     .replace(/\*\*Skills:\*\*/gi, "### Skills")
     .replace(/\*\*Core Skills:\*\*/gi, "### Skills")
@@ -388,7 +356,14 @@ function extractSections(markdownText) {
     .replace(
       /^###\s*(Professional\s+Skills|Skills|Core\s+Skills|Key\s+Skills)\s*$/gim,
       "### Skills"
-    );
+    )
+    // ✅ Spanish "pretty" headings (if model outputs ### style)
+    .replace(/^###\s*Resumen\s+profesional\s*$/gim, "### Professional Summary")
+    .replace(/^###\s*Perfil\s*$/gim, "### Professional Summary")
+    .replace(/^###\s*Resumen\s+de\s+experiencia\s*$/gim, "### Key Experience")
+    .replace(/^###\s*Competencias\s+clave\s*$/gim, "### Skills")
+    .replace(/^###\s*Competencias\s*$/gim, "### Skills")
+    .replace(/^###\s*Habilidades\s*$/gim, "### Skills");
 
   // First try: "###" structured format
   const parts = normalized
@@ -459,12 +434,39 @@ function extractSections(markdownText) {
   // If structured format didn't give us skills/summary, try API block format:
   const lines = normalized.split("\n").map((l) => l.trim());
 
+  // Alias headings (Spanish -> English canonical)
+  const HEADING_ALIASES = {
+    // Spanish
+    PERFIL: "PROFILE",
+    "RESUMEN PROFESIONAL": "PROFESSIONAL SUMMARY",
+    "RESUMEN DE EXPERIENCIA": "EXPERIENCE SUMMARY",
+    "COMPETENCIAS CLAVE": "KEY SKILLS",
+    "EXPERIENCIA LABORAL": "EMPLOYMENT HISTORY",
+    "CUALIFICACIONES Y CERTIFICACIONES": "QUALIFICATIONS & CERTIFICATIONS",
+    "INFORMACIÓN ADICIONAL": "ADDITIONAL INFORMATION",
+    "INFORMACION ADICIONAL": "ADDITIONAL INFORMATION",
+    REFERENCIAS: "REFERENCES",
+    EDUCACIÓN: "EDUCATION",
+    EDUCACION: "EDUCATION",
+  };
+
   const normalizeHeading = (s) =>
     String(s || "")
+      // remove leading markdown heading markers
+      .replace(/^#+\s*/g, "")
+      // remove surrounding bold markers
+      .replace(/^\*\*+/, "")
+      .replace(/\*\*+$/g, "")
+      // normalize whitespace/punctuation
       .replace(/[:\-–—]+$/g, "")
       .replace(/\s+/g, " ")
       .trim()
       .toUpperCase();
+
+  const canonicalHeading = (line) => {
+    const h = normalizeHeading(line);
+    return HEADING_ALIASES[h] || h;
+  };
 
   const KNOWN_HEADINGS = new Set([
     "PROFILE",
@@ -482,7 +484,7 @@ function extractSections(markdownText) {
   ]);
 
   const isHeadingLine = (l) => {
-    const h = normalizeHeading(l);
+    const h = canonicalHeading(l);
     return KNOWN_HEADINGS.has(h);
   };
 
@@ -493,7 +495,7 @@ function extractSections(markdownText) {
     if (!l) continue;
 
     if (isHeadingLine(l)) {
-      current = normalizeHeading(l);
+      current = canonicalHeading(l);
       if (!sections[current]) sections[current] = [];
       continue;
     }
@@ -502,6 +504,7 @@ function extractSections(markdownText) {
   }
 
   if (!out.summary) {
+    // Prefer proper summary blocks, but fall back gracefully
     const merged = []
       .concat(
         sections["PROFESSIONAL SUMMARY"] || [],
@@ -557,134 +560,203 @@ function extractSections(markdownText) {
   return out;
 }
 
+// Simple PDF CSS generator for templates (keeps A4-safe + ATS-safe)
 function getPdfCss(template) {
-  // Minimal: fewer borders, very ATS safe
-  if (template === "minimal") {
-    return `
-      @page { size: A4; margin: 12mm; }
-      body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color: #0f172a; background: #ffffff; }
-      .page { width: 210mm; box-sizing: border-box; }
-      .card { padding: 0; border: none; }
-      h1 { font-size: 30px; margin: 0; font-weight: 800; }
-      .meta { margin-top: 10px; font-size: 12.5px; color: #475569; }
-      hr { border: none; border-top: 1px solid #e2e8f0; margin: 14px 0 16px; }
-      h2 { font-size: 11.5px; margin: 0 0 8px; letter-spacing: .14em; text-transform: uppercase; color: #334155; }
-      p { margin: 0; font-size: 13px; line-height: 1.55; color: #0f172a; }
-      .list { margin: 6px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.55; color: #0f172a; }
-      .list li { margin: 3px 0; }
-      .section { margin-top: 14px; break-inside: avoid; }
-      .pillRow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-      .pill { display: inline-block; padding: 5px 10px; border-radius: 999px; border: 1px solid #e2e8f0; font-size: 12px; color: #0f172a; background: #ffffff; }
-      .muted { color: #64748b; font-size: 12px; }
-      .job { margin-top: 10px; padding-top: 8px; border-top: 1px solid #e2e8f0; }
-      .jobTitle { font-weight: 800; font-size: 13.5px; color: #0f172a; }
-      .jobMeta { margin-top: 2px; font-size: 12px; color: #64748b; }
-      .smallNote { margin-top: 14px; font-size: 11.5px; color: #64748b; }
-    `;
-  }
+  const t = String(template || "classic");
 
-  // Two-column PDF layout
-  if (template === "two_column") {
+  const base = ({
+    margin = "12mm",
+    borderTop = "#0f172a",
+    borderLeft = null,
+    pillBg = "#f1f5f9",
+    pillBorder = "#e2e8f0",
+    pillText = "#0f172a",
+    heading = "#0f172a",
+    sectionTitle = "#0f172a",
+    compact = false,
+    minimal = false,
+    twoCol = false,
+  }) => {
+    const pad = compact ? "18px 20px" : "24px 26px";
+    const radius = compact ? "14px" : "18px";
+    const h1 = compact ? "24px" : "30px";
+    const meta = compact ? "11.5px" : "12.5px";
+    const p = compact ? "12.3px" : "13px";
+    const lh = compact ? "1.4" : "1.55";
+    const sectionMt = compact ? "12px" : "16px";
+
+    const borderRule = borderLeft
+      ? `border-left: ${borderLeft}; border-top: 1px solid #e2e8f0;`
+      : `border: 1px solid #e2e8f0; border-top: 8px solid ${borderTop};`;
+
+    const sectionTitleCss = compact
+      ? `h2 { font-size: 13px; margin: 0 0 6px; color: ${sectionTitle}; }`
+      : `h2 { font-size: 11.5px; margin: 0 0 8px; letter-spacing: .14em; text-transform: uppercase; color: ${sectionTitle}; }`;
+
     return `
-      @page { size: A4; margin: 12mm; }
+      @page { size: A4; margin: ${margin}; }
       body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color: #0f172a; background: #ffffff; }
       .page { width: 210mm; box-sizing: border-box; }
-      .card { border: 1px solid #e2e8f0; border-top: 8px solid #1d4ed8; border-radius: 18px; padding: 22px 24px; }
-      h1 { font-size: 30px; margin: 0; letter-spacing: -0.02em; }
-      .meta { margin-top: 10px; font-size: 12.5px; color: #475569; }
+      .card { ${
+        minimal
+          ? "padding: 0; border: none;"
+          : `${borderRule} border-radius: ${radius}; padding: ${pad};`
+      } }
+      h1 { font-size: ${h1}; margin: 0; letter-spacing: -0.02em; color: ${heading}; }
+      .meta { margin-top: ${
+        compact ? "8px" : "10px"
+      }; font-size: ${meta}; color: #475569; }
       .meta b { color: #334155; }
-      hr { border: none; border-top: 1px solid #e2e8f0; margin: 16px 0 18px; }
-      h2 { font-size: 11.5px; margin: 0 0 8px; letter-spacing: .14em; text-transform: uppercase; color: #1e40af; }
-      p { margin: 0; font-size: 13px; line-height: 1.55; color: #334155; }
-      .list { margin: 6px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.55; color: #334155; }
-      .list li { margin: 3px 0; }
-      .section { margin-top: 14px; break-inside: avoid; }
-      .pillRow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-      .pill { display: inline-block; padding: 6px 10px; border-radius: 999px; background: #eff6ff; border: 1px solid #bfdbfe; font-size: 12px; color: #1e3a8a; }
-      .muted { color: #64748b; font-size: 12px; }
-      .job { margin-top: 10px; padding-top: 8px; border-top: 1px solid #e2e8f0; }
-      .jobTitle { font-weight: 800; font-size: 13.5px; color: #0f172a; }
-      .jobMeta { margin-top: 2px; font-size: 12px; color: #64748b; }
-
-      .cols { display: flex; gap: 18px; }
-      .left { width: 36%; }
-      .right { width: 64%; }
+      hr { border: none; border-top: 1px solid #e2e8f0; margin: ${
+        compact ? "12px 0 14px" : "16px 0 18px"
+      }; }
+      ${sectionTitleCss}
+      p { margin: 0; font-size: ${p}; line-height: ${lh}; color: #334155; }
+      .list { margin: 6px 0 0; padding-left: ${
+        compact ? "16px" : "18px"
+      }; font-size: ${p}; line-height: ${lh}; color: #334155; }
+      .list li { margin: ${compact ? "2px 0" : "3px 0"}; }
+      .section { margin-top: ${sectionMt}; break-inside: avoid; }
+      .pillRow { display: flex; flex-wrap: wrap; gap: ${
+        compact ? "6px" : "8px"
+      }; margin-top: ${compact ? "8px" : "10px"}; }
+      .pill { display: inline-block; padding: ${
+        compact ? "5px 8px" : "6px 10px"
+      }; border-radius: 999px; background: ${pillBg}; border: 1px solid ${pillBorder}; font-size: ${
+        compact ? "11px" : "12px"
+      }; color: ${pillText}; }
+      .muted { color: #64748b; font-size: ${compact ? "11px" : "12px"}; }
+      .job { margin-top: ${
+        compact ? "8px" : "10px"
+      }; padding-top: ${
+        compact ? "6px" : "8px"
+      }; border-top: 1px solid #e2e8f0; }
+      .jobTitle { font-weight: 800; font-size: ${
+        compact ? "12.8px" : "13.5px"
+      }; color: #0f172a; }
+      .jobMeta { margin-top: 2px; font-size: ${
+        compact ? "11px" : "12px"
+      }; color: #64748b; }
+      .smallNote { margin-top: ${
+        compact ? "10px" : "14px"
+      }; font-size: ${compact ? "10.5px" : "11.5px"}; color: #64748b; }
+      ${
+        twoCol
+          ? `
+        .cols { display: flex; gap: 18px; }
+        .left { width: 36%; }
+        .right { width: 64%; }
+      `
+          : ""
+      }
     `;
+  };
+
+  if (t === "minimal") {
+    return base({
+      margin: "12mm",
+      minimal: true,
+      heading: "#0f172a",
+      sectionTitle: "#334155",
+      pillBg: "#ffffff",
+      pillBorder: "#e2e8f0",
+      pillText: "#0f172a",
+    });
   }
 
-  // Your existing modern / compact / classic — keep as-is for now
-  if (template === "modern") {
-    return `
-      @page { size: A4; margin: 12mm; }
-      body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color: #0f172a; background: #ffffff; }
-      .page { width: 210mm; box-sizing: border-box; }
-      .card { border: 1px solid #e2e8f0; border-top: 8px solid #10b981; border-radius: 18px; padding: 24px 26px; }
-      h1 { font-size: 30px; margin: 0; letter-spacing: -0.02em; }
-      .meta { margin-top: 10px; font-size: 12.5px; color: #475569; }
-      .meta b { color: #334155; }
-      hr { border: none; border-top: 1px solid #e2e8f0; margin: 16px 0 18px; }
-      h2 { font-size: 11.5px; margin: 0 0 8px; letter-spacing: .14em; text-transform: uppercase; color: #047857; }
-      p { margin: 0; font-size: 13px; line-height: 1.55; color: #334155; }
-      .list { margin: 6px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.55; color: #334155; }
-      .list li { margin: 3px 0; }
-      .section { margin-top: 16px; break-inside: avoid; }
-      .pillRow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-      .pill { display: inline-block; padding: 6px 10px; border-radius: 999px; background: #ecfdf5; border: 1px solid #a7f3d0; font-size: 12px; color: #064e3b; }
-      .muted { color: #64748b; font-size: 12px; }
-      .job { margin-top: 10px; padding-top: 8px; border-top: 1px solid #e2e8f0; }
-      .jobTitle { font-weight: 800; font-size: 13.5px; color: #0f172a; }
-      .jobMeta { margin-top: 2px; font-size: 12px; color: #64748b; }
-      .smallNote { margin-top: 14px; font-size: 11.5px; color: #64748b; }
-    `;
+  if (t === "two_column") {
+    return base({
+      margin: "12mm",
+      borderTop: "#1d4ed8",
+      sectionTitle: "#1e40af",
+      pillBg: "#eff6ff",
+      pillBorder: "#bfdbfe",
+      pillText: "#1e3a8a",
+      twoCol: true,
+    });
   }
 
-  if (template === "compact") {
-    return `
-      @page { size: A4; margin: 10mm; }
-      body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color: #0f172a; background: #ffffff; }
-      .page { width: 210mm; box-sizing: border-box; }
-      .card { border: 1px solid #e2e8f0; border-left: 6px solid #6366f1; border-radius: 14px; padding: 18px 20px; }
-      h1 { font-size: 24px; margin: 0; letter-spacing: -0.02em; }
-      .meta { margin-top: 8px; font-size: 11.5px; color: #475569; }
-      .meta b { color: #334155; }
-      hr { border: none; border-top: 1px solid #e2e8f0; margin: 12px 0 14px; }
-      h2 { font-size: 13px; margin: 0 0 6px; color: #4338ca; }
-      p { margin: 0; font-size: 12.3px; line-height: 1.4; color: #334155; }
-      .list { margin: 6px 0 0; padding-left: 16px; font-size: 12.3px; line-height: 1.4; color: #334155; }
-      .list li { margin: 2px 0; }
-      .section { margin-top: 12px; break-inside: avoid; }
-      .pillRow { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-      .pill { display: inline-block; padding: 5px 8px; border-radius: 999px; background: #eef2ff; border: 1px solid #c7d2fe; font-size: 11px; color: #3730a3; }
-      .muted { color: #64748b; font-size: 11px; }
-      .job { margin-top: 8px; padding-top: 6px; border-top: 1px solid #e2e8f0; }
-      .jobTitle { font-weight: 800; font-size: 12.8px; color: #0f172a; }
-      .jobMeta { margin-top: 2px; font-size: 11px; color: #64748b; }
-      .smallNote { margin-top: 10px; font-size: 10.5px; color: #64748b; }
-    `;
+  if (t === "compact") {
+    return base({
+      margin: "10mm",
+      borderLeft: "6px solid #6366f1",
+      compact: true,
+      sectionTitle: "#4338ca",
+      pillBg: "#eef2ff",
+      pillBorder: "#c7d2fe",
+      pillText: "#3730a3",
+    });
   }
 
-  return `
-    @page { size: A4; margin: 12mm; }
-    body { margin: 0; font-family: Arial, sans-serif; color: #0f172a; background: #ffffff; }
-    .page { width: 210mm; box-sizing: border-box; }
-    .card { border: 1px solid #e2e8f0; border-top: 8px solid #0f172a; border-radius: 16px; padding: 20px 22px; }
-    h1 { font-size: 28px; margin: 0; letter-spacing: -0.02em; }
-    .meta { margin-top: 10px; font-size: 12.5px; color: #475569; }
-    .meta b { color: #334155; }
-    hr { border: none; border-top: 1px solid #e2e8f0; margin: 16px 0 18px; }
-    h2 { font-size: 14.5px; margin: 0 0 8px; color: #0f172a; }
-    p { margin: 0; font-size: 13px; line-height: 1.48; color: #334155; }
-    .list { margin: 6px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.48; color: #334155; }
-    .list li { margin: 3px 0; }
-    .section { margin-top: 16px; break-inside: avoid; }
-    .pillRow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .pill { display: inline-block; padding: 6px 10px; border-radius: 999px; background: #f1f5f9; border: 1px solid #e2e8f0; font-size: 12px; color: #0f172a; }
-    .muted { color: #64748b; font-size: 12px; }
-    .job { margin-top: 10px; padding-top: 8px; border-top: 1px solid #e2e8f0; }
-    .jobTitle { font-weight: 700; font-size: 13.5px; color: #0f172a; }
-    .jobMeta { margin-top: 2px; font-size: 12px; color: #64748b; }
-    .smallNote { margin-top: 14px; font-size: 11.5px; color: #64748b; }
-  `;
+  if (t === "modern") {
+    return base({
+      borderTop: "#10b981",
+      sectionTitle: "#047857",
+      pillBg: "#ecfdf5",
+      pillBorder: "#a7f3d0",
+      pillText: "#064e3b",
+    });
+  }
+
+  if (t === "executive") {
+    return base({
+      borderTop: "#0f172a",
+      sectionTitle: "#0f172a",
+      pillBg: "#f1f5f9",
+      pillBorder: "#e2e8f0",
+      pillText: "#0f172a",
+    });
+  }
+
+  if (t === "technical") {
+    return base({
+      borderTop: "#0891b2",
+      sectionTitle: "#0e7490",
+      pillBg: "#ecfeff",
+      pillBorder: "#a5f3fc",
+      pillText: "#155e75",
+    });
+  }
+
+  if (t === "graduate") {
+    return base({
+      borderTop: "#f43f5e",
+      sectionTitle: "#be123c",
+      pillBg: "#fff1f2",
+      pillBorder: "#fecdd3",
+      pillText: "#9f1239",
+    });
+  }
+
+  if (t === "academic") {
+    return base({
+      borderTop: "#57534e",
+      sectionTitle: "#57534e",
+      pillBg: "#fafaf9",
+      pillBorder: "#e7e5e4",
+      pillText: "#1c1917",
+    });
+  }
+
+  if (t === "bold") {
+    return base({
+      borderTop: "#020617",
+      sectionTitle: "#020617",
+      pillBg: "#f1f5f9",
+      pillBorder: "#e2e8f0",
+      pillText: "#020617",
+      heading: "#020617",
+    });
+  }
+
+  // classic default
+  return base({
+    borderTop: "#0f172a",
+    sectionTitle: "#0f172a",
+    pillBg: "#f1f5f9",
+    pillBorder: "#e2e8f0",
+    pillText: "#0f172a",
+  });
 }
 
 export default function PreviewPage() {
@@ -709,6 +781,9 @@ export default function PreviewPage() {
   // UI state
   const [exportBusy, setExportBusy] = useState(false);
 
+  // Print guard state (helps a few browsers re-render print view)
+  const [printIntercepted, setPrintIntercepted] = useState(false);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -718,12 +793,10 @@ export default function PreviewPage() {
       const unlocked = url.searchParams.get("unlocked") === "true";
 
       if (unlocked && process.env.NODE_ENV !== "production") {
-        // We don't persist any local "paid" markers now; just let dev test UI
         setPaidAccess(true);
         url.searchParams.delete("unlocked");
         window.history.replaceState({}, "", url.toString());
       } else {
-        // Real paid status from cookie
         const ok = await fetchPaidAccessStatus();
         setPaidAccess(ok);
       }
@@ -765,14 +838,21 @@ export default function PreviewPage() {
   const input = saved?.input || {};
   const region = input.region || "UK";
 
-  // ✅ Language pack (from input.lang) + html lang for PDF
-  const { pack: L, htmlLang } = useMemo(
-    () => getLanguagePack(input, region),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [input?.lang, input?.language, input?.locale, input?.i18n, region]
-  );
+  // ✅ Language pack (Phase 1)
+  const { L, htmlLang } = useMemo(() => {
+    const raw =
+      input?.lang || input?.language || input?.locale || input?.i18n || "";
 
-  const labelDoc = docLabel(region);
+    // normalize language robustly (supports "es", "es-es", "ES", etc.)
+    const key = normalizeLangKey(raw || regionLocale(region));
+    const pack = (LANGUAGES && LANGUAGES[key]) || LANGUAGES?.["en-GB"] || null;
+
+    // HTML lang attribute (best effort)
+    const html = pack?.htmlLang || pack?.lang || key || regionLocale(region);
+    return { L: pack, htmlLang: html };
+  }, [input?.lang, input?.language, input?.locale, input?.i18n, region]);
+
+  const labelDoc = (L?.cvLabel || docLabel(region)).trim();
 
   // ✅ Normalize template key so new templates always render cleanly
   const template = normalizeTemplateKey(input.template || "classic");
@@ -795,12 +875,25 @@ export default function PreviewPage() {
         })()
       : DEFAULT_SECTION_ORDER;
 
-  const referencesText = (
-    input.referencesText ||
-    (region === "US"
-      ? "References available upon request."
-      : "References available on request.")
-  ).trim();
+  // ✅ FIX: references default respects language pack AND overrides legacy stored English defaults
+  const referencesText = useMemo(() => {
+    const candidate = String(input.referencesText || "").trim();
+
+    const shouldUsePackDefault =
+      !candidate || isLegacyDefaultReferencesText(candidate);
+
+    const packDefault = String(
+      t(
+        L,
+        "referencesDefaultText",
+        region === "US"
+          ? "References available upon request."
+          : "References available on request."
+      )
+    ).trim();
+
+    return (shouldUsePackDefault ? packDefault : candidate).trim();
+  }, [input.referencesText, L, region]);
 
   const targetRole = input.role || "";
   const fullName = input.name || "Your Name";
@@ -821,18 +914,78 @@ export default function PreviewPage() {
       ? sections.skills
       : fallbackSkills;
 
-  // ✅ NEW RULE: ALL CVs are paid.
-  // Teacher Mode can bypass paywall (for school licence flows), but public users must pay.
+  // ✅ NEW RULE: Export is paid (teacher bypass allowed for classroom flows)
   const exportLocked = !teacherMode && !paidAccess;
 
   const requestExportUnlock = () => {
-    if (teacherMode) return false; // licence/teacher bypass
+    if (teacherMode) return false;
     if (exportLocked) {
       setPaywallOpen(true);
       return true;
     }
     return false;
   };
+
+  // ------------------------------------------------------------
+  // HARD PRINT GATE (Ctrl+P / Cmd+P / beforeprint)
+  // - We cannot stop the browser print dialog reliably everywhere
+  // - But we CAN ensure the PRINTED OUTPUT is a lock page if locked
+  // ------------------------------------------------------------
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const setLockedAttr = (locked) => {
+      try {
+        if (locked) document.body.setAttribute("data-export-locked", "1");
+        else document.body.removeAttribute("data-export-locked");
+      } catch {}
+    };
+
+    // keep attribute in sync
+    setLockedAttr(exportLocked);
+
+    const onBeforePrint = () => {
+      if (exportLocked) {
+        setLockedAttr(true);
+        setPrintIntercepted(true);
+        setPaywallOpen(true);
+      } else {
+        setLockedAttr(false);
+        setPrintIntercepted(false);
+      }
+    };
+
+    const onAfterPrint = () => {
+      // restore after print (in case paid state changed)
+      setLockedAttr(exportLocked);
+      setTimeout(() => setPrintIntercepted(false), 250);
+    };
+
+    const onKeyDown = (e) => {
+      const k = String(e.key || "").toLowerCase();
+      const isPrint = (e.ctrlKey || e.metaKey) && k === "p";
+      if (!isPrint) return;
+
+      if (exportLocked) {
+        e.preventDefault();
+        e.stopPropagation();
+        setLockedAttr(true);
+        setPrintIntercepted(true);
+        setPaywallOpen(true);
+        return false;
+      }
+    };
+
+    window.addEventListener("beforeprint", onBeforePrint);
+    window.addEventListener("afterprint", onAfterPrint);
+    window.addEventListener("keydown", onKeyDown, true);
+
+    return () => {
+      window.removeEventListener("beforeprint", onBeforePrint);
+      window.removeEventListener("afterprint", onAfterPrint);
+      window.removeEventListener("keydown", onKeyDown, true);
+    };
+  }, [exportLocked]);
 
   // Clear storage (and teacher flag), show notice first
   const clearStoredDataAndShowNotice = () => {
@@ -845,9 +998,10 @@ export default function PreviewPage() {
         localStorage.removeItem(STORAGE_KEY);
         sessionStorage.removeItem(STORAGE_KEY);
 
-        // ✅ Important: also remove Teacher Mode session flags so the next student isn't stuck
+        // ✅ Remove Teacher Mode session flags so the next student isn't stuck
         sessionStorage.removeItem(TEACHER_MODE_SESSION_KEY);
         sessionStorage.removeItem(TEACHER_PIN_SESSION_KEY);
+        sessionStorage.removeItem(SCHOOL_ACCESS_SESSION_KEY);
       } catch {}
     }, 50);
   };
@@ -881,9 +1035,9 @@ export default function PreviewPage() {
       email || phone || location
         ? `${email ? escapeHtml(email) : ""}${
             email && (phone || location) ? " · " : ""
-          }${phone ? escapeHtml(phone) : ""}${
-            phone && location ? " · " : ""
-          }${location ? escapeHtml(location) : ""}`
+          }${phone ? escapeHtml(phone) : ""}${phone && location ? " · " : ""}${
+            location ? escapeHtml(location) : ""
+          }`
         : "";
 
     const summaryHtml =
@@ -913,7 +1067,7 @@ export default function PreviewPage() {
                  return `
                    <div class="job">
                      <div class="jobTitle">${escapeHtml(
-                       titleLine || "Role"
+                       titleLine || t(L, "roleFallback", "Role")
                      )}</div>
                      ${
                        dateLine
@@ -942,8 +1096,12 @@ export default function PreviewPage() {
              <ul class="list">
                ${qualifications
                  .map((q) => {
-                   const left = [q.title, q.provider].filter(Boolean).join(" — ");
-                   const right = [q.year, q.grade].filter(Boolean).join(" · ");
+                   const left = [q.title, q.provider]
+                     .filter(Boolean)
+                     .join(" — ");
+                   const right = [q.year, q.grade]
+                     .filter(Boolean)
+                     .join(" · ");
                    return `<li>${escapeHtml(left)}${
                      right
                        ? ` <span class="muted">(${escapeHtml(right)})</span>`
@@ -1091,7 +1249,7 @@ export default function PreviewPage() {
             t(
               L,
               "pdfFailedHint",
-              "Use “Print / Save PDF” instead (choose “Save as PDF”)."
+              "Try again, or use a different device/browser."
             ),
             detail ? "Details: " + detail : "",
           ]
@@ -1122,7 +1280,7 @@ export default function PreviewPage() {
         t(
           L,
           "pdfFailedFallback",
-          "PDF download failed. Use “Print / Save PDF” instead (choose “Save as PDF”)."
+          "PDF download failed. Please try again or use a different browser."
         )
       );
     } finally {
@@ -1200,7 +1358,9 @@ export default function PreviewPage() {
               return (
                 <li key={idx}>
                   {left}
-                  {right ? <span className="text-slate-500"> ({right})</span> : null}
+                  {right ? (
+                    <span className="text-slate-500"> ({right})</span>
+                  ) : null}
                 </li>
               );
             })}
@@ -1253,11 +1413,11 @@ export default function PreviewPage() {
       {showExitNotice ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 px-6">
           <div className="max-w-lg rounded-2xl bg-white p-8 text-center shadow-xl">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">
+            <h2 className="mb-4 text-2xl font-bold text-slate-900">
               {t(L, "exitTitle", "Before you leave this computer")}
             </h2>
 
-            <p className="text-slate-700 mb-6">
+            <p className="mb-6 text-slate-700">
               {t(
                 L,
                 "exitBody",
@@ -1265,7 +1425,7 @@ export default function PreviewPage() {
               )}
             </p>
 
-            <p className="text-sm text-slate-500 mb-6">
+            <p className="mb-6 text-sm text-slate-500">
               {t(
                 L,
                 "exitBody2",
@@ -1287,10 +1447,7 @@ export default function PreviewPage() {
       <div className="mx-auto max-w-4xl">
         {/* ✅ Actions row is explicitly non-print */}
         <div className="mb-6 flex items-center justify-between gap-3 print:hidden">
-          <Link
-            href="/cv"
-            className="text-sm text-slate-600 hover:text-slate-900"
-          >
+          <Link href="/cv" className="text-sm text-slate-600 hover:text-slate-900">
             ← {t(L, "backToBuilder", "Back to builder")}
           </Link>
 
@@ -1301,7 +1458,7 @@ export default function PreviewPage() {
               disabled={exportBusy} // ONLY disable while actually generating
               className={`rounded-lg px-4 py-2 text-sm font-semibold text-white transition ${
                 exportBusy
-                  ? "opacity-60 bg-emerald-600 cursor-not-allowed"
+                  ? "cursor-not-allowed bg-emerald-600 opacity-60"
                   : "bg-emerald-600 hover:bg-emerald-500"
               }`}
               title={
@@ -1318,7 +1475,7 @@ export default function PreviewPage() {
             <button
               type="button"
               onClick={onPrint}
-              className="rounded-lg px-4 py-2 text-sm font-semibold text-white transition bg-slate-900 hover:bg-slate-800"
+              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
               title={
                 exportLocked
                   ? t(L, "exportLockedTitle", "Purchase access to unlock export")
@@ -1331,8 +1488,48 @@ export default function PreviewPage() {
           </div>
         </div>
 
-        {/* ✅ This is the ONLY thing that should appear in browser print */}
-        <div id="cv-print-root" className={ui.card}>
+        {/* PRINT-LOCK PAGE (only printed when export is locked) */}
+        <div id="print-lock-root" className="hidden print:block">
+          <div className="rounded-2xl bg-white p-10 ring-1 ring-slate-200">
+            <h1 className="text-3xl font-extrabold text-slate-900">
+              {t(L, "printLockedTitle", "Export locked")}
+            </h1>
+            <p className="mt-3 text-slate-700">
+              {t(
+                L,
+                "printLockedBody",
+                `Printing / saving PDF is available after purchase (${ACCESS_PRICE_LABEL}).`
+              )}
+            </p>
+
+            <div className="mt-6 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
+              <div className="text-sm font-semibold text-slate-900">
+                {t(L, "unlockHow", "To unlock:")}
+              </div>
+              <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-slate-700">
+                <li>{t(L, "unlockHow1", "Return to the page (don’t print).")}</li>
+                <li>{t(L, "unlockHow2", "Purchase access.")}</li>
+                <li>{t(L, "unlockHow3", "Then export from Preview.")}</li>
+              </ol>
+            </div>
+
+            <p className="mt-6 text-xs text-slate-500">
+              {t(
+                L,
+                "printLockedNote",
+                "This page is shown to protect paid exports."
+              )}
+            </p>
+          </div>
+        </div>
+
+        {/* ✅ This is the ONLY thing that should appear in browser print (when unlocked) */}
+        <div
+          id="cv-print-root"
+          className={ui.card}
+          // small nudge to re-render in a few browsers when interception happens
+          data-print-intercepted={printIntercepted ? "1" : "0"}
+        >
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h1 className={ui.name}>{fullName}</h1>
@@ -1358,7 +1555,7 @@ export default function PreviewPage() {
               <div className="text-sm font-bold">
                 {regionPretty || regionCode || "—"}
                 {regionCode ? (
-                  <span className="ml-2 font-semibold text-xs opacity-80">
+                  <span className="ml-2 text-xs font-semibold opacity-80">
                     ({regionCode})
                   </span>
                 ) : null}
@@ -1425,15 +1622,13 @@ export default function PreviewPage() {
           ) : isTwoColumn ? (
             // ✅ Two-column on-screen layout
             <div className="grid gap-8 md:grid-cols-12">
-              <div className="md:col-span-4 space-y-8">
+              <div className="space-y-8 md:col-span-4">
                 {cfg.skills ? <div>{renderSection("skills")}</div> : null}
-                {cfg.qualifications ? (
-                  <div>{renderSection("qualifications")}</div>
-                ) : null}
+                {cfg.qualifications ? <div>{renderSection("qualifications")}</div> : null}
                 {cfg.references ? <div>{renderSection("references")}</div> : null}
               </div>
 
-              <div className="md:col-span-8 space-y-8">
+              <div className="space-y-8 md:col-span-8">
                 {cfg.summary ? <div>{renderSection("summary")}</div> : null}
                 {cfg.employment ? <div>{renderSection("employment")}</div> : null}
 
@@ -1470,20 +1665,22 @@ export default function PreviewPage() {
         open={paywallOpen}
         reason="export"
         onClose={() => setPaywallOpen(false)}
-        onPreviewAnyway={() => {
-          setPaywallOpen(false);
-        }}
+        onPreviewAnyway={() => setPaywallOpen(false)}
         onUnlockClick={() => {
           // Preserve return path so user can come back to preview after paying
-          const returnTo = encodeURIComponent("/preview");
-          window.location.href = `/pricing?return=${returnTo}`;
+          const params = new URLSearchParams();
+          params.set("return", "/preview");
+          params.set("intent", "access");
+          params.set("price", ACCESS_PRICE_LABEL);
+          window.location.href = `${PRICING_PATH}?${params.toString()}`;
         }}
       />
 
       <style jsx global>{`
         /* ------------------------------------------------------------
            PRINT FIX (CRITICAL):
-           - Only print #cv-print-root (no back link, no buttons, no tips)
+           - Default: Only print #cv-print-root (no back link, no buttons, no tips)
+           - If export locked: print lock page instead
            ------------------------------------------------------------ */
         @media print {
           html,
@@ -1498,7 +1695,7 @@ export default function PreviewPage() {
             visibility: hidden !important;
           }
 
-          /* Show only the CV print root */
+          /* Default: show only the CV print root */
           #cv-print-root,
           #cv-print-root * {
             visibility: visible !important;
@@ -1528,6 +1725,28 @@ export default function PreviewPage() {
           /* Don’t print links as URLs in some browsers */
           a[href]::after {
             content: "" !important;
+          }
+
+          /* ------------------------------------------------------------
+             HARD LOCK: if export is locked, do NOT print the CV.
+             Print the lock page instead.
+             ------------------------------------------------------------ */
+          body[data-export-locked="1"] #cv-print-root {
+            display: none !important;
+          }
+
+          body[data-export-locked="1"] #print-lock-root {
+            display: block !important;
+            visibility: visible !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+          }
+
+          body[data-export-locked="1"] #print-lock-root,
+          body[data-export-locked="1"] #print-lock-root * {
+            visibility: visible !important;
           }
         }
       `}</style>
