@@ -213,22 +213,43 @@ export default function Home() {
           <p className="text-sm text-slate-400">
             © {new Date().getFullYear()} CVCraft. Built for speed. Built properly.
           </p>
-          <div className="flex items-center gap-4 text-sm">
-            <Link
-              href="/cover-letter"
-              className="text-slate-300 hover:text-white"
-            >
-              Cover letter
-            </Link>
-            <Link href="/pricing" className="text-slate-300 hover:text-white">
-              Pricing
-            </Link>
-            <Link href="/schools" className="text-slate-300 hover:text-white">
-              Schools
-            </Link>
-            <Link href="/cv" className="text-slate-300 hover:text-white">
-              Build CV
-            </Link>
+
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
+            {/* ✅ Primary footer links */}
+            <div className="flex flex-wrap items-center gap-4">
+              <Link
+                href="/cover-letter"
+                className="text-slate-300 hover:text-white"
+              >
+                Cover letter
+              </Link>
+              <Link
+                href="/pricing"
+                className="text-slate-300 hover:text-white"
+              >
+                Pricing
+              </Link>
+              <Link
+                href="/schools"
+                className="text-slate-300 hover:text-white"
+              >
+                Schools
+              </Link>
+              <Link href="/cv" className="text-slate-300 hover:text-white">
+                Build CV
+              </Link>
+            </div>
+
+            {/* ✅ NEW: SEO discovery links for “help” pages */}
+            <div className="flex flex-wrap items-center gap-2 text-slate-400">
+              <a href="/cv-writing-help" className="hover:text-white">
+                CV writing help
+              </a>
+              <span className="text-slate-600">·</span>
+              <a href="/cover-letter-help" className="hover:text-white">
+                Cover letter help
+              </a>
+            </div>
           </div>
         </div>
       </footer>
