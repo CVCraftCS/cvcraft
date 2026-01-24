@@ -95,6 +95,22 @@ export default function Home() {
                   Free cover letter generator
                 </span>
               </div>
+
+              {/* Helpful SEO links (must use Link, not <a>) */}
+              <div className="mt-6 flex flex-wrap gap-4 text-sm text-slate-300">
+                <Link
+                  href="/cv-writing-help"
+                  className="text-slate-300 hover:text-white underline underline-offset-4"
+                >
+                  CV writing help →
+                </Link>
+                <Link
+                  href="/cover-letter-help"
+                  className="text-slate-300 hover:text-white underline underline-offset-4"
+                >
+                  Cover letter help →
+                </Link>
+              </div>
             </div>
 
             {/* Right side card */}
@@ -137,6 +153,14 @@ export default function Home() {
                     className="text-sm font-semibold text-slate-200 hover:text-white underline underline-offset-4"
                   >
                     Open free cover letter generator →
+                  </Link>
+                </div>
+                <div className="mt-2">
+                  <Link
+                    href="/cover-letter-help"
+                    className="text-xs text-slate-300 hover:text-white underline underline-offset-4"
+                  >
+                    Cover letter writing tips →
                   </Link>
                 </div>
               </div>
@@ -213,43 +237,34 @@ export default function Home() {
           <p className="text-sm text-slate-400">
             © {new Date().getFullYear()} CVCraft. Built for speed. Built properly.
           </p>
-
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
-            {/* ✅ Primary footer links */}
-            <div className="flex flex-wrap items-center gap-4">
-              <Link
-                href="/cover-letter"
-                className="text-slate-300 hover:text-white"
-              >
-                Cover letter
-              </Link>
-              <Link
-                href="/pricing"
-                className="text-slate-300 hover:text-white"
-              >
-                Pricing
-              </Link>
-              <Link
-                href="/schools"
-                className="text-slate-300 hover:text-white"
-              >
-                Schools
-              </Link>
-              <Link href="/cv" className="text-slate-300 hover:text-white">
-                Build CV
-              </Link>
-            </div>
-
-            {/* ✅ NEW: SEO discovery links for “help” pages */}
-            <div className="flex flex-wrap items-center gap-2 text-slate-400">
-              <a href="/cv-writing-help" className="hover:text-white">
-                CV writing help
-              </a>
-              <span className="text-slate-600">·</span>
-              <a href="/cover-letter-help" className="hover:text-white">
-                Cover letter help
-              </a>
-            </div>
+          <div className="flex items-center gap-4 text-sm flex-wrap">
+            <Link
+              href="/cover-letter"
+              className="text-slate-300 hover:text-white"
+            >
+              Cover letter
+            </Link>
+            <Link href="/pricing" className="text-slate-300 hover:text-white">
+              Pricing
+            </Link>
+            <Link href="/schools" className="text-slate-300 hover:text-white">
+              Schools
+            </Link>
+            <Link href="/cv" className="text-slate-300 hover:text-white">
+              Build CV
+            </Link>
+            <Link
+              href="/cv-writing-help"
+              className="text-slate-300 hover:text-white"
+            >
+              CV help
+            </Link>
+            <Link
+              href="/cover-letter-help"
+              className="text-slate-300 hover:text-white"
+            >
+              Cover letter help
+            </Link>
           </div>
         </div>
       </footer>
