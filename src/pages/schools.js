@@ -1,6 +1,24 @@
+// src/pages/schools.js
+import { useEffect } from "react";
 import Link from "next/link";
 
+const SCHOOL_ACCESS_SESSION_KEY = "cvcraft:schoolAccess";
+const TEACHER_MODE_SESSION_KEY = "cvcraft:teacherMode";
+const TEACHER_PIN_SESSION_KEY = "cvcraft:teacherPinHash";
+
 export default function SchoolsPage() {
+  // ✅ Reset classroom session flags when arriving on /schools
+  // This forces the code prompt to appear again next time /cv?teacher=1 is opened.
+  useEffect(() => {
+    try {
+      sessionStorage.removeItem(SCHOOL_ACCESS_SESSION_KEY);
+      sessionStorage.removeItem(TEACHER_MODE_SESSION_KEY);
+      sessionStorage.removeItem(TEACHER_PIN_SESSION_KEY);
+    } catch {
+      // ignore
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white px-6 py-12">
       <div className="mx-auto max-w-4xl">
