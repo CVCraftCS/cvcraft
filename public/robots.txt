@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
 
+Disallow: /thumbs/
+Disallow: /api/
+Disallow: /_next/
+
 Sitemap: https://www.cvcraftclassroom.com/sitemap.xml
