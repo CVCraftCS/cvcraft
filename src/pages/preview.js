@@ -917,6 +917,15 @@ export default function PreviewPage() {
   // ✅ NEW RULE: Export is paid (teacher bypass allowed for classroom flows)
   const exportLocked = !teacherMode && !paidAccess;
 
+  // ✅ Always re-check Stripe truth before exporting/printing (handles refunds while tab is open)
+  const ensureExportAllowed = async () => {
+    if (teacherMode) return true;
+    const ok = await fetchPaidAccessStatus();
+    setPaidAccess(ok);
+    if (!ok) setPaywallOpen(true);
+    return ok;
+  };
+
   const requestExportUnlock = () => {
     if (teacherMode) return false;
     if (exportLocked) {
@@ -1201,15 +1210,21 @@ export default function PreviewPage() {
 </html>`;
   };
 
-  const onPrint = () => {
+  const onPrint = async () => {
+    // Quick gate (UI) + hard truth check (refund-safe)
     if (requestExportUnlock()) return;
+    const ok = await ensureExportAllowed();
+    if (!ok) return;
 
     if (safeModeActive) setPendingClearAfterPrint(true);
     window.print();
   };
 
   const downloadPdf = async () => {
+    // Quick gate (UI) + hard truth check (refund-safe)
     if (requestExportUnlock()) return;
+    const ok = await ensureExportAllowed();
+    if (!ok) return;
 
     if (!saved) {
       alert(
@@ -1447,7 +1462,10 @@ export default function PreviewPage() {
       <div className="mx-auto max-w-4xl">
         {/* ✅ Actions row is explicitly non-print */}
         <div className="mb-6 flex items-center justify-between gap-3 print:hidden">
-          <Link href="/cv" className="text-sm text-slate-600 hover:text-slate-900">
+          <Link
+            href="/cv"
+            className="text-sm text-slate-600 hover:text-slate-900"
+          >
             ← {t(L, "backToBuilder", "Back to builder")}
           </Link>
 
@@ -1469,7 +1487,9 @@ export default function PreviewPage() {
             >
               {exportBusy
                 ? t(L, "preparing", "Preparing…")
-                : `${t(L, "downloadPdf", "Download PDF")}${exportLocked ? " 🔒" : ""}`}
+                : `${t(L, "downloadPdf", "Download PDF")}${
+                    exportLocked ? " 🔒" : ""
+                  }`}
             </button>
 
             <button
@@ -1514,11 +1534,7 @@ export default function PreviewPage() {
             </div>
 
             <p className="mt-6 text-xs text-slate-500">
-              {t(
-                L,
-                "printLockedNote",
-                "This page is shown to protect paid exports."
-              )}
+              {t(L, "printLockedNote", "This page is shown to protect paid exports.")}
             </p>
           </div>
         </div>
