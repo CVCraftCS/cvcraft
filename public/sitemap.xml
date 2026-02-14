@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
   <url>
     <loc>https://www.cvcraftclassroom.com/</loc>
     <changefreq>weekly</changefreq>
@@ -30,15 +31,30 @@
     <priority>0.7</priority>
   </url>
 
+  <!-- Help & SEO Pages -->
+
   <url>
     <loc>https://www.cvcraftclassroom.com/cv-writing-help</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-format-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.cvcraftclassroom.com/personal-statement-examples</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://www.cvcraftclassroom.com/cover-letter-help</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
+
 </urlset>
