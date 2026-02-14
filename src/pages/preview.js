@@ -1,6 +1,7 @@
 // src/pages/preview.js
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Head from "next/head";
 import PaywallModal from "../components/PaywallModal";
 
 // ✅ Single source of truth for template keys + labels
@@ -1228,7 +1229,11 @@ export default function PreviewPage() {
 
     if (!saved) {
       alert(
-        t(L, "noDataAlert", `No ${labelDoc} data found yet. Go back and generate one.`)
+        t(
+          L,
+          "noDataAlert",
+          `No ${labelDoc} data found yet. Go back and generate one.`
+        )
       );
       return;
     }
@@ -1422,8 +1427,18 @@ export default function PreviewPage() {
   const regionPretty = regionDisplay(region);
   const regionCode = String(region || "").toUpperCase();
 
+  const seoTitle = saved
+    ? `${fullName} — ${labelDoc} Preview | CVCraft`
+    : `${labelDoc} Preview | CVCraft`;
+
   return (
     <div className={`min-h-screen px-6 py-10 ${ui.page}`}>
+      <Head>
+        {/* ✅ Prevent indexing (fixes Google showing /preview, /thumbs, etc.) */}
+        <meta name="robots" content="noindex,nofollow" />
+        <title>{seoTitle}</title>
+      </Head>
+
       {/* Student Safe Mode exit notice */}
       {showExitNotice ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 px-6">
@@ -1482,7 +1497,11 @@ export default function PreviewPage() {
               title={
                 exportLocked
                   ? t(L, "exportLockedTitle", "Purchase access to unlock export")
-                  : t(L, "downloadPdfTitle", "Downloads a clean PDF (recommended)")
+                  : t(
+                      L,
+                      "downloadPdfTitle",
+                      "Downloads a clean PDF (recommended)"
+                    )
               }
             >
               {exportBusy
@@ -1527,14 +1546,20 @@ export default function PreviewPage() {
                 {t(L, "unlockHow", "To unlock:")}
               </div>
               <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-slate-700">
-                <li>{t(L, "unlockHow1", "Return to the page (don’t print).")}</li>
+                <li>
+                  {t(L, "unlockHow1", "Return to the page (don’t print).")}
+                </li>
                 <li>{t(L, "unlockHow2", "Purchase access.")}</li>
                 <li>{t(L, "unlockHow3", "Then export from Preview.")}</li>
               </ol>
             </div>
 
             <p className="mt-6 text-xs text-slate-500">
-              {t(L, "printLockedNote", "This page is shown to protect paid exports.")}
+              {t(
+                L,
+                "printLockedNote",
+                "This page is shown to protect paid exports."
+              )}
             </p>
           </div>
         </div>
@@ -1623,7 +1648,11 @@ export default function PreviewPage() {
                 {t(L, "previewTitle", `${labelDoc} Preview`)}
               </h2>
               <p className="mt-2 text-slate-600">
-                {t(L, "noDataBody", `No ${labelDoc} data found yet. Go back and generate one.`)}
+                {t(
+                  L,
+                  "noDataBody",
+                  `No ${labelDoc} data found yet. Go back and generate one.`
+                )}
               </p>
 
               <div className="mt-6">
@@ -1640,8 +1669,12 @@ export default function PreviewPage() {
             <div className="grid gap-8 md:grid-cols-12">
               <div className="space-y-8 md:col-span-4">
                 {cfg.skills ? <div>{renderSection("skills")}</div> : null}
-                {cfg.qualifications ? <div>{renderSection("qualifications")}</div> : null}
-                {cfg.references ? <div>{renderSection("references")}</div> : null}
+                {cfg.qualifications ? (
+                  <div>{renderSection("qualifications")}</div>
+                ) : null}
+                {cfg.references ? (
+                  <div>{renderSection("references")}</div>
+                ) : null}
               </div>
 
               <div className="space-y-8 md:col-span-8">
@@ -1658,7 +1691,11 @@ export default function PreviewPage() {
               </div>
             </div>
           ) : (
-            <div className={`${template === "compact" ? "space-y-6" : "space-y-8"}`}>
+            <div
+              className={`${
+                template === "compact" ? "space-y-6" : "space-y-8"
+              }`}
+            >
               {order.map((key) => (
                 <div key={key}>{renderSection(key)}</div>
               ))}

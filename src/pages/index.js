@@ -26,6 +26,12 @@ export default function Home() {
           "query-input": "required name=search_term_string",
         },
       },
+      {
+        "@type": "WebPage",
+        name: title,
+        url: canonical,
+        description,
+      },
     ],
   };
 
@@ -41,6 +47,9 @@ export default function Home() {
 
         {/* Canonical */}
         <link rel="canonical" href={canonical} />
+
+        {/* ✅ Help crawlers discover key pages */}
+        <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
         {/* Open Graph */}
         <meta property="og:site_name" content="CVCraft Classroom" />
@@ -80,6 +89,15 @@ export default function Home() {
               >
                 Cover letter (free)
               </Link>
+
+              {/* ✅ Help hub quick link */}
+              <Link
+                href="/cv-writing-help"
+                className="text-slate-200 hover:text-white"
+              >
+                CV help
+              </Link>
+
               <Link href="/pricing" className="text-slate-200 hover:text-white">
                 Pricing
               </Link>
@@ -233,6 +251,102 @@ export default function Home() {
                 <p className="mt-1 text-2xl font-bold">Cover letter generator</p>
               </div>
             </div>
+
+            {/* ✅ Help hub (SEO internal linking) */}
+            <section className="mt-16">
+              <div className="rounded-3xl bg-white/5 p-8 ring-1 ring-white/10">
+                <div className="flex items-end justify-between gap-6 flex-wrap">
+                  <div>
+                    <h2 className="text-2xl font-bold">CV &amp; cover letter help</h2>
+                    <p className="mt-2 max-w-2xl text-slate-300">
+                      Practical guides and examples — built to help you write faster
+                      and apply with confidence.
+                    </p>
+                  </div>
+
+                  <Link
+                    href="/cv"
+                    className="text-sm font-semibold text-white underline underline-offset-4 hover:text-slate-200"
+                  >
+                    Start building →
+                  </Link>
+                </div>
+
+                <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <Link
+                    href="/cv-writing-help"
+                    className="rounded-2xl bg-white/5 p-5 ring-1 ring-white/10 hover:bg-white/10 transition"
+                  >
+                    <div className="text-sm font-semibold text-white">
+                      How to write a CV (UK)
+                    </div>
+                    <div className="mt-1 text-sm text-slate-300">
+                      Step-by-step structure + tips
+                    </div>
+                  </Link>
+
+                  <Link
+                    href="/personal-statement-examples"
+                    className="rounded-2xl bg-white/5 p-5 ring-1 ring-white/10 hover:bg-white/10 transition"
+                  >
+                    <div className="text-sm font-semibold text-white">
+                      Personal statement examples
+                    </div>
+                    <div className="mt-1 text-sm text-slate-300">
+                      Copy-ready examples for roles
+                    </div>
+                  </Link>
+
+                  <Link
+                    href="/cv-format-uk"
+                    className="rounded-2xl bg-white/5 p-5 ring-1 ring-white/10 hover:bg-white/10 transition"
+                  >
+                    <div className="text-sm font-semibold text-white">
+                      Best CV format (UK)
+                    </div>
+                    <div className="mt-1 text-sm text-slate-300">
+                      Layout, length, and what to include
+                    </div>
+                  </Link>
+
+                  <Link
+                    href="/cover-letter-help"
+                    className="rounded-2xl bg-white/5 p-5 ring-1 ring-white/10 hover:bg-white/10 transition"
+                  >
+                    <div className="text-sm font-semibold text-white">
+                      Cover letter help (UK)
+                    </div>
+                    <div className="mt-1 text-sm text-slate-300">
+                      Structure + example letter
+                    </div>
+                  </Link>
+
+                  <Link
+                    href="/cover-letter"
+                    className="rounded-2xl bg-emerald-500/15 p-5 ring-1 ring-emerald-400/20 hover:bg-emerald-500/20 transition"
+                  >
+                    <div className="text-sm font-semibold text-white">
+                      Free cover letter generator
+                    </div>
+                    <div className="mt-1 text-sm text-slate-200">
+                      Generate a tailored letter in seconds
+                    </div>
+                  </Link>
+
+                  <Link
+                    href="/pricing"
+                    className="rounded-2xl bg-white/5 p-5 ring-1 ring-white/10 hover:bg-white/10 transition"
+                  >
+                    <div className="text-sm font-semibold text-white">
+                      Pricing
+                    </div>
+                    <div className="mt-1 text-sm text-slate-300">
+                      One simple pass — export when you’re ready
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            </section>
           </div>
         </section>
 
@@ -277,6 +391,18 @@ export default function Home() {
               <Link href="/cover-letter" className="text-slate-300 hover:text-white">
                 Cover letter
               </Link>
+
+              {/* ✅ Footer help links (more internal linking) */}
+              <Link href="/cv-writing-help" className="text-slate-300 hover:text-white">
+                CV writing help
+              </Link>
+              <Link href="/personal-statement-examples" className="text-slate-300 hover:text-white">
+                Personal statements
+              </Link>
+              <Link href="/cover-letter-help" className="text-slate-300 hover:text-white">
+                Cover letter help
+              </Link>
+
               <Link href="/pricing" className="text-slate-300 hover:text-white">
                 Pricing
               </Link>

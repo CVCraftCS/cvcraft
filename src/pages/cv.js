@@ -1,6 +1,7 @@
 // src/pages/cv.js
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
+import Head from "next/head";
 import PaywallModal from "../components/PaywallModal";
 
 // ✅ Single source of truth for templates
@@ -1344,732 +1345,765 @@ export default function CVBuilderPage() {
 
   const teacherLockedTemplate = teacherMode && isTeacherLocked("template");
 
+  // ✅ SEO helpers (stable canonical + clean title)
+  const CANONICAL_BASE = "https://www.cvcraftclassroom.com";
+  const canonicalUrl = `${CANONICAL_BASE}/cv`;
+
+  const seoTitle =
+    region === "UK"
+      ? "Build a Professional CV Online UK | AI CV Builder | CVCraft"
+      : region === "US"
+      ? "Build a Professional Résumé Online | AI Resume Builder | CVCraft"
+      : "Build a Professional CV Online | AI CV Builder | CVCraft";
+
+  const seoDescription =
+    region === "UK"
+      ? "Build a recruiter-ready UK CV in minutes with modern templates, student presets, and classroom-safe modes. Preview instantly and export to PDF when you're ready."
+      : region === "US"
+      ? "Build a recruiter-ready résumé in minutes with modern templates, student presets, and classroom-safe modes. Preview instantly and export to PDF when you're ready."
+      : "Build a recruiter-ready CV in minutes with modern templates, student presets, and classroom-safe modes. Preview instantly and export to PDF when you're ready.";
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white px-6 py-12">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-6 flex items-center justify-between">
-          <button onClick={() => router.push("/")} className="text-slate-300 hover:text-white" type="button">
-            ← Back
-          </button>
+    <>
+      <Head>
+        <title>{seoTitle}</title>
+        <meta name="description" content={seoDescription} />
+        <link rel="canonical" href={canonicalUrl} />
 
-          <div className="flex items-center gap-4">
-            {/* 🌍 Language selector (session-only) */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-300">Language</span>
-              <div className="flex flex-col items-start">
-                <select
-                  value={lang}
-                  onChange={(e) => {
-                    const nextLang = safeLang(e.target.value);
-                    setLang(nextLang);
+        {/* Social preview (nice-to-have, safe) */}
+        <meta property="og:title" content={seoTitle} />
+        <meta property="og:description" content={seoDescription} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="CVCraft" />
+      </Head>
 
-                    // ✅ Only auto-sync region for English variants (public mode).
-                    if (!teacherMode && isEnglishLang(nextLang)) {
-                      const desiredRegion = langToRegion(nextLang);
-                      setRegion(desiredRegion);
-                      applyRegionDefaults(desiredRegion);
-                    }
-                  }}
-                  className="rounded-xl px-3 py-2 text-black text-sm"
-                  title="Language affects UI wording; English variants also auto-set region."
-                >
-                  {Object.entries(LANGUAGES).map(([code, meta]) => (
-                    <option key={code} value={code}>
-                      {meta?.label || code}
-                    </option>
-                  ))}
-                </select>
-
-                {!teacherMode && isSpanishLang(lang) ? (
-                  <div className="mt-1 text-[11px] text-slate-300">Spanish generation is beta (ES).</div>
-                ) : null}
-
-                {!teacherMode && !isSpanishLang(lang) && isComingSoonGeneratedLang(lang) ? (
-                  <div className="mt-1 text-[11px] text-slate-300">
-                    This language is coming soon — generation remains English for now.
-                  </div>
-                ) : null}
-
-                {teacherMode ? (
-                  <div className="mt-1 text-[11px] text-slate-300">Teacher Mode locks language to classroom region.</div>
-                ) : null}
-              </div>
-            </div>
-
-            {teacherUiAllowed ? (
-              teacherMode ? (
-                <div className="flex items-center gap-3">
-                  <span className="rounded-full bg-emerald-400/20 text-emerald-200 ring-1 ring-emerald-400/30 px-3 py-1 text-xs font-semibold">
-                    🔒 Teacher Mode Active
-                  </span>
-
-                  {!teacherUnlocked ? (
-                    <button
-                      type="button"
-                      onClick={unlockTeacherControlsWithPin}
-                      className="text-sm text-emerald-200 hover:text-emerald-100 underline underline-offset-4"
-                      title="Unlock teacher-only controls (PIN required)"
-                    >
-                      Teacher controls
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={lockTeacherControls}
-                      className="text-sm text-emerald-200 hover:text-emerald-100 underline underline-offset-4"
-                      title="Hide/lock teacher controls"
-                    >
-                      Lock controls
-                    </button>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={handleDisableTeacherMode}
-                    className="text-sm text-emerald-200 hover:text-emerald-100 underline underline-offset-4"
-                    title="Disable Teacher Mode (PIN required)"
-                  >
-                    Disable Teacher Mode
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleEnableTeacherMode}
-                  className="text-sm text-emerald-200 hover:text-emerald-100 underline underline-offset-4"
-                  title="Enable Teacher Mode (PIN protected, session only)"
-                >
-                  Enable Teacher Mode
-                </button>
-              )
-            ) : null}
-
-            <button
-              onClick={clearForm}
-              type="button"
-              className="text-sm text-slate-300 hover:text-white underline underline-offset-4"
-              title="Clears the current form fields"
-            >
-              Clear form
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white px-6 py-12">
+        <div className="mx-auto max-w-3xl">
+          <div className="mb-6 flex items-center justify-between">
+            <button onClick={() => router.push("/")} className="text-slate-300 hover:text-white" type="button">
+              ← Back
             </button>
 
-            <button
-              onClick={clearSavedData}
-              type="button"
-              className="text-sm text-red-300 hover:text-red-200 underline underline-offset-4"
-              title="Removes all saved information from this device"
-            >
-              Clear saved data
-            </button>
-          </div>
-        </div>
+            <div className="flex items-center gap-4">
+              {/* 🌍 Language selector (session-only) */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-300">Language</span>
+                <div className="flex flex-col items-start">
+                  <select
+                    value={lang}
+                    onChange={(e) => {
+                      const nextLang = safeLang(e.target.value);
+                      setLang(nextLang);
 
-        <h1 className="text-4xl font-bold mb-2">Build your {labelDoc}</h1>
-        <p className="text-slate-300 mb-6">
-          Add your details, build your history, and generate a recruiter-ready {labelDoc}.
-        </p>
-
-        {teacherMode ? (
-          <div className="mb-4 rounded-2xl bg-emerald-950/40 border border-emerald-400/30 px-4 py-3 text-emerald-100">
-            🔒 Teacher Mode is active. Student Safe Mode is locked ON and no data is saved to this device.
-          </div>
-        ) : null}
-
-        {/* Teacher Control Panel (PIN-gated) */}
-        {teacherUiAllowed && teacherMode && teacherUnlocked ? (
-          <div className="mb-8 rounded-2xl bg-emerald-950/30 border border-emerald-400/20 p-6 space-y-4">
-            <h2 className="text-lg font-semibold">Teacher controls</h2>
-            <p className="text-sm text-emerald-100/90">These settings are teacher-only (PIN unlocked). They do not disable safety features.</p>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="block text-sm font-semibold mb-2">Classroom region</label>
-                <select value={teacherConfig.region} onChange={(e) => teacherSetRegion(e.target.value)} className="w-full rounded-xl px-4 py-3 text-black">
-                  <option value="UK">United Kingdom (UK)</option>
-                  <option value="US">United States (US)</option>
-                  <option value="AU">Australia (AU)</option>
-                </select>
-              </div>
-
-              <div className="rounded-xl bg-white/5 ring-1 ring-white/10 p-4 text-sm text-emerald-100">
-                <div className="font-semibold mb-1">What this affects:</div>
-                <div>Headings + conventions (CV vs Résumé, references norms)</div>
-              </div>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-2">
-              <button
-                type="button"
-                onClick={teacherToggleEmployment}
-                className={`rounded-xl px-4 py-3 text-sm font-semibold ring-1 transition ${
-                  teacherConfig.enableEmployment ? "bg-white text-slate-900 ring-white" : "bg-white/5 text-white ring-white/10 hover:bg-white/10"
-                }`}
-              >
-                {teacherConfig.enableEmployment ? "✓ Employment enabled" : "Employment disabled"}
-              </button>
-
-              <button
-                type="button"
-                onClick={teacherToggleReferences}
-                className={`rounded-xl px-4 py-3 text-sm font-semibold ring-1 transition ${
-                  teacherConfig.enableReferences ? "bg-white text-slate-900 ring-white" : "bg-white/5 text-white ring-white/10 hover:bg-white/10"
-                }`}
-              >
-                {teacherConfig.enableReferences ? "✓ References enabled" : "References disabled"}
-              </button>
-            </div>
-
-            <div className="text-xs text-emerald-100/80">
-              Safety note: Student Safe Mode remains locked ON and local storage remains disabled in Teacher Mode.
-            </div>
-          </div>
-        ) : null}
-
-        {/* --- FORM --- */}
-        <form onSubmit={handleGenerate} className="space-y-8">
-          {/* Region */}
-          <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-3">
-            <h2 className="text-lg font-semibold">Region</h2>
-            <p className="text-sm text-slate-300">Adjusts wording and default conventions (CV vs Résumé, references norms, headings).</p>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="block text-sm font-semibold mb-2">Select region</label>
-                <select
-                  value={region}
-                  onChange={(e) => {
-                    if (teacherMode && isTeacherLocked("region")) return;
-                    const next = e.target.value;
-                    setRegion(next);
-                    applyRegionDefaults(next);
-
-                    // ✅ Only auto-sync language for English variants.
-                    if (!teacherMode && isEnglishLang(lang)) {
-                      const desiredLang = regionToLang(next);
-                      setLang(desiredLang);
-                      try {
-                        sessionStorage.setItem(LANGUAGE_SESSION_KEY, desiredLang);
-                      } catch {
-                        // ignore
+                      // ✅ Only auto-sync region for English variants (public mode).
+                      if (!teacherMode && isEnglishLang(nextLang)) {
+                        const desiredRegion = langToRegion(nextLang);
+                        setRegion(desiredRegion);
+                        applyRegionDefaults(desiredRegion);
                       }
-                    }
-                  }}
-                  disabled={teacherMode && isTeacherLocked("region")}
-                  className={`w-full rounded-xl px-4 py-3 text-black ${teacherMode && isTeacherLocked("region") ? "opacity-70 cursor-not-allowed" : ""}`}
-                >
-                  <option value="UK">United Kingdom (UK)</option>
-                  <option value="US">United States (US)</option>
-                  <option value="AU">Australia (AU)</option>
-                </select>
-              </div>
+                    }}
+                    className="rounded-xl px-3 py-2 text-black text-sm"
+                    title="Language affects UI wording; English variants also auto-set region."
+                  >
+                    {Object.entries(LANGUAGES).map(([code, meta]) => (
+                      <option key={code} value={code}>
+                        {meta?.label || code}
+                      </option>
+                    ))}
+                  </select>
 
-              <div className="rounded-xl bg-white/5 ring-1 ring-white/10 p-4 text-sm text-slate-200">
-                <div className="font-semibold mb-1">Current output:</div>
-                <div>{labelDoc}</div>
-                <div className="text-slate-300 mt-2">Presets below will adapt to this region automatically.</div>
-              </div>
-            </div>
-          </div>
+                  {!teacherMode && isSpanishLang(lang) ? (
+                    <div className="mt-1 text-[11px] text-slate-300">Spanish generation is beta (ES).</div>
+                  ) : null}
 
-          {/* Presets */}
-          <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-4">
-            <h2 className="text-lg font-semibold">Quick start presets (region-aware)</h2>
-            <p className="text-sm text-slate-300">
-              One-click setup for common use cases. These adapt to {region} conventions.
-            </p>
-
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              <button
-                type="button"
-                onClick={() => applyPreset("student")}
-                disabled={teacherMode && isTeacherLocked("presets")}
-                className={`rounded-2xl bg-white text-slate-900 p-4 text-left font-semibold hover:bg-slate-100 transition ${
-                  teacherMode && isTeacherLocked("presets") ? "opacity-60 cursor-not-allowed" : ""
-                }`}
-              >
-                Student Mode
-                <div className="mt-1 text-sm font-normal text-slate-700">Skills + education forward. Great for first CVs.</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => applyPreset("apprenticeship")}
-                disabled={teacherMode && isTeacherLocked("presets")}
-                className={`rounded-2xl bg-white text-slate-900 p-4 text-left font-semibold hover:bg-slate-100 transition ${
-                  teacherMode && isTeacherLocked("presets") ? "opacity-60 cursor-not-allowed" : ""
-                }`}
-              >
-                Apprenticeship Mode
-                <div className="mt-1 text-sm font-normal text-slate-700">Skills + qualifications high priority.</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => applyPreset("jobseeker")}
-                disabled={teacherMode && isTeacherLocked("presets")}
-                className={`rounded-2xl bg-white text-slate-900 p-4 text-left font-semibold hover:bg-slate-100 transition ${
-                  teacherMode && isTeacherLocked("presets") ? "opacity-60 cursor-not-allowed" : ""
-                }`}
-              >
-                Jobseeker Mode
-                <div className="mt-1 text-sm font-normal text-slate-700">Experience-forward for general applications.</div>
-              </button>
-            </div>
-
-            {presetNotice ? (
-              <div className="rounded-xl bg-emerald-950/40 border border-emerald-400/40 px-4 py-3 text-emerald-100">{presetNotice}</div>
-            ) : null}
-          </div>
-
-          {/* Student Safe Mode */}
-          <div className="rounded-2xl bg-amber-950/30 p-6 ring-1 ring-amber-400/30 space-y-3">
-            <h2 className="text-lg font-semibold text-amber-200">Student Safe Mode (recommended for schools)</h2>
-
-            <p className="text-sm text-amber-100">
-              Prevents personal information from being stored on shared computers. When enabled, data is saved temporarily for preview, then cleared
-              automatically after PDF download/print.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => {
-                if (teacherMode && isTeacherLocked("studentSafeMode")) return;
-                setStudentSafeMode((v) => !v);
-              }}
-              disabled={teacherMode && isTeacherLocked("studentSafeMode")}
-              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold ring-1 transition ${
-                studentSafeMode || teacherMode ? "bg-amber-400 text-amber-950 ring-amber-400" : "bg-white/5 text-white ring-white/10 hover:bg-white/10"
-              } ${teacherMode && isTeacherLocked("studentSafeMode") ? "opacity-60 cursor-not-allowed" : ""}`}
-              aria-pressed={studentSafeMode || teacherMode ? "true" : "false"}
-              title={teacherMode ? "Locked in Teacher Mode" : undefined}
-            >
-              {studentSafeMode || teacherMode ? "✓ Enabled" : "Enable Student Safe Mode"}
-            </button>
-          </div>
-
-          {/* Template selector */}
-          <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-4">
-            <h2 className="text-lg font-semibold">{labelDoc} template</h2>
-            <p className="text-sm text-slate-300">Choose a style. This affects both the preview and the PDF.</p>
-
-            <TemplateGrid
-              templateOrder={TEMPLATE_ORDER}
-              templateMeta={TEMPLATE_META}
-              selectedTemplate={template}
-              onSelectTemplate={requestTemplateChange}
-              teacherMode={teacherMode}
-              teacherLocked={teacherLockedTemplate}
-              paidAccess={paidAccess}
-              priceLabel={ACCESS_PRICE_LABEL}
-            />
-          </div>
-
-          {/* Section builder */}
-          <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-4">
-            <h2 className="text-lg font-semibold">Sections</h2>
-            <p className="text-sm text-slate-300">Toggle sections on/off and choose the order shown in Preview + PDF.</p>
-
-            <div className="space-y-3">
-              {sectionOrder.map((key) => (
-                <div
-                  key={key}
-                  className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => toggleSection(key)}
-                      disabled={teacherMode && isTeacherLocked("sectionToggles")}
-                      className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold ring-1 transition ${
-                        sectionConfig[key] ? "bg-white text-slate-900 ring-white" : "bg-white/5 text-white ring-white/10 hover:bg-white/10"
-                      } ${teacherMode && isTeacherLocked("sectionToggles") ? "opacity-60 cursor-not-allowed" : ""}`}
-                      aria-pressed={sectionConfig[key] ? "true" : "false"}
-                      title={teacherMode ? "Locked in Teacher Mode" : undefined}
-                    >
-                      {sectionConfig[key] ? "✓ Enabled" : "Disabled"}
-                    </button>
-
-                    <div>
-                      <div className="font-semibold">{sectionLabel(key, region, L)}</div>
-                      {key === "references" ? <div className="text-xs text-slate-300">Region note: US résumés usually hide references.</div> : null}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => moveSection(key, "up")}
-                      disabled={teacherMode && isTeacherLocked("ordering")}
-                      className={`rounded-xl bg-white/5 px-3 py-2 text-sm font-semibold ring-1 ring-white/10 hover:bg-white/10 ${
-                        teacherMode && isTeacherLocked("ordering") ? "opacity-60 cursor-not-allowed" : ""
-                      }`}
-                      title={teacherMode ? "Locked in Teacher Mode" : "Move up"}
-                    >
-                      ↑
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => moveSection(key, "down")}
-                      disabled={teacherMode && isTeacherLocked("ordering")}
-                      className={`rounded-xl bg-white/5 px-3 py-2 text-sm font-semibold ring-1 ring-white/10 hover:bg-white/10 ${
-                        teacherMode && isTeacherLocked("ordering") ? "opacity-60 cursor-not-allowed" : ""
-                      }`}
-                      title={teacherMode ? "Locked in Teacher Mode" : "Move down"}
-                    >
-                      ↓
-                    </button>
-                  </div>
-
-                  {key === "references" && sectionConfig.references ? (
-                    <div className="sm:col-span-2 w-full">
-                      <label className="block text-sm font-semibold mb-2">References text</label>
-                      <input
-                        value={referencesText}
-                        onChange={(e) => setReferencesText(e.target.value)}
-                        placeholder={regionDefaults(region).referencesText}
-                        className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
-                      />
+                  {!teacherMode && !isSpanishLang(lang) && isComingSoonGeneratedLang(lang) ? (
+                    <div className="mt-1 text-[11px] text-slate-300">
+                      This language is coming soon — generation remains English for now.
                     </div>
                   ) : null}
-                </div>
-              ))}
-            </div>
-          </div>
 
-          {/* Personal details */}
-          <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-3">
-            <h2 className="text-lg font-semibold">Personal details</h2>
-            <p className="text-sm text-slate-300">
-              Saved locally in your browser (not uploaded). If you are using this service on a shared computer, enable “Student Safe Mode”.
-            </p>
-
-            <div className="space-y-5 pt-2">
-              <div>
-                <label className="block text-sm font-semibold mb-2">Full name</label>
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="For example: Alex Smith"
-                  className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
-                  required
-                />
-              </div>
-
-              <div className="grid gap-5 md:grid-cols-2">
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Email</label>
-                  <input
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@email.com"
-                    className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
-                    type="email"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Phone</label>
-                  <input
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder={phonePlaceholder(region)}
-                    className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
-                  />
+                  {teacherMode ? (
+                    <div className="mt-1 text-[11px] text-slate-300">Teacher Mode locks language to classroom region.</div>
+                  ) : null}
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold mb-2">Location</label>
-                <input
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder={locationPlaceholder(region)}
-                  className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
-                />
-              </div>
-            </div>
-          </div>
+              {teacherUiAllowed ? (
+                teacherMode ? (
+                  <div className="flex items-center gap-3">
+                    <span className="rounded-full bg-emerald-400/20 text-emerald-200 ring-1 ring-emerald-400/30 px-3 py-1 text-xs font-semibold">
+                      🔒 Teacher Mode Active
+                    </span>
 
-          {/* Qualifications */}
-          <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h2 className="text-lg font-semibold">{sectionLabel("qualifications", region, L)}</h2>
-                <p className="text-sm text-slate-300">Add any qualifications, courses, licences, or certificates (optional).</p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() =>
-                  setQualifications((prev) => [
-                    ...(prev || []),
-                    { id: `q-${(prev?.length || 0) + 1}`, title: "", provider: "", year: "", grade: "" },
-                  ])
-                }
-                className="rounded-xl bg-white text-black px-4 py-2 text-sm font-semibold hover:bg-slate-100"
-              >
-                + Add
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {qualifications.map((q, idx) => (
-                <div key={q.id} className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-semibold text-slate-200">Item {idx + 1}</div>
+                    {!teacherUnlocked ? (
+                      <button
+                        type="button"
+                        onClick={unlockTeacherControlsWithPin}
+                        className="text-sm text-emerald-200 hover:text-emerald-100 underline underline-offset-4"
+                        title="Unlock teacher-only controls (PIN required)"
+                      >
+                        Teacher controls
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={lockTeacherControls}
+                        className="text-sm text-emerald-200 hover:text-emerald-100 underline underline-offset-4"
+                        title="Hide/lock teacher controls"
+                      >
+                        Lock controls
+                      </button>
+                    )}
 
                     <button
                       type="button"
-                      onClick={() => {
-                        setQualifications((prev) => {
-                          const next = (prev || []).filter((x) => x.id !== q.id);
-                          return next.length ? next : [{ id: "q-1", title: "", provider: "", year: "", grade: "" }];
-                        });
-                      }}
-                      className="text-sm text-slate-300 hover:text-white underline underline-offset-4"
+                      onClick={handleDisableTeacherMode}
+                      className="text-sm text-emerald-200 hover:text-emerald-100 underline underline-offset-4"
+                      title="Disable Teacher Mode (PIN required)"
                     >
-                      Remove
+                      Disable Teacher Mode
                     </button>
                   </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleEnableTeacherMode}
+                    className="text-sm text-emerald-200 hover:text-emerald-100 underline underline-offset-4"
+                    title="Enable Teacher Mode (PIN protected, session only)"
+                  >
+                    Enable Teacher Mode
+                  </button>
+                )
+              ) : null}
 
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-semibold mb-2">{region === "US" ? "Education / Certificate" : "Qualification / Certificate"}</label>
-                      <input
-                        value={q.title}
-                        onChange={(e) => setQualifications((prev) => (prev || []).map((x) => (x.id === q.id ? { ...x, title: e.target.value } : x)))}
-                        placeholder={region === "US" ? "e.g. High School Diploma, OSHA 10, CPR" : "e.g. GCSEs, NVQ Level 2, First Aid"}
-                        className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
-                      />
-                    </div>
+              <button
+                onClick={clearForm}
+                type="button"
+                className="text-sm text-slate-300 hover:text-white underline underline-offset-4"
+                title="Clears the current form fields"
+              >
+                Clear form
+              </button>
 
-                    <div>
-                      <label className="block text-sm font-semibold mb-2">School / College / Provider</label>
-                      <input
-                        value={q.provider}
-                        onChange={(e) =>
-                          setQualifications((prev) => (prev || []).map((x) => (x.id === q.id ? { ...x, provider: e.target.value } : x)))
+              <button
+                onClick={clearSavedData}
+                type="button"
+                className="text-sm text-red-300 hover:text-red-200 underline underline-offset-4"
+                title="Removes all saved information from this device"
+              >
+                Clear saved data
+              </button>
+            </div>
+          </div>
+
+          <h1 className="text-4xl font-bold mb-2">Build your {labelDoc}</h1>
+          <p className="text-slate-300 mb-6">
+            Add your details, build your history, and generate a recruiter-ready {labelDoc}.
+          </p>
+
+          {teacherMode ? (
+            <div className="mb-4 rounded-2xl bg-emerald-950/40 border border-emerald-400/30 px-4 py-3 text-emerald-100">
+              🔒 Teacher Mode is active. Student Safe Mode is locked ON and no data is saved to this device.
+            </div>
+          ) : null}
+
+          {/* Teacher Control Panel (PIN-gated) */}
+          {teacherUiAllowed && teacherMode && teacherUnlocked ? (
+            <div className="mb-8 rounded-2xl bg-emerald-950/30 border border-emerald-400/20 p-6 space-y-4">
+              <h2 className="text-lg font-semibold">Teacher controls</h2>
+              <p className="text-sm text-emerald-100/90">These settings are teacher-only (PIN unlocked). They do not disable safety features.</p>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Classroom region</label>
+                  <select value={teacherConfig.region} onChange={(e) => teacherSetRegion(e.target.value)} className="w-full rounded-xl px-4 py-3 text-black">
+                    <option value="UK">United Kingdom (UK)</option>
+                    <option value="US">United States (US)</option>
+                    <option value="AU">Australia (AU)</option>
+                  </select>
+                </div>
+
+                <div className="rounded-xl bg-white/5 ring-1 ring-white/10 p-4 text-sm text-emerald-100">
+                  <div className="font-semibold mb-1">What this affects:</div>
+                  <div>Headings + conventions (CV vs Résumé, references norms)</div>
+                </div>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={teacherToggleEmployment}
+                  className={`rounded-xl px-4 py-3 text-sm font-semibold ring-1 transition ${
+                    teacherConfig.enableEmployment ? "bg-white text-slate-900 ring-white" : "bg-white/5 text-white ring-white/10 hover:bg-white/10"
+                  }`}
+                >
+                  {teacherConfig.enableEmployment ? "✓ Employment enabled" : "Employment disabled"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={teacherToggleReferences}
+                  className={`rounded-xl px-4 py-3 text-sm font-semibold ring-1 transition ${
+                    teacherConfig.enableReferences ? "bg-white text-slate-900 ring-white" : "bg-white/5 text-white ring-white/10 hover:bg-white/10"
+                  }`}
+                >
+                  {teacherConfig.enableReferences ? "✓ References enabled" : "References disabled"}
+                </button>
+              </div>
+
+              <div className="text-xs text-emerald-100/80">
+                Safety note: Student Safe Mode remains locked ON and local storage remains disabled in Teacher Mode.
+              </div>
+            </div>
+          ) : null}
+
+          {/* --- FORM --- */}
+          <form onSubmit={handleGenerate} className="space-y-8">
+            {/* Region */}
+            <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-3">
+              <h2 className="text-lg font-semibold">Region</h2>
+              <p className="text-sm text-slate-300">Adjusts wording and default conventions (CV vs Résumé, references norms, headings).</p>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Select region</label>
+                  <select
+                    value={region}
+                    onChange={(e) => {
+                      if (teacherMode && isTeacherLocked("region")) return;
+                      const next = e.target.value;
+                      setRegion(next);
+                      applyRegionDefaults(next);
+
+                      // ✅ Only auto-sync language for English variants.
+                      if (!teacherMode && isEnglishLang(lang)) {
+                        const desiredLang = regionToLang(next);
+                        setLang(desiredLang);
+                        try {
+                          sessionStorage.setItem(LANGUAGE_SESSION_KEY, desiredLang);
+                        } catch {
+                          // ignore
                         }
-                        placeholder={region === "US" ? "e.g. Lincoln High School" : "e.g. College Name"}
-                        className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold mb-2">Year</label>
-                      <input
-                        value={q.year}
-                        onChange={(e) => setQualifications((prev) => (prev || []).map((x) => (x.id === q.id ? { ...x, year: e.target.value } : x)))}
-                        placeholder="e.g. 2025"
-                        className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
-                        inputMode="numeric"
-                      />
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-semibold mb-2">Grade / Result (optional)</label>
-                      <input
-                        value={q.grade}
-                        onChange={(e) => setQualifications((prev) => (prev || []).map((x) => (x.id === q.id ? { ...x, grade: e.target.value } : x)))}
-                        placeholder={region === "US" ? "e.g. GPA 3.6, Honors" : "e.g. Grade 6, Pass"}
-                        className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
-                      />
-                    </div>
-                  </div>
+                      }
+                    }}
+                    disabled={teacherMode && isTeacherLocked("region")}
+                    className={`w-full rounded-xl px-4 py-3 text-black ${teacherMode && isTeacherLocked("region") ? "opacity-70 cursor-not-allowed" : ""}`}
+                  >
+                    <option value="UK">United Kingdom (UK)</option>
+                    <option value="US">United States (US)</option>
+                    <option value="AU">Australia (AU)</option>
+                  </select>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          {/* Employment history */}
-          <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h2 className="text-lg font-semibold">Employment history</h2>
-                <p className="text-sm text-slate-300">
-                  Add roles one-by-one. If you fill this in, you can leave the “Experience text” box empty.
-                </p>
+                <div className="rounded-xl bg-white/5 ring-1 ring-white/10 p-4 text-sm text-slate-200">
+                  <div className="font-semibold mb-1">Current output:</div>
+                  <div>{labelDoc}</div>
+                  <div className="text-slate-300 mt-2">Presets below will adapt to this region automatically.</div>
+                </div>
               </div>
+            </div>
+
+            {/* Presets */}
+            <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-4">
+              <h2 className="text-lg font-semibold">Quick start presets (region-aware)</h2>
+              <p className="text-sm text-slate-300">
+                One-click setup for common use cases. These adapt to {region} conventions.
+              </p>
+
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <button
+                  type="button"
+                  onClick={() => applyPreset("student")}
+                  disabled={teacherMode && isTeacherLocked("presets")}
+                  className={`rounded-2xl bg-white text-slate-900 p-4 text-left font-semibold hover:bg-slate-100 transition ${
+                    teacherMode && isTeacherLocked("presets") ? "opacity-60 cursor-not-allowed" : ""
+                  }`}
+                >
+                  Student Mode
+                  <div className="mt-1 text-sm font-normal text-slate-700">Skills + education forward. Great for first CVs.</div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => applyPreset("apprenticeship")}
+                  disabled={teacherMode && isTeacherLocked("presets")}
+                  className={`rounded-2xl bg-white text-slate-900 p-4 text-left font-semibold hover:bg-slate-100 transition ${
+                    teacherMode && isTeacherLocked("presets") ? "opacity-60 cursor-not-allowed" : ""
+                  }`}
+                >
+                  Apprenticeship Mode
+                  <div className="mt-1 text-sm font-normal text-slate-700">Skills + qualifications high priority.</div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => applyPreset("jobseeker")}
+                  disabled={teacherMode && isTeacherLocked("presets")}
+                  className={`rounded-2xl bg-white text-slate-900 p-4 text-left font-semibold hover:bg-slate-100 transition ${
+                    teacherMode && isTeacherLocked("presets") ? "opacity-60 cursor-not-allowed" : ""
+                  }`}
+                >
+                  Jobseeker Mode
+                  <div className="mt-1 text-sm font-normal text-slate-700">Experience-forward for general applications.</div>
+                </button>
+              </div>
+
+              {presetNotice ? (
+                <div className="rounded-xl bg-emerald-950/40 border border-emerald-400/40 px-4 py-3 text-emerald-100">{presetNotice}</div>
+              ) : null}
+            </div>
+
+            {/* Student Safe Mode */}
+            <div className="rounded-2xl bg-amber-950/30 p-6 ring-1 ring-amber-400/30 space-y-3">
+              <h2 className="text-lg font-semibold text-amber-200">Student Safe Mode (recommended for schools)</h2>
+
+              <p className="text-sm text-amber-100">
+                Prevents personal information from being stored on shared computers. When enabled, data is saved temporarily for preview, then cleared
+                automatically after PDF download/print.
+              </p>
 
               <button
                 type="button"
-                onClick={() =>
-                  setEmploymentHistory((prev) => [
-                    ...(prev || []),
-                    { id: `job-${(prev?.length || 0) + 1}`, title: "", company: "", location: "", start: "", end: "", bulletsText: "" },
-                  ])
-                }
-                className="rounded-xl bg-white text-black px-4 py-2 text-sm font-semibold hover:bg-slate-100"
+                onClick={() => {
+                  if (teacherMode && isTeacherLocked("studentSafeMode")) return;
+                  setStudentSafeMode((v) => !v);
+                }}
+                disabled={teacherMode && isTeacherLocked("studentSafeMode")}
+                className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold ring-1 transition ${
+                  studentSafeMode || teacherMode ? "bg-amber-400 text-amber-950 ring-amber-400" : "bg-white/5 text-white ring-white/10 hover:bg-white/10"
+                } ${teacherMode && isTeacherLocked("studentSafeMode") ? "opacity-60 cursor-not-allowed" : ""}`}
+                aria-pressed={studentSafeMode || teacherMode ? "true" : "false"}
+                title={teacherMode ? "Locked in Teacher Mode" : undefined}
               >
-                + Add role
+                {studentSafeMode || teacherMode ? "✓ Enabled" : "Enable Student Safe Mode"}
               </button>
             </div>
 
-            <div className="space-y-4">
-              {employmentHistory.map((j, idx) => (
-                <div key={j.id} className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-semibold text-slate-200">Role {idx + 1}</div>
+            {/* Template selector */}
+            <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-4">
+              <h2 className="text-lg font-semibold">{labelDoc} template</h2>
+              <p className="text-sm text-slate-300">Choose a style. This affects both the preview and the PDF.</p>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEmploymentHistory((prev) => {
-                          const next = (prev || []).filter((x) => x.id !== j.id);
-                          return next.length
-                            ? next
-                            : [{ id: "job-1", title: "", company: "", location: "", start: "", end: "", bulletsText: "" }];
-                        });
-                      }}
-                      className="text-sm text-slate-300 hover:text-white underline underline-offset-4"
-                    >
-                      Remove
-                    </button>
+              <TemplateGrid
+                templateOrder={TEMPLATE_ORDER}
+                templateMeta={TEMPLATE_META}
+                selectedTemplate={template}
+                onSelectTemplate={requestTemplateChange}
+                teacherMode={teacherMode}
+                teacherLocked={teacherLockedTemplate}
+                paidAccess={paidAccess}
+                priceLabel={ACCESS_PRICE_LABEL}
+              />
+            </div>
+
+            {/* Section builder */}
+            <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-4">
+              <h2 className="text-lg font-semibold">Sections</h2>
+              <p className="text-sm text-slate-300">Toggle sections on/off and choose the order shown in Preview + PDF.</p>
+
+              <div className="space-y-3">
+                {sectionOrder.map((key) => (
+                  <div
+                    key={key}
+                    className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => toggleSection(key)}
+                        disabled={teacherMode && isTeacherLocked("sectionToggles")}
+                        className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold ring-1 transition ${
+                          sectionConfig[key] ? "bg-white text-slate-900 ring-white" : "bg-white/5 text-white ring-white/10 hover:bg-white/10"
+                        } ${teacherMode && isTeacherLocked("sectionToggles") ? "opacity-60 cursor-not-allowed" : ""}`}
+                        aria-pressed={sectionConfig[key] ? "true" : "false"}
+                        title={teacherMode ? "Locked in Teacher Mode" : undefined}
+                      >
+                        {sectionConfig[key] ? "✓ Enabled" : "Disabled"}
+                      </button>
+
+                      <div>
+                        <div className="font-semibold">{sectionLabel(key, region, L)}</div>
+                        {key === "references" ? <div className="text-xs text-slate-300">Region note: US résumés usually hide references.</div> : null}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => moveSection(key, "up")}
+                        disabled={teacherMode && isTeacherLocked("ordering")}
+                        className={`rounded-xl bg-white/5 px-3 py-2 text-sm font-semibold ring-1 ring-white/10 hover:bg-white/10 ${
+                          teacherMode && isTeacherLocked("ordering") ? "opacity-60 cursor-not-allowed" : ""
+                        }`}
+                        title={teacherMode ? "Locked in Teacher Mode" : "Move up"}
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveSection(key, "down")}
+                        disabled={teacherMode && isTeacherLocked("ordering")}
+                        className={`rounded-xl bg-white/5 px-3 py-2 text-sm font-semibold ring-1 ring-white/10 hover:bg-white/10 ${
+                          teacherMode && isTeacherLocked("ordering") ? "opacity-60 cursor-not-allowed" : ""
+                        }`}
+                        title={teacherMode ? "Locked in Teacher Mode" : "Move down"}
+                      >
+                        ↓
+                      </button>
+                    </div>
+
+                    {key === "references" && sectionConfig.references ? (
+                      <div className="sm:col-span-2 w-full">
+                        <label className="block text-sm font-semibold mb-2">References text</label>
+                        <input
+                          value={referencesText}
+                          onChange={(e) => setReferencesText(e.target.value)}
+                          placeholder={regionDefaults(region).referencesText}
+                          className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Personal details */}
+            <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-3">
+              <h2 className="text-lg font-semibold">Personal details</h2>
+              <p className="text-sm text-slate-300">
+                Saved locally in your browser (not uploaded). If you are using this service on a shared computer, enable “Student Safe Mode”.
+              </p>
+
+              <div className="space-y-5 pt-2">
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Full name</label>
+                  <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="For example: Alex Smith"
+                    className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
+                    required
+                  />
+                </div>
+
+                <div className="grid gap-5 md:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Email</label>
+                    <input
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="name@email.com"
+                      className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
+                      type="email"
+                    />
                   </div>
 
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div>
-                      <label className="block text-sm font-semibold mb-2">Job title</label>
-                      <input
-                        value={j.title}
-                        onChange={(e) => setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, title: e.target.value } : x)))}
-                        placeholder="e.g. Retail Assistant"
-                        className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
-                      />
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Phone</label>
+                    <input
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder={phonePlaceholder(region)}
+                      className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Location</label>
+                  <input
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder={locationPlaceholder(region)}
+                    className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Qualifications */}
+            <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold">{sectionLabel("qualifications", region, L)}</h2>
+                  <p className="text-sm text-slate-300">Add any qualifications, courses, licences, or certificates (optional).</p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setQualifications((prev) => [
+                      ...(prev || []),
+                      { id: `q-${(prev?.length || 0) + 1}`, title: "", provider: "", year: "", grade: "" },
+                    ])
+                  }
+                  className="rounded-xl bg-white text-black px-4 py-2 text-sm font-semibold hover:bg-slate-100"
+                >
+                  + Add
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {qualifications.map((q, idx) => (
+                  <div key={q.id} className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-semibold text-slate-200">Item {idx + 1}</div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setQualifications((prev) => {
+                            const next = (prev || []).filter((x) => x.id !== q.id);
+                            return next.length ? next : [{ id: "q-1", title: "", provider: "", year: "", grade: "" }];
+                          });
+                        }}
+                        className="text-sm text-slate-300 hover:text-white underline underline-offset-4"
+                      >
+                        Remove
+                      </button>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold mb-2">Company</label>
-                      <input
-                        value={j.company}
-                        onChange={(e) => setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, company: e.target.value } : x)))}
-                        placeholder="e.g. Tesco"
-                        className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold mb-2">Location (optional)</label>
-                      <input
-                        value={j.location}
-                        onChange={(e) => setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, location: e.target.value } : x)))}
-                        placeholder={region === "US" ? "e.g. Dallas, TX" : region === "AU" ? "e.g. Brisbane" : "e.g. Sheffield"}
-                        className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
-                      />
-                    </div>
-
-                    <div className="grid gap-4 grid-cols-2">
-                      <div>
-                        <label className="block text-sm font-semibold mb-2">Start</label>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-semibold mb-2">{region === "US" ? "Education / Certificate" : "Qualification / Certificate"}</label>
                         <input
-                          value={j.start}
-                          onChange={(e) => setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, start: e.target.value } : x)))}
-                          placeholder="e.g. 2024"
+                          value={q.title}
+                          onChange={(e) => setQualifications((prev) => (prev || []).map((x) => (x.id === q.id ? { ...x, title: e.target.value } : x)))}
+                          placeholder={region === "US" ? "e.g. High School Diploma, OSHA 10, CPR" : "e.g. GCSEs, NVQ Level 2, First Aid"}
                           className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-semibold mb-2">End</label>
+                        <label className="block text-sm font-semibold mb-2">School / College / Provider</label>
                         <input
-                          value={j.end}
-                          onChange={(e) => setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, end: e.target.value } : x)))}
-                          placeholder="e.g. Present"
+                          value={q.provider}
+                          onChange={(e) =>
+                            setQualifications((prev) => (prev || []).map((x) => (x.id === q.id ? { ...x, provider: e.target.value } : x)))
+                          }
+                          placeholder={region === "US" ? "e.g. Lincoln High School" : "e.g. College Name"}
+                          className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold mb-2">Year</label>
+                        <input
+                          value={q.year}
+                          onChange={(e) => setQualifications((prev) => (prev || []).map((x) => (x.id === q.id ? { ...x, year: e.target.value } : x)))}
+                          placeholder="e.g. 2025"
+                          className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
+                          inputMode="numeric"
+                        />
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-semibold mb-2">Grade / Result (optional)</label>
+                        <input
+                          value={q.grade}
+                          onChange={(e) => setQualifications((prev) => (prev || []).map((x) => (x.id === q.id ? { ...x, grade: e.target.value } : x)))}
+                          placeholder={region === "US" ? "e.g. GPA 3.6, Honors" : "e.g. Grade 6, Pass"}
                           className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
                         />
                       </div>
                     </div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-semibold mb-2">Responsibilities / achievements (one per line)</label>
-                      <textarea
-                        value={j.bulletsText}
-                        onChange={(e) =>
-                          setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, bulletsText: e.target.value } : x)))
-                        }
-                        placeholder={`For example:
+            {/* Employment history */}
+            <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold">Employment history</h2>
+                  <p className="text-sm text-slate-300">
+                    Add roles one-by-one. If you fill this in, you can leave the “Experience text” box empty.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEmploymentHistory((prev) => [
+                      ...(prev || []),
+                      { id: `job-${(prev?.length || 0) + 1}`, title: "", company: "", location: "", start: "", end: "", bulletsText: "" },
+                    ])
+                  }
+                  className="rounded-xl bg-white text-black px-4 py-2 text-sm font-semibold hover:bg-slate-100"
+                >
+                  + Add role
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {employmentHistory.map((j, idx) => (
+                  <div key={j.id} className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-semibold text-slate-200">Role {idx + 1}</div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEmploymentHistory((prev) => {
+                            const next = (prev || []).filter((x) => x.id !== j.id);
+                            return next.length
+                              ? next
+                              : [{ id: "job-1", title: "", company: "", location: "", start: "", end: "", bulletsText: "" }];
+                          });
+                        }}
+                        className="text-sm text-slate-300 hover:text-white underline underline-offset-4"
+                      >
+                        Remove
+                      </button>
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div>
+                        <label className="block text-sm font-semibold mb-2">Job title</label>
+                        <input
+                          value={j.title}
+                          onChange={(e) => setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, title: e.target.value } : x)))}
+                          placeholder="e.g. Retail Assistant"
+                          className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold mb-2">Company</label>
+                        <input
+                          value={j.company}
+                          onChange={(e) => setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, company: e.target.value } : x)))}
+                          placeholder="e.g. Tesco"
+                          className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold mb-2">Location (optional)</label>
+                        <input
+                          value={j.location}
+                          onChange={(e) => setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, location: e.target.value } : x)))}
+                          placeholder={region === "US" ? "e.g. Dallas, TX" : region === "AU" ? "e.g. Brisbane" : "e.g. Sheffield"}
+                          className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
+                        />
+                      </div>
+
+                      <div className="grid gap-4 grid-cols-2">
+                        <div>
+                          <label className="block text-sm font-semibold mb-2">Start</label>
+                          <input
+                            value={j.start}
+                            onChange={(e) => setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, start: e.target.value } : x)))}
+                            placeholder="e.g. 2024"
+                            className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold mb-2">End</label>
+                          <input
+                            value={j.end}
+                            onChange={(e) => setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, end: e.target.value } : x)))}
+                            placeholder="e.g. Present"
+                            className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-semibold mb-2">Responsibilities / achievements (one per line)</label>
+                        <textarea
+                          value={j.bulletsText}
+                          onChange={(e) =>
+                            setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, bulletsText: e.target.value } : x)))
+                          }
+                          placeholder={`For example:
 Served customers and handled payments
 Maintained stock and kept displays tidy
 Worked as part of a team under pressure`}
-                        className="w-full min-h-[120px] rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
-                      />
+                          className="w-full min-h-[120px] rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Remaining inputs */}
-          <div>
-            <label className="block text-sm font-semibold mb-2">Target role title</label>
-            <input
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              placeholder="For example: Warehouse Supervisor"
-              className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
-              required
-            />
-          </div>
+            {/* Remaining inputs */}
+            <div>
+              <label className="block text-sm font-semibold mb-2">Target role title</label>
+              <input
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                placeholder="For example: Warehouse Supervisor"
+                className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
+                required
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-semibold mb-2">Experience text (optional if you filled in Employment history)</label>
-            <textarea
-              value={experience}
-              onChange={(e) => setExperience(e.target.value)}
-              placeholder="Optional: paste your work history as one block (or leave blank if you added roles above)."
-              className="w-full min-h-[180px] rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-semibold mb-2">Experience text (optional if you filled in Employment history)</label>
+              <textarea
+                value={experience}
+                onChange={(e) => setExperience(e.target.value)}
+                placeholder="Optional: paste your work history as one block (or leave blank if you added roles above)."
+                className="w-full min-h-[180px] rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-semibold mb-2">Skills (one per line, optional)</label>
-            <textarea
-              value={skillsText}
-              onChange={(e) => setSkillsText(e.target.value)}
-              placeholder={`For example:
+            <div>
+              <label className="block text-sm font-semibold mb-2">Skills (one per line, optional)</label>
+              <textarea
+                value={skillsText}
+                onChange={(e) => setSkillsText(e.target.value)}
+                placeholder={`For example:
 Teamwork
 Communication
 Timekeeping`}
-              className="w-full min-h-[110px] rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
-            />
-          </div>
+                className="w-full min-h-[110px] rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
+              />
+            </div>
 
-          {errorMsg ? (
-            <div className="rounded-xl border border-red-400 bg-red-950/40 px-4 py-3 text-red-200">{errorMsg}</div>
-          ) : null}
+            {errorMsg ? (
+              <div className="rounded-xl border border-red-400 bg-red-950/40 px-4 py-3 text-red-200">{errorMsg}</div>
+            ) : null}
 
-          <button type="submit" disabled={isLoading} className="rounded-xl bg-white text-black px-6 py-3 font-semibold disabled:opacity-60">
-            {isLoading ? "Generating..." : `Generate ${labelDoc}`}
-          </button>
-        </form>
+            <button type="submit" disabled={isLoading} className="rounded-xl bg-white text-black px-6 py-3 font-semibold disabled:opacity-60">
+              {isLoading ? "Generating..." : `Generate ${labelDoc}`}
+            </button>
+          </form>
 
-        {/* Paywall modal */}
-        <PaywallModal
-          open={paywallOpen}
-          reason={paywallReason}
-          onClose={() => {
-            setPaywallOpen(false);
-            setPendingTemplate(null);
-          }}
-          onPreviewAnyway={() => {
-            if (pendingTemplate) setTemplate(pendingTemplate);
-            setPendingTemplate(null);
-            setPaywallOpen(false);
-          }}
-          onUnlockClick={() => {
-            const returnPath = pendingTemplate ? `/cv?template=${encodeURIComponent(pendingTemplate)}` : "/cv";
+          {/* Paywall modal */}
+          <PaywallModal
+            open={paywallOpen}
+            reason={paywallReason}
+            onClose={() => {
+              setPaywallOpen(false);
+              setPendingTemplate(null);
+            }}
+            onPreviewAnyway={() => {
+              if (pendingTemplate) setTemplate(pendingTemplate);
+              setPendingTemplate(null);
+              setPaywallOpen(false);
+            }}
+            onUnlockClick={() => {
+              const returnPath = pendingTemplate ? `/cv?template=${encodeURIComponent(pendingTemplate)}` : "/cv";
 
-            const params = new URLSearchParams();
-            params.set("return", returnPath);
-            params.set("intent", "access");
-            params.set("price", ACCESS_PRICE_LABEL);
-            if (pendingTemplate) params.set("template", pendingTemplate);
+              const params = new URLSearchParams();
+              params.set("return", returnPath);
+              params.set("intent", "access");
+              params.set("price", ACCESS_PRICE_LABEL);
+              if (pendingTemplate) params.set("template", pendingTemplate);
 
-            router.push(`${PRICING_PATH}?${params.toString()}`);
-          }}
-        />
+              router.push(`${PRICING_PATH}?${params.toString()}`);
+            }}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 }
