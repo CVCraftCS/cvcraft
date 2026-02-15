@@ -10,6 +10,51 @@ export default function NoExperienceCvUk() {
 
   const canonical = "https://www.cvcraftclassroom.com/no-experience-cv-uk";
 
+  // Optional OG image (add this file later if you want)
+  // Create: /public/og/og-default.png
+  const ogImage = "https://www.cvcraftclassroom.com/og/og-default.png";
+
+  const faqItems = [
+    {
+      question: "Can I get a job in the UK with no experience?",
+      answer:
+        "Yes. Many UK employers hire for entry-level roles based on attitude, reliability and willingness to learn. Your CV should show transferable skills from school, volunteering, clubs, hobbies or responsibilities at home.",
+    },
+    {
+      question: "What should I put on a CV if I have no work history?",
+      answer:
+        "Include a short personal statement, skills with examples, education, volunteering or work experience placements, school responsibilities, clubs/sports, and personal projects that show responsibility and effort.",
+    },
+    {
+      question: "How long should a no-experience CV be?",
+      answer:
+        "One page is usually perfect. Keep it clear and easy to scan with headings and bullet points. Avoid big paragraphs and keep everything relevant to the job.",
+    },
+    {
+      question: "What skills do employers want for first jobs?",
+      answer:
+        "Most employers look for reliability, communication, teamwork, willingness to learn, basic numeracy/literacy, and confidence following instructions.",
+    },
+    {
+      question: "Should I include references on a first CV?",
+      answer:
+        "It’s optional. Many people write “References available on request”. If you include a reference, ask permission first (a teacher, coach or placement supervisor can work well).",
+    },
+  ];
+
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
+
   return (
     <>
       <Head>
@@ -23,11 +68,41 @@ export default function NoExperienceCvUk() {
         <meta property="og:description" content={description} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={canonical} />
+        <meta property="og:image" content={ogImage} />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={ogImage} />
+
+        {/* FAQ Schema */}
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
       </Head>
 
       <main className="min-h-screen bg-slate-950 text-white px-6 py-14">
         <div className="mx-auto max-w-4xl">
-          <h1 className="text-4xl font-bold tracking-tight">
+          {/* Breadcrumbs */}
+          <nav className="text-sm text-slate-400">
+            <Link href="/" className="hover:text-white underline underline-offset-4">
+              Home
+            </Link>{" "}
+            <span className="mx-2">→</span>
+            <Link
+              href="/cv-examples-uk"
+              className="hover:text-white underline underline-offset-4"
+            >
+              CV Examples UK
+            </Link>{" "}
+            <span className="mx-2">→</span>
+            <span className="text-slate-200">CV With No Experience</span>
+          </nav>
+
+          <h1 className="mt-4 text-4xl font-bold tracking-tight">
             CV With No Experience (UK 2026 Guide)
           </h1>
 
@@ -35,7 +110,15 @@ export default function NoExperienceCvUk() {
             If you have no work experience yet, you can still write a strong UK
             CV. The goal is to show you’re reliable, ready to learn and already
             have skills employers care about — even if they came from school,
-            volunteering, hobbies or helping family.
+            volunteering, hobbies or helping family. If you’re 16 and writing a
+            first CV, see our{" "}
+            <Link
+              href="/cv-for-16-year-old-uk"
+              className="underline underline-offset-4 hover:text-white"
+            >
+              CV for a 16 year old UK guide
+            </Link>
+            .
           </p>
 
           <div className="mt-6 flex flex-col sm:flex-row gap-3">
@@ -53,6 +136,64 @@ export default function NoExperienceCvUk() {
               CV writing help →
             </Link>
           </div>
+
+          {/* Copy/paste layout */}
+          <section className="mt-14">
+            <h2 className="text-2xl font-bold">Copy/Paste CV Layout (No Experience)</h2>
+            <p className="mt-3 text-slate-300 leading-relaxed">
+              Use this structure to keep your CV simple and strong. Employers
+              don’t expect a big work history — they want evidence you can be
+              trusted and will learn quickly.
+            </p>
+
+            <div className="mt-4 rounded-2xl bg-white/5 ring-1 ring-white/10 p-6">
+              <ol className="list-decimal pl-6 space-y-2 text-slate-200">
+                <li>
+                  <span className="font-semibold">Name + Contact Details</span>{" "}
+                  (phone, email, town/city)
+                </li>
+                <li>
+                  <span className="font-semibold">Personal Statement</span>{" "}
+                  (3–5 lines)
+                </li>
+                <li>
+                  <span className="font-semibold">Key Skills</span>{" "}
+                  (with examples from school/life)
+                </li>
+                <li>
+                  <span className="font-semibold">Education</span>{" "}
+                  (GCSEs, predicted grades, achievements)
+                </li>
+                <li>
+                  <span className="font-semibold">Experience</span>{" "}
+                  (volunteering, clubs, responsibilities, work placement)
+                </li>
+                <li>
+                  <span className="font-semibold">Optional</span>{" "}
+                  (interests, certificates, awards)
+                </li>
+              </ol>
+            </div>
+
+            <p className="mt-4 text-slate-300 leading-relaxed">
+              Not sure what role you’re aiming for? These examples can help with
+              wording:{" "}
+              <Link
+                href="/retail-cv-example-uk"
+                className="underline underline-offset-4 hover:text-white"
+              >
+                Retail
+              </Link>{" "}
+              or{" "}
+              <Link
+                href="/warehouse-cv-example-uk"
+                className="underline underline-offset-4 hover:text-white"
+              >
+                Warehouse
+              </Link>
+              .
+            </p>
+          </section>
 
           {/* What employers want */}
           <section className="mt-14">
@@ -153,9 +294,7 @@ export default function NoExperienceCvUk() {
 
           {/* Experience alternatives */}
           <section className="mt-14">
-            <h2 className="text-2xl font-bold">
-              What to Put Instead of Work Experience
-            </h2>
+            <h2 className="text-2xl font-bold">What to Put Instead of Work Experience</h2>
 
             <p className="mt-3 text-slate-300 leading-relaxed">
               If you don’t have jobs to list yet, use any of the below. Employers
@@ -184,6 +323,24 @@ export default function NoExperienceCvUk() {
             </ul>
           </section>
 
+          {/* FAQ (visible) */}
+          <section className="mt-16">
+            <h2 className="text-2xl font-bold">FAQ</h2>
+            <div className="mt-6 space-y-4">
+              {faqItems.map((item) => (
+                <details
+                  key={item.question}
+                  className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-5"
+                >
+                  <summary className="cursor-pointer font-semibold text-slate-100">
+                    {item.question}
+                  </summary>
+                  <p className="mt-3 text-slate-300 leading-relaxed">{item.answer}</p>
+                </details>
+              ))}
+            </div>
+          </section>
+
           {/* CTA */}
           <section className="mt-16 rounded-3xl bg-white/5 ring-1 ring-white/10 p-8 text-center">
             <h2 className="text-2xl font-bold">Build a CV That Gets You In</h2>
@@ -208,6 +365,16 @@ export default function NoExperienceCvUk() {
               </Link>
             </div>
           </section>
+
+          {/* Back link */}
+          <div className="mt-12">
+            <Link
+              href="/cv-examples-uk"
+              className="text-sm text-slate-300 hover:text-white underline underline-offset-4"
+            >
+              ← Back to CV Examples UK
+            </Link>
+          </div>
         </div>
       </main>
     </>

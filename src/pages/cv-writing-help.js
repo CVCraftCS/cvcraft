@@ -8,11 +8,75 @@ export default function CvWritingHelpPage() {
     "A practical UK CV writing guide with examples: what to include, CV layout, personal statement tips, skills examples, and common mistakes. Built for real job applications.";
   const canonical = "https://www.cvcraftclassroom.com/cv-writing-help";
 
+  // Optional OG image (add this file later if you want)
+  // Create: /public/og/og-default.png
+  const ogImage = "https://www.cvcraftclassroom.com/og/og-default.png";
+
+  const faqItems = [
+    {
+      q: "How long should a CV be in the UK?",
+      a: "Usually 1–2 pages. If you’re early in your career, one page is often enough. If you have years of relevant experience, two pages is fine — keep it focused.",
+    },
+    {
+      q: "What is the best UK CV structure?",
+      a: "Most UK CVs use: contact details, personal statement, employment history, education/qualifications, skills, and optional references. Keep headings clear and use bullet points.",
+    },
+    {
+      q: "Do I need a photo on my CV in the UK?",
+      a: "Usually no. UK CVs typically do not include photos. Focus on skills, achievements, and experience instead.",
+    },
+    {
+      q: "Should I include references on my CV?",
+      a: "It’s optional. Most UK applicants write “References available on request”. If you list a referee, ask permission first.",
+    },
+    {
+      q: "How do I write a strong personal statement?",
+      a: "Keep it to 3–5 lines. Start with who you are, add 2–3 strengths that match the job, prove it with a responsibility or result, and finish with what role you want next.",
+    },
+  ];
+
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems.map((x) => ({
+      "@type": "Question",
+      name: x.q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: x.a,
+      },
+    })),
+  };
+
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: title,
+    description,
+    mainEntityOfPage: canonical,
+    url: canonical,
+    image: ogImage,
+    author: {
+      "@type": "Organization",
+      name: "CVCraft Classroom",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "CVCraft Classroom",
+      logo: {
+        "@type": "ImageObject",
+        url: ogImage,
+      },
+    },
+    dateModified: "2026-01-01",
+  };
+
   return (
     <>
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
+        <meta name="robots" content="index,follow" />
 
         {/* Canonical */}
         <link rel="canonical" href={canonical} />
@@ -22,11 +86,25 @@ export default function CvWritingHelpPage() {
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
         <meta property="og:url" content={canonical} />
+        <meta property="og:image" content={ogImage} />
 
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={ogImage} />
+
+        {/* Structured data */}
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
       </Head>
 
       <main className="min-h-screen bg-slate-950 text-white">
@@ -104,7 +182,72 @@ export default function CvWritingHelpPage() {
               </div>
             </div>
 
-            <section className="mt-10">
+            {/* TOC */}
+            <div className="mt-8 rounded-2xl bg-white/5 ring-1 ring-white/10 p-5">
+              <div className="font-semibold text-slate-100">On this page</div>
+              <ul className="mt-3 grid gap-2 text-sm text-slate-300 sm:grid-cols-2">
+                <li>
+                  <a className="hover:text-white underline underline-offset-4" href="#what-is-a-cv">
+                    What is a CV?
+                  </a>
+                </li>
+                <li>
+                  <a className="hover:text-white underline underline-offset-4" href="#what-to-include">
+                    What to include
+                  </a>
+                </li>
+                <li>
+                  <a className="hover:text-white underline underline-offset-4" href="#layout-example">
+                    CV layout example
+                  </a>
+                </li>
+                <li>
+                  <a className="hover:text-white underline underline-offset-4" href="#personal-statement">
+                    Personal statement
+                  </a>
+                </li>
+                <li>
+                  <a className="hover:text-white underline underline-offset-4" href="#skills-examples">
+                    Skills examples
+                  </a>
+                </li>
+                <li>
+                  <a className="hover:text-white underline underline-offset-4" href="#mistakes">
+                    Common mistakes
+                  </a>
+                </li>
+                <li>
+                  <a className="hover:text-white underline underline-offset-4" href="#templates">
+                    Should you use a template?
+                  </a>
+                </li>
+                <li>
+                  <a className="hover:text-white underline underline-offset-4" href="#faq">
+                    FAQ
+                  </a>
+                </li>
+              </ul>
+
+              <p className="mt-4 text-sm text-slate-300">
+                Want role-specific wording? See{" "}
+                <Link
+                  href="/cv-examples-uk"
+                  className="underline underline-offset-4 hover:text-white"
+                >
+                  CV examples UK
+                </Link>{" "}
+                or the full{" "}
+                <Link
+                  href="/cv-format-uk"
+                  className="underline underline-offset-4 hover:text-white"
+                >
+                  UK CV format guide
+                </Link>
+                .
+              </p>
+            </div>
+
+            <section id="what-is-a-cv" className="mt-10 scroll-mt-24">
               <h2 className="text-xl font-bold">What is a CV?</h2>
               <p className="mt-3 text-slate-300 leading-relaxed">
                 A CV (Curriculum Vitae) is a clear, structured summary of your skills,
@@ -113,7 +256,7 @@ export default function CvWritingHelpPage() {
               </p>
             </section>
 
-            <section className="mt-10">
+            <section id="what-to-include" className="mt-10 scroll-mt-24">
               <h2 className="text-xl font-bold">What to include in a UK CV</h2>
               <p className="mt-3 text-slate-300 leading-relaxed">
                 Most UK CVs follow the same core layout. Keep it simple and easy to scan.
@@ -159,9 +302,29 @@ export default function CvWritingHelpPage() {
                   help you get this job, remove it. A focused CV beats a long CV every time.
                 </p>
               </div>
+
+              <p className="mt-6 text-slate-300 leading-relaxed">
+                If you’re applying with no work history, use the same structure but put
+                <b className="text-slate-200"> education higher </b>
+                and add volunteering/school responsibilities. See{" "}
+                <Link
+                  href="/no-experience-cv-uk"
+                  className="underline underline-offset-4 hover:text-white"
+                >
+                  CV with no experience (UK)
+                </Link>{" "}
+                and{" "}
+                <Link
+                  href="/cv-for-16-year-old-uk"
+                  className="underline underline-offset-4 hover:text-white"
+                >
+                  CV for 16 year old (UK)
+                </Link>
+                .
+              </p>
             </section>
 
-            <section className="mt-10">
+            <section id="layout-example" className="mt-10 scroll-mt-24">
               <h2 className="text-xl font-bold">CV layout example (UK format)</h2>
               <p className="mt-3 text-slate-300 leading-relaxed">
                 Here’s a simple structure that works for most jobs. You can copy this format.
@@ -191,16 +354,30 @@ REFERENCES
 References available on request.`}
                 </pre>
               </div>
+
+              <p className="mt-4 text-slate-300 leading-relaxed">
+                Want the full layout rules (length, margins, what to remove)? See{" "}
+                <Link
+                  href="/cv-format-uk"
+                  className="underline underline-offset-4 hover:text-white"
+                >
+                  UK CV format (2026)
+                </Link>
+                .
+              </p>
             </section>
 
-            <section className="mt-10">
+            <section id="personal-statement" className="mt-10 scroll-mt-24">
               <h2 className="text-xl font-bold">How to write a personal statement</h2>
               <p className="mt-3 text-slate-300 leading-relaxed">
                 Your personal statement is the “why you” section. Keep it short and specific:
               </p>
 
               <ul className="mt-4 list-disc pl-6 text-slate-300 space-y-2">
-                <li>Start with who you are <span className="text-slate-200">(role/level)</span></li>
+                <li>
+                  Start with who you are{" "}
+                  <span className="text-slate-200">(role/level)</span>
+                </li>
                 <li>Add 2–3 strengths that match the job</li>
                 <li>Prove it with a result or responsibility</li>
                 <li>End with what you’re targeting next</li>
@@ -216,9 +393,27 @@ References available on request.`}
                   operations.”
                 </p>
               </div>
+
+              <p className="mt-5 text-slate-300 leading-relaxed">
+                If you’re applying for customer-facing roles, compare the tone with our{" "}
+                <Link
+                  href="/customer-service-cv-example-uk"
+                  className="underline underline-offset-4 hover:text-white"
+                >
+                  customer service CV example
+                </Link>{" "}
+                or{" "}
+                <Link
+                  href="/retail-cv-example-uk"
+                  className="underline underline-offset-4 hover:text-white"
+                >
+                  retail CV example
+                </Link>
+                .
+              </p>
             </section>
 
-            <section className="mt-10">
+            <section id="skills-examples" className="mt-10 scroll-mt-24">
               <h2 className="text-xl font-bold">CV skills examples (pick what fits)</h2>
               <p className="mt-3 text-slate-300 leading-relaxed">
                 Only include skills that are relevant to the job you want. Mix practical skills
@@ -252,16 +447,31 @@ References available on request.`}
               </div>
             </section>
 
-            <section className="mt-10">
+            <section id="mistakes" className="mt-10 scroll-mt-24">
               <h2 className="text-xl font-bold">Common CV mistakes (and quick fixes)</h2>
 
               <div className="mt-5 grid gap-4">
                 {[
-                  { bad: "It’s too long", fix: "Cut anything that doesn’t support your target job. Keep it focused." },
-                  { bad: "It’s vague", fix: "Add proof: numbers, outcomes, responsibilities, tools, customers." },
-                  { bad: "No structure", fix: "Use clear headings, bullet points, and reverse chronological order." },
-                  { bad: "Weak wording", fix: "Swap ‘helped with’ for ‘managed’, ‘improved’, ‘delivered’, ‘reduced’." },
-                  { bad: "Spelling/formatting issues", fix: "Keep font consistent, use one style, and run a final check." },
+                  {
+                    bad: "It’s too long",
+                    fix: "Cut anything that doesn’t support your target job. Keep it focused.",
+                  },
+                  {
+                    bad: "It’s vague",
+                    fix: "Add proof: numbers, outcomes, responsibilities, tools, customers.",
+                  },
+                  {
+                    bad: "No structure",
+                    fix: "Use clear headings, bullet points, and reverse chronological order.",
+                  },
+                  {
+                    bad: "Weak wording",
+                    fix: "Swap ‘helped with’ for ‘managed’, ‘improved’, ‘delivered’, ‘reduced’.",
+                  },
+                  {
+                    bad: "Spelling/formatting issues",
+                    fix: "Keep font consistent, use one style, and run a final check.",
+                  },
                 ].map((x) => (
                   <div key={x.bad} className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-5">
                     <p className="font-semibold text-white">{x.bad}</p>
@@ -271,7 +481,7 @@ References available on request.`}
               </div>
             </section>
 
-            <section className="mt-10">
+            <section id="templates" className="mt-10 scroll-mt-24">
               <h2 className="text-xl font-bold">Should you use a CV template?</h2>
               <p className="mt-3 text-slate-300 leading-relaxed">
                 Yes — if it’s clean, recruiter-safe and prints properly. A template helps you
@@ -300,30 +510,21 @@ References available on request.`}
               </div>
             </section>
 
-            <section className="mt-10">
-              <h2 className="text-xl font-bold">Quick FAQ</h2>
+            <section id="faq" className="mt-10 scroll-mt-24">
+              <h2 className="text-xl font-bold">FAQ</h2>
 
               <div className="mt-5 space-y-4">
-                <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-5">
-                  <p className="font-semibold">How long should a CV be in the UK?</p>
-                  <p className="mt-2 text-slate-300">
-                    Usually 1–2 pages. If you’re early in your career, 1 page is often enough.
-                  </p>
-                </div>
-
-                <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-5">
-                  <p className="font-semibold">Do I need a photo on my CV?</p>
-                  <p className="mt-2 text-slate-300">
-                    In the UK, usually no. Keep it professional and focused on your experience.
-                  </p>
-                </div>
-
-                <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-5">
-                  <p className="font-semibold">Should I include references?</p>
-                  <p className="mt-2 text-slate-300">
-                    Most people just write “References available on request.”
-                  </p>
-                </div>
+                {faqItems.map((x) => (
+                  <details
+                    key={x.q}
+                    className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-5"
+                  >
+                    <summary className="cursor-pointer font-semibold text-white">
+                      {x.q}
+                    </summary>
+                    <p className="mt-2 text-slate-300">{x.a}</p>
+                  </details>
+                ))}
               </div>
             </section>
 
@@ -353,11 +554,21 @@ References available on request.`}
             <footer className="mt-12 border-t border-white/10 pt-6 text-sm text-slate-400 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <p>© {new Date().getFullYear()} CVCraft</p>
               <div className="flex gap-4 flex-wrap">
-                <Link href="/" className="text-slate-300 hover:text-white">Home</Link>
-                <Link href="/cv" className="text-slate-300 hover:text-white">Build CV</Link>
-                <Link href="/cover-letter" className="text-slate-300 hover:text-white">Cover letter</Link>
-                <Link href="/pricing" className="text-slate-300 hover:text-white">Pricing</Link>
-                <Link href="/schools" className="text-slate-300 hover:text-white">Schools</Link>
+                <Link href="/" className="text-slate-300 hover:text-white">
+                  Home
+                </Link>
+                <Link href="/cv-examples-uk" className="text-slate-300 hover:text-white">
+                  CV examples UK
+                </Link>
+                <Link href="/cv-format-uk" className="text-slate-300 hover:text-white">
+                  UK CV format
+                </Link>
+                <Link href="/cv" className="text-slate-300 hover:text-white">
+                  Build CV
+                </Link>
+                <Link href="/pricing" className="text-slate-300 hover:text-white">
+                  Pricing
+                </Link>
               </div>
             </footer>
           </div>
