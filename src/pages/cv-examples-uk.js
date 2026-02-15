@@ -167,6 +167,90 @@ export default function CvExamplesUk() {
               <li>Skills</li>
               <li>References (optional)</li>
             </ol>
+
+            <p className="mt-4 text-slate-300 leading-relaxed">
+              If you want a deeper breakdown (length, layout, and what to
+              include), see{" "}
+              <Link
+                href="/cv-format-uk"
+                className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4"
+              >
+                Best CV format (UK)
+              </Link>
+              .
+            </p>
+          </section>
+
+          {/* Cluster Links */}
+          <section className="mt-14 rounded-3xl bg-white/5 ring-1 ring-white/10 p-6">
+            <h2 className="text-xl font-bold">Explore More UK CV Examples</h2>
+            <p className="mt-2 text-slate-300">
+              Jump to a specific example and copy the structure.
+            </p>
+
+            <ul className="mt-4 grid gap-3 sm:grid-cols-2 text-sm">
+              <li>
+                <Link
+                  href="/warehouse-cv-example-uk"
+                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
+                >
+                  <span className="font-semibold">Warehouse CV Example UK</span>
+                  <span className="mt-1 block text-slate-300">
+                    Productivity, safety, order volumes
+                  </span>
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/retail-cv-example-uk"
+                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
+                >
+                  <span className="font-semibold">Retail CV Example UK</span>
+                  <span className="mt-1 block text-slate-300">
+                    Customer service, targets, tills
+                  </span>
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/customer-service-cv-example-uk"
+                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
+                >
+                  <span className="font-semibold">
+                    Customer Service CV Example UK
+                  </span>
+                  <span className="mt-1 block text-slate-300">
+                    KPIs, resolution, communication
+                  </span>
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/no-experience-cv-uk"
+                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
+                >
+                  <span className="font-semibold">No Experience CV UK</span>
+                  <span className="mt-1 block text-slate-300">
+                    Transferable skills, education
+                  </span>
+                </Link>
+              </li>
+
+              <li className="sm:col-span-2">
+                <Link
+                  href="/cv-for-16-year-old-uk"
+                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
+                >
+                  <span className="font-semibold">CV for 16 Year Old UK</span>
+                  <span className="mt-1 block text-slate-300">
+                    First CV, school achievements, reliability
+                  </span>
+                </Link>
+              </li>
+            </ul>
           </section>
 
           {/* CTA Section */}

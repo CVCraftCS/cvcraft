@@ -98,6 +98,14 @@ export default function Home() {
                 CV help
               </Link>
 
+              {/* ✅ Examples hub quick link */}
+              <Link
+                href="/cv-examples-uk"
+                className="text-slate-200 hover:text-white"
+              >
+                CV examples (UK)
+              </Link>
+
               <Link href="/pricing" className="text-slate-200 hover:text-white">
                 Pricing
               </Link>
@@ -155,6 +163,16 @@ export default function Home() {
                     className="inline-flex items-center justify-center rounded-2xl bg-white/5 ring-1 ring-white/10 px-6 py-4 font-semibold text-white hover:bg-white/10 transition"
                   >
                     See pricing
+                  </Link>
+                </div>
+
+                {/* ✅ Extra internal link (subtle + strong for SEO) */}
+                <div className="mt-4">
+                  <Link
+                    href="/cv-examples-uk"
+                    className="text-sm font-semibold text-emerald-300 hover:text-emerald-200 underline underline-offset-4"
+                  >
+                    Browse UK CV examples →
                   </Link>
                 </div>
 
@@ -233,6 +251,22 @@ export default function Home() {
                     </Link>
                   </div>
                 </div>
+
+                {/* ✅ UK CV Examples promo (another internal link) */}
+                <div className="mt-4 rounded-2xl bg-white/5 ring-1 ring-white/10 p-4">
+                  <p className="text-sm text-slate-200">
+                    <span className="font-semibold text-white">Need examples?</span>{" "}
+                    Browse UK CV examples for warehouse, retail and no experience.
+                  </p>
+                  <div className="mt-3">
+                    <Link
+                      href="/cv-examples-uk"
+                      className="text-sm font-semibold text-slate-200 hover:text-white underline underline-offset-4"
+                    >
+                      Open CV examples (UK) →
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -257,10 +291,12 @@ export default function Home() {
               <div className="rounded-3xl bg-white/5 p-8 ring-1 ring-white/10">
                 <div className="flex items-end justify-between gap-6 flex-wrap">
                   <div>
-                    <h2 className="text-2xl font-bold">CV &amp; cover letter help</h2>
+                    <h2 className="text-2xl font-bold">
+                      CV &amp; cover letter help
+                    </h2>
                     <p className="mt-2 max-w-2xl text-slate-300">
-                      Practical guides and examples — built to help you write faster
-                      and apply with confidence.
+                      Practical guides and examples — built to help you write
+                      faster and apply with confidence.
                     </p>
                   </div>
 
@@ -344,6 +380,19 @@ export default function Home() {
                       One simple pass — export when you’re ready
                     </div>
                   </Link>
+
+                  {/* ✅ CV Examples hub link (NEW) */}
+                  <Link
+                    href="/cv-examples-uk"
+                    className="rounded-2xl bg-white/5 p-5 ring-1 ring-white/10 hover:bg-white/10 transition sm:col-span-2 lg:col-span-3"
+                  >
+                    <div className="text-sm font-semibold text-white">
+                      CV Examples UK (2026)
+                    </div>
+                    <div className="mt-1 text-sm text-slate-300">
+                      Warehouse, retail, customer service, no experience, and 16-year-old CV examples.
+                    </div>
+                  </Link>
                 </div>
               </div>
             </section>
@@ -388,19 +437,39 @@ export default function Home() {
               properly.
             </p>
             <div className="flex items-center gap-4 text-sm flex-wrap">
-              <Link href="/cover-letter" className="text-slate-300 hover:text-white">
+              <Link
+                href="/cover-letter"
+                className="text-slate-300 hover:text-white"
+              >
                 Cover letter
               </Link>
 
               {/* ✅ Footer help links (more internal linking) */}
-              <Link href="/cv-writing-help" className="text-slate-300 hover:text-white">
+              <Link
+                href="/cv-writing-help"
+                className="text-slate-300 hover:text-white"
+              >
                 CV writing help
               </Link>
-              <Link href="/personal-statement-examples" className="text-slate-300 hover:text-white">
+              <Link
+                href="/personal-statement-examples"
+                className="text-slate-300 hover:text-white"
+              >
                 Personal statements
               </Link>
-              <Link href="/cover-letter-help" className="text-slate-300 hover:text-white">
+              <Link
+                href="/cover-letter-help"
+                className="text-slate-300 hover:text-white"
+              >
                 Cover letter help
+              </Link>
+
+              {/* ✅ Footer examples link */}
+              <Link
+                href="/cv-examples-uk"
+                className="text-slate-300 hover:text-white"
+              >
+                CV examples (UK)
               </Link>
 
               <Link href="/pricing" className="text-slate-300 hover:text-white">
