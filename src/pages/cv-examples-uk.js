@@ -27,17 +27,16 @@ export default function CvExamplesUk() {
 
       <main className="min-h-screen bg-slate-950 text-white px-6 py-14">
         <div className="mx-auto max-w-4xl">
-
           {/* H1 */}
           <h1 className="text-4xl font-bold tracking-tight">
             CV Examples UK (2026 Guide)
           </h1>
 
           <p className="mt-4 text-slate-300 text-lg leading-relaxed">
-            Looking for real UK CV examples? Below you'll find practical
-            examples for warehouse jobs, retail, customer service, graduates
-            and candidates with no experience — plus guidance on formatting
-            your CV correctly for UK employers.
+            Looking for real UK CV examples? Below you&apos;ll find practical
+            examples for warehouse jobs, retail, customer service, graduates and
+            candidates with no experience — plus guidance on formatting your CV
+            correctly for UK employers.
           </p>
 
           <div className="mt-6">
@@ -53,9 +52,9 @@ export default function CvExamplesUk() {
           <section className="mt-14">
             <h2 className="text-2xl font-bold">What Makes a Good UK CV?</h2>
             <p className="mt-3 text-slate-300 leading-relaxed">
-              A strong UK CV should be clear, structured and easy to scan.
-              Most recruiters spend less than 30 seconds reviewing a CV.
-              That means formatting and clarity matter just as much as content.
+              A strong UK CV should be clear, structured and easy to scan. Most
+              recruiters spend less than 30 seconds reviewing a CV. That means
+              formatting and clarity matter just as much as content.
             </p>
 
             <ul className="mt-4 list-disc pl-6 space-y-2 text-slate-300">
@@ -72,7 +71,6 @@ export default function CvExamplesUk() {
             <h2 className="text-2xl font-bold">UK CV Example Types</h2>
 
             <div className="mt-6 space-y-8">
-
               <div>
                 <h3 className="text-xl font-semibold">
                   Warehouse CV Example (UK)
@@ -91,12 +89,10 @@ export default function CvExamplesUk() {
               </div>
 
               <div>
-                <h3 className="text-xl font-semibold">
-                  Retail CV Example (UK)
-                </h3>
+                <h3 className="text-xl font-semibold">Retail CV Example (UK)</h3>
                 <p className="mt-2 text-slate-300">
-                  Highlight customer service, sales targets, cash handling,
-                  and teamwork. Quantify performance where possible.
+                  Highlight customer service, sales targets, cash handling, and
+                  teamwork. Quantify performance where possible.
                 </p>
                 <Link
                   href="/retail-cv-example-uk"
@@ -111,8 +107,8 @@ export default function CvExamplesUk() {
                   Customer Service CV Example
                 </h3>
                 <p className="mt-2 text-slate-300">
-                  Demonstrate communication skills, conflict resolution,
-                  and problem solving. Mention KPIs or satisfaction scores.
+                  Demonstrate communication skills, conflict resolution, and
+                  problem solving. Mention KPIs or satisfaction scores.
                 </p>
                 <Link
                   href="/customer-service-cv-example-uk"
@@ -127,8 +123,8 @@ export default function CvExamplesUk() {
                   CV With No Experience (UK)
                 </h3>
                 <p className="mt-2 text-slate-300">
-                  Emphasise transferable skills, volunteering, education
-                  and personal strengths.
+                  Emphasise transferable skills, volunteering, education and
+                  personal strengths.
                 </p>
                 <Link
                   href="/no-experience-cv-uk"
@@ -153,7 +149,6 @@ export default function CvExamplesUk() {
                   View 16 year old CV guide →
                 </Link>
               </div>
-
             </div>
           </section>
 
@@ -165,10 +160,10 @@ export default function CvExamplesUk() {
             </p>
 
             <ol className="mt-4 list-decimal pl-6 space-y-2 text-slate-300">
-              <li>Full Name & Contact Details</li>
+              <li>Full Name &amp; Contact Details</li>
               <li>Personal Statement</li>
               <li>Employment History</li>
-              <li>Qualifications & Certifications</li>
+              <li>Qualifications &amp; Certifications</li>
               <li>Skills</li>
               <li>References (optional)</li>
             </ol>
@@ -176,12 +171,10 @@ export default function CvExamplesUk() {
 
           {/* CTA Section */}
           <section className="mt-16 rounded-3xl bg-white/5 ring-1 ring-white/10 p-8 text-center">
-            <h2 className="text-2xl font-bold">
-              Ready to Build Your UK CV?
-            </h2>
+            <h2 className="text-2xl font-bold">Ready to Build Your UK CV?</h2>
             <p className="mt-3 text-slate-300">
-              Use a structured, recruiter-ready template and generate your
-              CV in under 20 minutes.
+              Use a structured, recruiter-ready template and generate your CV
+              in under 20 minutes.
             </p>
 
             <div className="mt-6 flex justify-center gap-4 flex-wrap">
@@ -200,7 +193,6 @@ export default function CvExamplesUk() {
               </Link>
             </div>
           </section>
-
         </div>
       </main>
     </>
