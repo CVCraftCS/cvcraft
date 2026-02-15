@@ -5,10 +5,7 @@ import Head from "next/head";
 import PaywallModal from "../components/PaywallModal";
 
 // ✅ Single source of truth for templates
-import {
-  TEMPLATE_META as TEMPLATE_META_LIB,
-  TEMPLATE_ORDER,
-} from "../lib/templates";
+import { TEMPLATE_META as TEMPLATE_META_LIB, TEMPLATE_ORDER } from "../lib/templates";
 
 // 🌍 Languages
 import { LANGUAGES } from "../lib/languages";
@@ -100,16 +97,9 @@ function jobsToExperienceText(jobs) {
 
   const lines = [];
   for (const j of jobs) {
-    const headerParts = [
-      j.title ? j.title.trim() : "",
-      j.company ? j.company.trim() : "",
-    ].filter(Boolean);
+    const headerParts = [j.title ? j.title.trim() : "", j.company ? j.company.trim() : ""].filter(Boolean);
 
-    const metaParts = [
-      j.location ? j.location.trim() : "",
-      j.start ? j.start.trim() : "",
-      j.end ? j.end.trim() : "",
-    ].filter(Boolean);
+    const metaParts = [j.location ? j.location.trim() : "", j.start ? j.start.trim() : "", j.end ? j.end.trim() : ""].filter(Boolean);
 
     if (headerParts.length) lines.push(headerParts.join(" — "));
     if (metaParts.length) lines.push(metaParts.join(" | "));
@@ -210,11 +200,7 @@ async function verifySchoolAccessCode(codeRaw) {
 
     if (okFlag) return { ok: true };
 
-    const serverMsg =
-      data?.error ||
-      data?.message ||
-      data?.reason ||
-      (r.ok ? "invalid_code" : `request_failed_${r.status}`);
+    const serverMsg = data?.error || data?.message || data?.reason || (r.ok ? "invalid_code" : `request_failed_${r.status}`);
 
     return { ok: false, error: serverMsg, debug: { status: r.status, data } };
   } catch (err) {
@@ -393,11 +379,7 @@ function TemplateCard({ id, meta, selected, onSelect, disabled, teacherMode, loc
           src={templateThumbSrc(id)}
           alt={`${title} template preview`}
           loading="lazy"
-          className={[
-            "h-full w-full object-cover",
-            "transition-transform duration-200",
-            disabled ? "" : "group-hover:scale-[1.02]",
-          ].join(" ")}
+          className={["h-full w-full object-cover", "transition-transform duration-200", disabled ? "" : "group-hover:scale-[1.02]"].join(" ")}
           onError={(e) => {
             e.currentTarget.style.display = "none";
           }}
@@ -405,14 +387,10 @@ function TemplateCard({ id, meta, selected, onSelect, disabled, teacherMode, loc
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/0" />
 
         <div className="absolute top-3 left-3 flex items-center gap-2">
-          {selected ? (
-            <div className="rounded-full bg-white/90 text-black text-xs font-semibold px-3 py-1">Selected</div>
-          ) : null}
+          {selected ? <div className="rounded-full bg-white/90 text-black text-xs font-semibold px-3 py-1">Selected</div> : null}
 
           {locked && !teacherMode ? (
-            <div className="rounded-full bg-white/10 border border-white/20 text-white text-xs font-semibold px-3 py-1">
-              Premium preview
-            </div>
+            <div className="rounded-full bg-white/10 border border-white/20 text-white text-xs font-semibold px-3 py-1">Premium preview</div>
           ) : null}
         </div>
 
@@ -429,9 +407,7 @@ function TemplateCard({ id, meta, selected, onSelect, disabled, teacherMode, loc
             <h3 className="text-white font-semibold leading-tight">{title}</h3>
             <p className="text-white/70 text-sm mt-1 line-clamp-2">{desc}</p>
 
-            {locked && !teacherMode ? (
-              <div className="mt-2 text-xs text-white/60">Export locked — unlock for {priceLabel}</div>
-            ) : null}
+            {locked && !teacherMode ? <div className="mt-2 text-xs text-white/60">Export locked — unlock for {priceLabel}</div> : null}
           </div>
 
           <a
@@ -595,8 +571,9 @@ export default function CVBuilderPage() {
         setLang(safeLang(saved));
       } else {
         const b = getBrowserLang();
-        setLang(b);
-        sessionStorage.setItem(LANGUAGE_SESSION_KEY, b);
+        const normalized = safeLang(b || "en-GB");
+        setLang(normalized);
+        sessionStorage.setItem(LANGUAGE_SESSION_KEY, normalized);
       }
     } catch {
       setLang("en-GB");
@@ -802,17 +779,29 @@ export default function CVBuilderPage() {
 
       setTemplate(TEMPLATE_META[next.template] ? next.template : "classic");
 
-      setSectionConfig((prev) => ({
+      // ✅ FIX: Don't carry old toggles in Teacher Mode (references could "stick" ON).
+      setSectionConfig({
         ...DEFAULT_SECTION_CONFIG,
-        ...prev,
         summary: true,
         qualifications: true,
         skills: true,
         employment: !!next.enableEmployment,
         references: !!next.enableReferences,
-      }));
+      });
 
-      setSectionOrder(DEFAULT_SECTION_ORDER);
+      // ✅ FIX: Order should reflect what teacher enabled.
+      const baseOrder = ["summary", "employment", "qualifications", "skills", "references"];
+      const desiredOrder = [
+        "summary",
+        ...(next.enableEmployment ? ["employment"] : []),
+        "qualifications",
+        "skills",
+        ...(next.enableReferences ? ["references"] : []),
+      ];
+      // Ensure stable ordering keys exist (preview expects full list).
+      const merged = [...desiredOrder];
+      for (const k of baseOrder) if (!merged.includes(k)) merged.push(k);
+      setSectionOrder(merged);
 
       const def = regionDefaults(next.region);
       setReferencesText(def.referencesText);
@@ -1205,17 +1194,15 @@ export default function CVBuilderPage() {
       employmentHistory: cleanedJobs,
     };
 
+    // ✅ Phase 2 language: send "language" but only Spanish is generated (server decides).
     const apiPayload = {
       role: payload.role,
       experience: experienceForAI,
       skills: payload.skills,
-
       language: payload.lang,
-
       region: payload.region,
       template: payload.template,
       tone: "professional",
-
       jobs: cleanedJobs,
     };
 
@@ -1294,9 +1281,7 @@ export default function CVBuilderPage() {
         <div className="mx-auto max-w-xl">
           <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-6">
             <div className="text-lg font-semibold">School access required</div>
-            <div className="mt-2 text-slate-300 text-sm">
-              Enter the School Access Code to open the classroom builder.
-            </div>
+            <div className="mt-2 text-slate-300 text-sm">Enter the School Access Code to open the classroom builder.</div>
 
             <div className="mt-5 space-y-3">
               <input
@@ -1309,9 +1294,7 @@ export default function CVBuilderPage() {
               />
 
               {schoolGateError ? (
-                <div className="rounded-xl border border-red-400 bg-red-950/40 px-4 py-3 text-red-200 text-sm">
-                  {schoolGateError}
-                </div>
+                <div className="rounded-xl border border-red-400 bg-red-950/40 px-4 py-3 text-red-200 text-sm">{schoolGateError}</div>
               ) : null}
 
               <div className="flex items-center gap-3">
@@ -1333,9 +1316,7 @@ export default function CVBuilderPage() {
                 </button>
               </div>
 
-              <div className="text-xs text-slate-400">
-                Tip: If you refreshed the page, re-enter the code (session-only).
-              </div>
+              <div className="text-xs text-slate-400">Tip: If you refreshed the page, re-enter the code (session-only).</div>
             </div>
           </div>
         </div>
@@ -1413,19 +1394,13 @@ export default function CVBuilderPage() {
                     ))}
                   </select>
 
-                  {!teacherMode && isSpanishLang(lang) ? (
-                    <div className="mt-1 text-[11px] text-slate-300">Spanish generation is beta (ES).</div>
-                  ) : null}
+                  {!teacherMode && isSpanishLang(lang) ? <div className="mt-1 text-[11px] text-slate-300">Spanish generation is beta (ES).</div> : null}
 
                   {!teacherMode && !isSpanishLang(lang) && isComingSoonGeneratedLang(lang) ? (
-                    <div className="mt-1 text-[11px] text-slate-300">
-                      This language is coming soon — generation remains English for now.
-                    </div>
+                    <div className="mt-1 text-[11px] text-slate-300">This language is coming soon — generation remains English for now.</div>
                   ) : null}
 
-                  {teacherMode ? (
-                    <div className="mt-1 text-[11px] text-slate-300">Teacher Mode locks language to classroom region.</div>
-                  ) : null}
+                  {teacherMode ? <div className="mt-1 text-[11px] text-slate-300">Teacher Mode locks language to classroom region.</div> : null}
                 </div>
               </div>
 
@@ -1498,9 +1473,7 @@ export default function CVBuilderPage() {
           </div>
 
           <h1 className="text-4xl font-bold mb-2">Build your {labelDoc}</h1>
-          <p className="text-slate-300 mb-6">
-            Add your details, build your history, and generate a recruiter-ready {labelDoc}.
-          </p>
+          <p className="text-slate-300 mb-6">Add your details, build your history, and generate a recruiter-ready {labelDoc}.</p>
 
           {teacherMode ? (
             <div className="mb-4 rounded-2xl bg-emerald-950/40 border border-emerald-400/30 px-4 py-3 text-emerald-100">
@@ -1517,7 +1490,11 @@ export default function CVBuilderPage() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <label className="block text-sm font-semibold mb-2">Classroom region</label>
-                  <select value={teacherConfig.region} onChange={(e) => teacherSetRegion(e.target.value)} className="w-full rounded-xl px-4 py-3 text-black">
+                  <select
+                    value={teacherConfig.region}
+                    onChange={(e) => teacherSetRegion(e.target.value)}
+                    className="w-full rounded-xl px-4 py-3 text-black"
+                  >
                     <option value="UK">United Kingdom (UK)</option>
                     <option value="US">United States (US)</option>
                     <option value="AU">Australia (AU)</option>
@@ -1552,9 +1529,7 @@ export default function CVBuilderPage() {
                 </button>
               </div>
 
-              <div className="text-xs text-emerald-100/80">
-                Safety note: Student Safe Mode remains locked ON and local storage remains disabled in Teacher Mode.
-              </div>
+              <div className="text-xs text-emerald-100/80">Safety note: Student Safe Mode remains locked ON and local storage remains disabled in Teacher Mode.</div>
             </div>
           ) : null}
 
@@ -1607,9 +1582,7 @@ export default function CVBuilderPage() {
             {/* Presets */}
             <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 space-y-4">
               <h2 className="text-lg font-semibold">Quick start presets (region-aware)</h2>
-              <p className="text-sm text-slate-300">
-                One-click setup for common use cases. These adapt to {region} conventions.
-              </p>
+              <p className="text-sm text-slate-300">One-click setup for common use cases. These adapt to {region} conventions.</p>
 
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 <button
@@ -1870,7 +1843,9 @@ export default function CVBuilderPage() {
                         <label className="block text-sm font-semibold mb-2">{region === "US" ? "Education / Certificate" : "Qualification / Certificate"}</label>
                         <input
                           value={q.title}
-                          onChange={(e) => setQualifications((prev) => (prev || []).map((x) => (x.id === q.id ? { ...x, title: e.target.value } : x)))}
+                          onChange={(e) =>
+                            setQualifications((prev) => (prev || []).map((x) => (x.id === q.id ? { ...x, title: e.target.value } : x)))
+                          }
                           placeholder={region === "US" ? "e.g. High School Diploma, OSHA 10, CPR" : "e.g. GCSEs, NVQ Level 2, First Aid"}
                           className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
                         />
@@ -1892,7 +1867,9 @@ export default function CVBuilderPage() {
                         <label className="block text-sm font-semibold mb-2">Year</label>
                         <input
                           value={q.year}
-                          onChange={(e) => setQualifications((prev) => (prev || []).map((x) => (x.id === q.id ? { ...x, year: e.target.value } : x)))}
+                          onChange={(e) =>
+                            setQualifications((prev) => (prev || []).map((x) => (x.id === q.id ? { ...x, year: e.target.value } : x)))
+                          }
                           placeholder="e.g. 2025"
                           className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
                           inputMode="numeric"
@@ -1903,7 +1880,9 @@ export default function CVBuilderPage() {
                         <label className="block text-sm font-semibold mb-2">Grade / Result (optional)</label>
                         <input
                           value={q.grade}
-                          onChange={(e) => setQualifications((prev) => (prev || []).map((x) => (x.id === q.id ? { ...x, grade: e.target.value } : x)))}
+                          onChange={(e) =>
+                            setQualifications((prev) => (prev || []).map((x) => (x.id === q.id ? { ...x, grade: e.target.value } : x)))
+                          }
                           placeholder={region === "US" ? "e.g. GPA 3.6, Honors" : "e.g. Grade 6, Pass"}
                           className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
                         />
@@ -1919,9 +1898,7 @@ export default function CVBuilderPage() {
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h2 className="text-lg font-semibold">Employment history</h2>
-                  <p className="text-sm text-slate-300">
-                    Add roles one-by-one. If you fill this in, you can leave the “Experience text” box empty.
-                  </p>
+                  <p className="text-sm text-slate-300">Add roles one-by-one. If you fill this in, you can leave the “Experience text” box empty.</p>
                 </div>
 
                 <button
@@ -1965,7 +1942,9 @@ export default function CVBuilderPage() {
                         <label className="block text-sm font-semibold mb-2">Job title</label>
                         <input
                           value={j.title}
-                          onChange={(e) => setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, title: e.target.value } : x)))}
+                          onChange={(e) =>
+                            setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, title: e.target.value } : x)))
+                          }
                           placeholder="e.g. Retail Assistant"
                           className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
                         />
@@ -1975,7 +1954,9 @@ export default function CVBuilderPage() {
                         <label className="block text-sm font-semibold mb-2">Company</label>
                         <input
                           value={j.company}
-                          onChange={(e) => setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, company: e.target.value } : x)))}
+                          onChange={(e) =>
+                            setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, company: e.target.value } : x)))
+                          }
                           placeholder="e.g. Tesco"
                           className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
                         />
@@ -1985,7 +1966,9 @@ export default function CVBuilderPage() {
                         <label className="block text-sm font-semibold mb-2">Location (optional)</label>
                         <input
                           value={j.location}
-                          onChange={(e) => setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, location: e.target.value } : x)))}
+                          onChange={(e) =>
+                            setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, location: e.target.value } : x)))
+                          }
                           placeholder={region === "US" ? "e.g. Dallas, TX" : region === "AU" ? "e.g. Brisbane" : "e.g. Sheffield"}
                           className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
                         />
@@ -1996,7 +1979,9 @@ export default function CVBuilderPage() {
                           <label className="block text-sm font-semibold mb-2">Start</label>
                           <input
                             value={j.start}
-                            onChange={(e) => setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, start: e.target.value } : x)))}
+                            onChange={(e) =>
+                              setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, start: e.target.value } : x)))
+                            }
                             placeholder="e.g. 2024"
                             className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
                           />
@@ -2006,7 +1991,9 @@ export default function CVBuilderPage() {
                           <label className="block text-sm font-semibold mb-2">End</label>
                           <input
                             value={j.end}
-                            onChange={(e) => setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, end: e.target.value } : x)))}
+                            onChange={(e) =>
+                              setEmploymentHistory((prev) => (prev || []).map((x) => (x.id === j.id ? { ...x, end: e.target.value } : x)))
+                            }
                             placeholder="e.g. Present"
                             className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
                           />
@@ -2068,9 +2055,7 @@ Timekeeping`}
               />
             </div>
 
-            {errorMsg ? (
-              <div className="rounded-xl border border-red-400 bg-red-950/40 px-4 py-3 text-red-200">{errorMsg}</div>
-            ) : null}
+            {errorMsg ? <div className="rounded-xl border border-red-400 bg-red-950/40 px-4 py-3 text-red-200">{errorMsg}</div> : null}
 
             <button type="submit" disabled={isLoading} className="rounded-xl bg-white text-black px-6 py-3 font-semibold disabled:opacity-60">
               {isLoading ? "Generating..." : `Generate ${labelDoc}`}
