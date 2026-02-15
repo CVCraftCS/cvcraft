@@ -8,6 +8,9 @@ export default function Home() {
     "Create a clean, recruiter-ready CV in minutes. UK, US and AU formats. Classroom-safe mode for teachers. Free cover letter generator included.";
   const canonical = "https://www.cvcraftclassroom.com/";
 
+  // Default OG image (keep consistent with your public/og setup)
+  const ogImage = "https://www.cvcraftclassroom.com/og/og-default.png";
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -57,16 +60,19 @@ export default function Home() {
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
         <meta property="og:url" content={canonical} />
+        <meta property="og:image" content={ogImage} />
 
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
         <meta name="twitter:url" content={canonical} />
+        <meta name="twitter:image" content={ogImage} />
 
         {/* Structured data */}
         <script
           type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </Head>
@@ -390,7 +396,8 @@ export default function Home() {
                       CV Examples UK (2026)
                     </div>
                     <div className="mt-1 text-sm text-slate-300">
-                      Warehouse, retail, customer service, no experience, and 16-year-old CV examples.
+                      Warehouse, retail, customer service, no experience, and
+                      16-year-old CV examples.
                     </div>
                   </Link>
                 </div>
