@@ -6,20 +6,14 @@ export default function Document() {
     <Html lang="en">
       <Head>
         {/* Favicons */}
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
 
-        {/* PWA / Manifest */}
-        <link rel="manifest" href="/site.manifest" />
-        <meta name="theme-color" content="#0f172a" />
-
-        {/* Helps iOS behave nicely */}
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta
-          name="apple-mobile-web-app-status-bar-style"
-          content="black-translucent"
-        />
+        {/* Optional: Android icons if your manifest doesn't cover it */}
+        <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
       </Head>
       <body>
         <Main />
