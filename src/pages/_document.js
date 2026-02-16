@@ -5,15 +5,22 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
-        {/* Favicons */}
-        <link rel="icon" href="/favicon.ico" sizes="any" />
+        {/* Primary favicon (SVG) */}
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="manifest" href="/site.webmanifest" />
 
-        {/* Optional: Android icons if your manifest doesn't cover it */}
+        {/* PNG fallbacks */}
+        <link rel="icon" type="image/png" sizes="32x32" href="/icon-192.png" />
         <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
         <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+
+        {/* Apple */}
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+        {/* Manifest */}
+        <link rel="manifest" href="/site.manifest" />
+
+        {/* Theme color (mobile browser bar colour) */}
+        <meta name="theme-color" content="#0f172a" />
       </Head>
       <body>
         <Main />
