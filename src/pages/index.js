@@ -80,15 +80,26 @@ export default function Home() {
       <main className="min-h-screen bg-slate-950 text-white">
         {/* Top bar */}
         <header className="w-full px-6 py-5">
-          <div className="mx-auto max-w-6xl flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-white/10 ring-1 ring-white/15 flex items-center justify-center font-bold">
+          <div className="mx-auto max-w-6xl flex items-center justify-between gap-4">
+            {/* ✅ Brand: prefers SVG if present, falls back to simple mark */}
+            <Link href="/" className="flex items-center gap-3 shrink-0">
+              <img
+                src="/brand/logo.svg"
+                alt="CVCraft Classroom"
+                className="h-9 w-auto hidden sm:block"
+                onError={(e) => {
+                  // hide broken image if logo not added yet
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+              <div className="h-9 w-9 rounded-xl bg-white/10 ring-1 ring-white/15 flex items-center justify-center font-bold sm:hidden">
                 CV
               </div>
-              <span className="font-semibold tracking-tight">CVCraft</span>
-            </div>
+              <span className="sr-only">CVCraft Classroom</span>
+            </Link>
 
-            <nav className="flex items-center gap-5 text-sm">
+            {/* Desktop nav */}
+            <nav className="hidden md:flex items-center gap-5 text-sm">
               <Link
                 href="/cover-letter"
                 className="text-slate-200 hover:text-white"
@@ -96,7 +107,6 @@ export default function Home() {
                 Cover letter (free)
               </Link>
 
-              {/* ✅ Help hub quick link */}
               <Link
                 href="/cv-writing-help"
                 className="text-slate-200 hover:text-white"
@@ -104,7 +114,6 @@ export default function Home() {
                 CV help
               </Link>
 
-              {/* ✅ Examples hub quick link */}
               <Link
                 href="/cv-examples-uk"
                 className="text-slate-200 hover:text-white"
@@ -115,9 +124,11 @@ export default function Home() {
               <Link href="/pricing" className="text-slate-200 hover:text-white">
                 Pricing
               </Link>
+
               <Link href="/schools" className="text-slate-200 hover:text-white">
                 Schools &amp; Educators
               </Link>
+
               <Link
                 href="/cv"
                 className="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 font-semibold text-slate-950 hover:bg-slate-200 transition"
@@ -125,6 +136,16 @@ export default function Home() {
                 Build CV
               </Link>
             </nav>
+
+            {/* Mobile primary CTA only */}
+            <div className="md:hidden">
+              <Link
+                href="/cv"
+                className="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 font-semibold text-slate-950 hover:bg-slate-200 transition"
+              >
+                Build CV
+              </Link>
+            </div>
           </div>
         </header>
 
@@ -149,6 +170,7 @@ export default function Home() {
                   running one-hour CV sessions.
                 </p>
 
+                {/* ✅ Cleaner hero: only 2 buttons */}
                 <div className="mt-7 flex flex-col sm:flex-row sm:items-center gap-3">
                   <Link
                     href="/cv"
@@ -163,16 +185,15 @@ export default function Home() {
                   >
                     Free cover letter
                   </Link>
-
-                  <Link
-                    href="/pricing"
-                    className="inline-flex items-center justify-center rounded-2xl bg-white/5 ring-1 ring-white/10 px-6 py-4 font-semibold text-white hover:bg-white/10 transition"
-                  >
-                    See pricing
-                  </Link>
                 </div>
 
-                {/* ✅ Extra internal link (subtle + strong for SEO) */}
+                {/* ✅ Tight value line (less clutter than many pills) */}
+                <p className="mt-4 text-sm text-slate-300">
+                  No subscriptions • Instant PDF export (paid) • Classroom-safe
+                  modes
+                </p>
+
+                {/* ✅ Single subtle internal link */}
                 <div className="mt-4">
                   <Link
                     href="/cv-examples-uk"
@@ -180,21 +201,6 @@ export default function Home() {
                   >
                     Browse UK CV examples →
                   </Link>
-                </div>
-
-                <div className="mt-6 flex flex-wrap gap-3 text-sm text-slate-300">
-                  <span className="rounded-full bg-white/5 ring-1 ring-white/10 px-3 py-1">
-                    No subscriptions
-                  </span>
-                  <span className="rounded-full bg-white/5 ring-1 ring-white/10 px-3 py-1">
-                    Download &amp; print PDF
-                  </span>
-                  <span className="rounded-full bg-white/5 ring-1 ring-white/10 px-3 py-1">
-                    Classroom-safe modes
-                  </span>
-                  <span className="rounded-full bg-white/5 ring-1 ring-white/10 px-3 py-1">
-                    Free cover letter generator
-                  </span>
                 </div>
               </div>
 
@@ -258,7 +264,6 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* ✅ UK CV Examples promo (another internal link) */}
                 <div className="mt-4 rounded-2xl bg-white/5 ring-1 ring-white/10 p-4">
                   <p className="text-sm text-slate-200">
                     <span className="font-semibold text-white">Need examples?</span>{" "}
@@ -292,7 +297,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* ✅ Help hub (SEO internal linking) */}
+            {/* Help hub */}
             <section className="mt-16">
               <div className="rounded-3xl bg-white/5 p-8 ring-1 ring-white/10">
                 <div className="flex items-end justify-between gap-6 flex-wrap">
@@ -387,7 +392,6 @@ export default function Home() {
                     </div>
                   </Link>
 
-                  {/* ✅ CV Examples hub link (NEW) */}
                   <Link
                     href="/cv-examples-uk"
                     className="rounded-2xl bg-white/5 p-5 ring-1 ring-white/10 hover:bg-white/10 transition sm:col-span-2 lg:col-span-3"
@@ -443,6 +447,7 @@ export default function Home() {
               © {new Date().getFullYear()} CVCraft. Built for speed. Built
               properly.
             </p>
+
             <div className="flex items-center gap-4 text-sm flex-wrap">
               <Link
                 href="/cover-letter"
@@ -451,19 +456,20 @@ export default function Home() {
                 Cover letter
               </Link>
 
-              {/* ✅ Footer help links (more internal linking) */}
               <Link
                 href="/cv-writing-help"
                 className="text-slate-300 hover:text-white"
               >
                 CV writing help
               </Link>
+
               <Link
                 href="/personal-statement-examples"
                 className="text-slate-300 hover:text-white"
               >
                 Personal statements
               </Link>
+
               <Link
                 href="/cover-letter-help"
                 className="text-slate-300 hover:text-white"
@@ -471,7 +477,6 @@ export default function Home() {
                 Cover letter help
               </Link>
 
-              {/* ✅ Footer examples link */}
               <Link
                 href="/cv-examples-uk"
                 className="text-slate-300 hover:text-white"
@@ -482,9 +487,11 @@ export default function Home() {
               <Link href="/pricing" className="text-slate-300 hover:text-white">
                 Pricing
               </Link>
+
               <Link href="/schools" className="text-slate-300 hover:text-white">
                 Schools
               </Link>
+
               <Link href="/cv" className="text-slate-300 hover:text-white">
                 Build CV
               </Link>
