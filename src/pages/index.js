@@ -79,10 +79,7 @@ export default function Home() {
 
       <main className="min-h-screen bg-slate-950 text-white">
         {/* Subtle background glow (adds “life” without changing your theme) */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none fixed inset-0 -z-10"
-        >
+        <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10">
           <div className="absolute -top-32 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-emerald-500/15 blur-[90px]" />
           <div className="absolute top-40 right-[-140px] h-[520px] w-[520px] rounded-full bg-indigo-500/15 blur-[100px]" />
           <div className="absolute bottom-[-200px] left-[-160px] h-[520px] w-[520px] rounded-full bg-cyan-500/10 blur-[110px]" />
@@ -109,24 +106,20 @@ export default function Home() {
 
             {/* Desktop nav */}
             <nav className="hidden md:flex items-center gap-5 text-sm">
-              <Link
-                href="/cover-letter"
-                className="text-slate-200 hover:text-white"
-              >
+              {/* ✅ NEW: Start funnel link */}
+              <Link href="/start" className="text-slate-200 hover:text-white">
+                Start here
+              </Link>
+
+              <Link href="/cover-letter" className="text-slate-200 hover:text-white">
                 Cover letter (free)
               </Link>
 
-              <Link
-                href="/cv-writing-help"
-                className="text-slate-200 hover:text-white"
-              >
+              <Link href="/cv-writing-help" className="text-slate-200 hover:text-white">
                 CV help
               </Link>
 
-              <Link
-                href="/cv-examples-uk"
-                className="text-slate-200 hover:text-white"
-              >
+              <Link href="/cv-examples-uk" className="text-slate-200 hover:text-white">
                 CV examples (UK)
               </Link>
 
@@ -146,8 +139,16 @@ export default function Home() {
               </Link>
             </nav>
 
-            {/* Mobile primary CTA only */}
-            <div className="md:hidden">
+            {/* Mobile CTAs */}
+            <div className="md:hidden flex items-center gap-3">
+              {/* ✅ NEW: Start shortcut on mobile */}
+              <Link
+                href="/start"
+                className="inline-flex items-center justify-center rounded-xl bg-white/5 ring-1 ring-white/10 px-3 py-2 text-sm font-semibold text-white hover:bg-white/10 transition"
+              >
+                Start
+              </Link>
+
               <Link
                 href="/cv"
                 className="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 font-semibold text-slate-950 hover:bg-slate-200 transition"
@@ -174,29 +175,29 @@ export default function Home() {
                 </h1>
 
                 <p className="mt-4 text-slate-300 text-lg leading-relaxed">
-                  CVCraft turns a few simple inputs into a clean, recruiter-ready
-                  CV. Perfect for jobseekers, and classroom-ready for teachers
-                  running one-hour CV sessions.
+                  CVCraft turns a few simple inputs into a clean, recruiter-ready CV.
+                  Perfect for jobseekers, and classroom-ready for teachers running
+                  one-hour CV sessions.
                 </p>
 
-                {/* ✅ Cleaner hero: only 2 buttons */}
+                {/* ✅ Updated hero: Start funnel first, CV second */}
                 <div className="mt-7 flex flex-col sm:flex-row sm:items-center gap-3">
                   <Link
-                    href="/cv"
+                    href="/start"
                     className="inline-flex items-center justify-center rounded-2xl bg-white px-6 py-4 font-semibold text-slate-950 hover:bg-slate-200 transition"
                   >
-                    Build my CV
+                    Start here (best flow) →
                   </Link>
 
                   <Link
-                    href="/cover-letter"
+                    href="/cv"
                     className="inline-flex items-center justify-center rounded-2xl bg-white/5 ring-1 ring-white/10 px-6 py-4 font-semibold text-white hover:bg-white/10 transition"
                   >
-                    Free cover letter
+                    Jump to CV builder →
                   </Link>
                 </div>
 
-                {/* ✅ Authority strip (trust + clarity) */}
+                {/* Authority strip (trust + clarity) */}
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
                   <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4">
                     <p className="text-sm font-semibold text-white">No subscriptions</p>
@@ -224,13 +225,19 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* ✅ Single subtle internal link */}
-                <div className="mt-5">
+                <div className="mt-5 flex flex-col sm:flex-row gap-3">
+                  <Link
+                    href="/cover-letter"
+                    className="inline-flex items-center justify-center rounded-2xl bg-white/5 ring-1 ring-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10 transition"
+                  >
+                    Free cover letter →
+                  </Link>
+
                   <Link
                     href="/cv-examples-uk"
-                    className="text-sm font-semibold text-emerald-300 hover:text-emerald-200 underline underline-offset-4"
+                    className="inline-flex items-center justify-center rounded-2xl bg-white/5 ring-1 ring-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10 transition"
                   >
-                    Browse UK CV examples →
+                    Browse UK examples →
                   </Link>
                 </div>
               </div>
@@ -262,19 +269,18 @@ export default function Home() {
                   </div>
                 </div>
 
+                {/* ✅ NEW: Funnel card */}
                 <div className="mt-6 rounded-2xl bg-white/5 ring-1 ring-white/10 p-4">
                   <p className="text-sm text-slate-200">
-                    <span className="font-semibold text-white">
-                      Need a cover letter?
-                    </span>{" "}
-                    Generate one for free in under 2 minutes.
+                    <span className="font-semibold text-white">Best flow:</span>{" "}
+                    build CV → generate free cover letter → export.
                   </p>
                   <div className="mt-3">
                     <Link
-                      href="/cover-letter"
+                      href="/start"
                       className="text-sm font-semibold text-slate-200 hover:text-white underline underline-offset-4"
                     >
-                      Open free cover letter generator →
+                      Open “Start here” →
                     </Link>
                   </div>
                 </div>
@@ -282,8 +288,7 @@ export default function Home() {
                 <div className="mt-4 rounded-2xl bg-indigo-500/10 ring-1 ring-indigo-400/20 p-4">
                   <p className="text-sm text-slate-200">
                     <span className="font-semibold text-white">For schools:</span>{" "}
-                    run a one-hour session and students leave with a professional
-                    CV.
+                    run a one-hour session and students leave with a professional CV.
                   </p>
                   <div className="mt-3">
                     <Link
@@ -333,20 +338,18 @@ export default function Home() {
               <div className="rounded-3xl bg-white/5 p-8 ring-1 ring-white/10">
                 <div className="flex items-end justify-between gap-6 flex-wrap">
                   <div>
-                    <h2 className="text-2xl font-bold">
-                      CV &amp; cover letter help
-                    </h2>
+                    <h2 className="text-2xl font-bold">CV &amp; cover letter help</h2>
                     <p className="mt-2 max-w-2xl text-slate-300">
-                      Practical guides and examples — built to help you write
-                      faster and apply with confidence.
+                      Practical guides and examples — built to help you write faster and apply with confidence.
                     </p>
                   </div>
 
+                  {/* ✅ Start here link */}
                   <Link
-                    href="/cv"
+                    href="/start"
                     className="text-sm font-semibold text-white underline underline-offset-4 hover:text-slate-200"
                   >
-                    Start building →
+                    Start here →
                   </Link>
                 </div>
 
@@ -415,9 +418,7 @@ export default function Home() {
                     href="/pricing"
                     className="rounded-2xl bg-white/5 p-5 ring-1 ring-white/10 hover:bg-white/10 transition"
                   >
-                    <div className="text-sm font-semibold text-white">
-                      Pricing
-                    </div>
+                    <div className="text-sm font-semibold text-white">Pricing</div>
                     <div className="mt-1 text-sm text-slate-300">
                       One simple pass — export when you’re ready
                     </div>
@@ -431,8 +432,7 @@ export default function Home() {
                       CV Examples UK (2026)
                     </div>
                     <div className="mt-1 text-sm text-slate-300">
-                      Warehouse, retail, customer service, no experience, and
-                      16-year-old CV examples.
+                      Warehouse, retail, customer service, no experience, and 16-year-old CV examples.
                     </div>
                   </Link>
                 </div>
@@ -454,16 +454,14 @@ export default function Home() {
             <div className="mt-6 grid gap-6 md:grid-cols-2 text-left">
               <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-6">
                 <p className="text-slate-100 leading-relaxed">
-                  “The cover letter wording was spot on. It saved me so much
-                  time.”
+                  “The cover letter wording was spot on. It saved me so much time.”
                 </p>
                 <p className="mt-4 text-sm text-slate-300">— Danny W</p>
               </div>
 
               <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-6">
                 <p className="text-slate-100 leading-relaxed">
-                  “It made me sound professional even though my spelling isn’t
-                  great.”
+                  “It made me sound professional even though my spelling isn’t great.”
                 </p>
                 <p className="mt-4 text-sm text-slate-300">— Katie J</p>
               </div>
@@ -475,22 +473,20 @@ export default function Home() {
         <footer className="px-6 pb-10">
           <div className="mx-auto max-w-6xl border-t border-white/10 pt-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <p className="text-sm text-slate-400">
-              © {new Date().getFullYear()} CVCraft. Built for speed. Built
-              properly.
+              © {new Date().getFullYear()} CVCraft. Built for speed. Built properly.
             </p>
 
             <div className="flex items-center gap-4 text-sm flex-wrap">
-              <Link
-                href="/cover-letter"
-                className="text-slate-300 hover:text-white"
-              >
+              {/* ✅ Start here link in footer */}
+              <Link href="/start" className="text-slate-300 hover:text-white">
+                Start here
+              </Link>
+
+              <Link href="/cover-letter" className="text-slate-300 hover:text-white">
                 Cover letter
               </Link>
 
-              <Link
-                href="/cv-writing-help"
-                className="text-slate-300 hover:text-white"
-              >
+              <Link href="/cv-writing-help" className="text-slate-300 hover:text-white">
                 CV writing help
               </Link>
 
@@ -501,17 +497,11 @@ export default function Home() {
                 Personal statements
               </Link>
 
-              <Link
-                href="/cover-letter-help"
-                className="text-slate-300 hover:text-white"
-              >
+              <Link href="/cover-letter-help" className="text-slate-300 hover:text-white">
                 Cover letter help
               </Link>
 
-              <Link
-                href="/cv-examples-uk"
-                className="text-slate-300 hover:text-white"
-              >
+              <Link href="/cv-examples-uk" className="text-slate-300 hover:text-white">
                 CV examples (UK)
               </Link>
 
