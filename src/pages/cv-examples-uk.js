@@ -56,6 +56,115 @@ export default function CvExamplesUk() {
     })),
   };
 
+  // Grouped TOC (pro feel + clearer topical clustering)
+  const tocGroups = [
+    {
+      title: "Logistics & Physical Roles",
+      items: [
+        {
+          href: "#warehouse",
+          label: "Warehouse CV Example",
+          blurb: "Productivity, safety, order volumes",
+        },
+        {
+          href: "#delivery-driver",
+          label: "Delivery Driver CV Example",
+          blurb: "Reliability, route planning, customer delivery",
+        },
+        {
+          href: "#construction",
+          label: "Construction Labourer CV Example",
+          blurb: "Site safety, manual handling, teamwork",
+        },
+        {
+          href: "#cleaner",
+          label: "Cleaner CV Example",
+          blurb: "Checklists, hygiene, reliability",
+        },
+      ],
+    },
+    {
+      title: "Retail & Customer-Facing Roles",
+      items: [
+        {
+          href: "#retail",
+          label: "Retail CV Example",
+          blurb: "Customer service, targets, tills",
+        },
+        {
+          href: "#sales-assistant",
+          label: "Sales Assistant CV Example",
+          blurb: "Customer service, tills, targets",
+        },
+        {
+          href: "#customer-service",
+          label: "Customer Service CV Example",
+          blurb: "KPIs, resolution, communication",
+        },
+        {
+          href: "#barista",
+          label: "Barista CV Example",
+          blurb: "Fast service, POS, coffee skills",
+        },
+        {
+          href: "#receptionist",
+          label: "Receptionist CV Example",
+          blurb: "Calls, diaries, professionalism",
+        },
+      ],
+    },
+    {
+      title: "Care, Support & Education",
+      items: [
+        {
+          href: "#care-assistant",
+          label: "Care Assistant CV Example",
+          blurb: "Compassion, safeguarding, care records",
+        },
+        {
+          href: "#support-worker",
+          label: "Support Worker CV Example",
+          blurb: "Person-centred care, handovers",
+        },
+        {
+          href: "#teaching-assistant",
+          label: "Teaching Assistant CV Example",
+          blurb: "Classroom support, safeguarding",
+        },
+        {
+          href: "#security",
+          label: "Security Guard CV Example",
+          blurb: "Vigilance, reporting, de-escalation",
+        },
+      ],
+    },
+    {
+      title: "Office & Admin",
+      items: [
+        {
+          href: "#admin",
+          label: "Admin Assistant CV Example",
+          blurb: "Accuracy, inboxes, spreadsheets",
+        },
+      ],
+    },
+    {
+      title: "First Job & Entry Level",
+      items: [
+        {
+          href: "#no-experience",
+          label: "No Experience CV",
+          blurb: "Transferable skills, education",
+        },
+        {
+          href: "#age-16",
+          label: "CV for 16 Year Old",
+          blurb: "First CV, school achievements, reliability",
+        },
+      ],
+    },
+  ];
+
   return (
     <>
       <Head>
@@ -158,227 +267,52 @@ export default function CvExamplesUk() {
             </Link>
           </div>
 
-          {/* Table of contents */}
+          {/* Grouped Table of contents */}
           <section className="mt-10 rounded-3xl bg-white/5 ring-1 ring-white/10 p-6">
-            <h2 className="text-xl font-bold">Jump to a CV example</h2>
-            <p className="mt-2 text-slate-300">
-              Use the links below to jump straight to the example you need.
-            </p>
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-bold">Jump to a CV example</h2>
+                <p className="mt-2 text-slate-300">
+                  Grouped by job type so it&apos;s easy to find what you need.
+                </p>
+              </div>
 
-            <ul className="mt-4 grid gap-3 sm:grid-cols-2 text-sm">
-              {/* Original set */}
-              <li>
-                <a
-                  href="#warehouse"
-                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
-                >
-                  <span className="font-semibold">Warehouse CV Example</span>
-                  <span className="mt-1 block text-slate-300">
-                    Productivity, safety, order volumes
-                  </span>
-                </a>
-              </li>
+              <a
+                href="#examples"
+                className="text-sm text-emerald-400 hover:text-emerald-300 underline underline-offset-4"
+              >
+                Skip to full examples ↓
+              </a>
+            </div>
 
-              <li>
-                <a
-                  href="#retail"
-                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
+            <div className="mt-6 space-y-6">
+              {tocGroups.map((group) => (
+                <div
+                  key={group.title}
+                  className="rounded-2xl bg-black/20 ring-1 ring-white/10 p-5"
                 >
-                  <span className="font-semibold">Retail CV Example</span>
-                  <span className="mt-1 block text-slate-300">
-                    Customer service, targets, tills
-                  </span>
-                </a>
-              </li>
+                  <h3 className="text-base font-semibold text-slate-100">
+                    {group.title}
+                  </h3>
 
-              <li>
-                <a
-                  href="#customer-service"
-                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
-                >
-                  <span className="font-semibold">
-                    Customer Service CV Example
-                  </span>
-                  <span className="mt-1 block text-slate-300">
-                    KPIs, resolution, communication
-                  </span>
-                </a>
-              </li>
-
-              <li>
-                <a
-                  href="#no-experience"
-                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
-                >
-                  <span className="font-semibold">No Experience CV</span>
-                  <span className="mt-1 block text-slate-300">
-                    Transferable skills, education
-                  </span>
-                </a>
-              </li>
-
-              <li className="sm:col-span-2">
-                <a
-                  href="#age-16"
-                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
-                >
-                  <span className="font-semibold">CV for 16 Year Old</span>
-                  <span className="mt-1 block text-slate-300">
-                    First CV, school achievements, reliability
-                  </span>
-                </a>
-              </li>
-
-              {/* New set */}
-              <li>
-                <a
-                  href="#care-assistant"
-                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
-                >
-                  <span className="font-semibold">
-                    Care Assistant CV Example
-                  </span>
-                  <span className="mt-1 block text-slate-300">
-                    Compassion, safeguarding, care records
-                  </span>
-                </a>
-              </li>
-
-              <li>
-                <a
-                  href="#cleaner"
-                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
-                >
-                  <span className="font-semibold">Cleaner CV Example</span>
-                  <span className="mt-1 block text-slate-300">
-                    Checklists, hygiene, reliability
-                  </span>
-                </a>
-              </li>
-
-              <li>
-                <a
-                  href="#barista"
-                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
-                >
-                  <span className="font-semibold">Barista CV Example</span>
-                  <span className="mt-1 block text-slate-300">
-                    Fast service, POS, coffee skills
-                  </span>
-                </a>
-              </li>
-
-              {/* ✅ Added: Delivery driver */}
-              <li>
-                <a
-                  href="#delivery-driver"
-                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
-                >
-                  <span className="font-semibold">
-                    Delivery Driver CV Example
-                  </span>
-                  <span className="mt-1 block text-slate-300">
-                    Reliability, route planning, customer delivery
-                  </span>
-                </a>
-              </li>
-
-              <li>
-                <a
-                  href="#construction"
-                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
-                >
-                  <span className="font-semibold">
-                    Construction Labourer CV Example
-                  </span>
-                  <span className="mt-1 block text-slate-300">
-                    Site safety, manual handling, teamwork
-                  </span>
-                </a>
-              </li>
-
-              <li>
-                <a
-                  href="#security"
-                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
-                >
-                  <span className="font-semibold">
-                    Security Guard CV Example
-                  </span>
-                  <span className="mt-1 block text-slate-300">
-                    Vigilance, reporting, de-escalation
-                  </span>
-                </a>
-              </li>
-
-              <li>
-                <a
-                  href="#teaching-assistant"
-                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
-                >
-                  <span className="font-semibold">
-                    Teaching Assistant CV Example
-                  </span>
-                  <span className="mt-1 block text-slate-300">
-                    Classroom support, safeguarding
-                  </span>
-                </a>
-              </li>
-
-              <li>
-                <a
-                  href="#support-worker"
-                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
-                >
-                  <span className="font-semibold">
-                    Support Worker CV Example
-                  </span>
-                  <span className="mt-1 block text-slate-300">
-                    Person-centred care, handovers
-                  </span>
-                </a>
-              </li>
-
-              <li>
-                <a
-                  href="#receptionist"
-                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
-                >
-                  <span className="font-semibold">Receptionist CV Example</span>
-                  <span className="mt-1 block text-slate-300">
-                    Calls, diaries, professionalism
-                  </span>
-                </a>
-              </li>
-
-              <li>
-                <a
-                  href="#admin"
-                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
-                >
-                  <span className="font-semibold">
-                    Admin Assistant CV Example
-                  </span>
-                  <span className="mt-1 block text-slate-300">
-                    Accuracy, inboxes, spreadsheets
-                  </span>
-                </a>
-              </li>
-
-              <li className="sm:col-span-2">
-                <a
-                  href="#sales-assistant"
-                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
-                >
-                  <span className="font-semibold">
-                    Sales Assistant CV Example
-                  </span>
-                  <span className="mt-1 block text-slate-300">
-                    Customer service, tills, targets
-                  </span>
-                </a>
-              </li>
-            </ul>
+                  <ul className="mt-4 grid gap-3 sm:grid-cols-2 text-sm">
+                    {group.items.map((item) => (
+                      <li key={item.href}>
+                        <a
+                          href={item.href}
+                          className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
+                        >
+                          <span className="font-semibold">{item.label}</span>
+                          <span className="mt-1 block text-slate-300">
+                            {item.blurb}
+                          </span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </section>
 
           {/* How to use these examples */}
@@ -419,261 +353,319 @@ export default function CvExamplesUk() {
           </section>
 
           {/* Section: Example Types */}
-          <section className="mt-14">
+          <section className="mt-14" id="examples">
             <h2 className="text-2xl font-bold">UK CV Example Types</h2>
 
-            <div className="mt-6 space-y-10">
-              {/* Existing pages (top-level routes) */}
-              <div id="warehouse">
-                <h3 className="text-xl font-semibold">
-                  Warehouse CV Example (UK)
+            <div className="mt-6 space-y-12">
+              {/* ===== Group: Logistics & Physical ===== */}
+              <div className="rounded-3xl bg-white/5 ring-1 ring-white/10 p-6">
+                <h3 className="text-lg font-bold">Logistics &amp; Physical Roles</h3>
+                <p className="mt-2 text-slate-300">
+                  Roles focused on reliability, pace, safety, and practical work.
+                  Use numbers where possible (drops/day, orders/day, sites worked).
+                </p>
+
+                <div className="mt-6 space-y-8">
+                  <div id="warehouse">
+                    <h4 className="text-xl font-semibold">
+                      Warehouse CV Example (UK)
+                    </h4>
+                    <p className="mt-2 text-slate-300">
+                      Focus on productivity, order accuracy, safety awareness and
+                      teamwork. Mention daily order volumes, stock control systems
+                      and physical workload.
+                    </p>
+                    <Link
+                      href="/warehouse-cv-example-uk"
+                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                    >
+                      View warehouse CV guide →
+                    </Link>
+                  </div>
+
+                  <div id="delivery-driver">
+                    <h4 className="text-xl font-semibold">
+                      Delivery Driver CV Example (UK)
+                    </h4>
+                    <p className="mt-2 text-slate-300">
+                      Highlight safe driving, timekeeping, route planning, proof
+                      of delivery, and good customer service. Mention licence type,
+                      van experience, and any multi-drop work.
+                    </p>
+                    <Link
+                      href="/cv-examples/delivery-driver-cv-example-uk"
+                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                    >
+                      View delivery driver CV guide →
+                    </Link>
+                  </div>
+
+                  <div id="construction">
+                    <h4 className="text-xl font-semibold">
+                      Construction Labourer CV Example (UK)
+                    </h4>
+                    <p className="mt-2 text-slate-300">
+                      Focus on site safety, manual handling, assisting trades, and
+                      reliability. Mention CSCS if you have it.
+                    </p>
+                    <Link
+                      href="/cv-examples/construction-labourer-cv-example-uk"
+                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                    >
+                      View construction labourer CV guide →
+                    </Link>
+                  </div>
+
+                  <div id="cleaner">
+                    <h4 className="text-xl font-semibold">Cleaner CV Example (UK)</h4>
+                    <p className="mt-2 text-slate-300">
+                      Highlight reliability, attention to detail, hygiene standards,
+                      and the ability to follow checklists and routines.
+                    </p>
+                    <Link
+                      href="/cv-examples/cleaner-cv-example-uk"
+                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                    >
+                      View cleaner CV guide →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              {/* ===== Group: Retail & Customer-Facing ===== */}
+              <div className="rounded-3xl bg-white/5 ring-1 ring-white/10 p-6">
+                <h3 className="text-lg font-bold">
+                  Retail &amp; Customer-Facing Roles
                 </h3>
                 <p className="mt-2 text-slate-300">
-                  Focus on productivity, order accuracy, safety awareness and
-                  teamwork. Mention daily order volumes, stock control systems
-                  and physical workload.
+                  Emphasise customer service, speed, accuracy, and hitting targets.
+                  Use metrics (sales, baskets, upsells, satisfaction scores).
                 </p>
-                <Link
-                  href="/warehouse-cv-example-uk"
-                  className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
-                >
-                  View warehouse CV guide →
-                </Link>
+
+                <div className="mt-6 space-y-8">
+                  <div id="retail">
+                    <h4 className="text-xl font-semibold">Retail CV Example (UK)</h4>
+                    <p className="mt-2 text-slate-300">
+                      Highlight customer service, sales targets, cash handling, and
+                      teamwork. Quantify performance where possible.
+                    </p>
+                    <Link
+                      href="/retail-cv-example-uk"
+                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                    >
+                      View retail CV guide →
+                    </Link>
+                  </div>
+
+                  <div id="sales-assistant">
+                    <h4 className="text-xl font-semibold">
+                      Sales Assistant CV Example (UK)
+                    </h4>
+                    <p className="mt-2 text-slate-300">
+                      Focus on customer service, till confidence, store standards,
+                      and working to targets/KPIs where relevant.
+                    </p>
+                    <Link
+                      href="/cv-examples/sales-assistant-cv-example-uk"
+                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                    >
+                      View sales assistant CV guide →
+                    </Link>
+                  </div>
+
+                  <div id="customer-service">
+                    <h4 className="text-xl font-semibold">
+                      Customer Service CV Example
+                    </h4>
+                    <p className="mt-2 text-slate-300">
+                      Demonstrate communication skills, conflict resolution, and
+                      problem solving. Mention KPIs or satisfaction scores.
+                    </p>
+                    <Link
+                      href="/customer-service-cv-example-uk"
+                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                    >
+                      View customer service CV guide →
+                    </Link>
+                  </div>
+
+                  <div id="barista">
+                    <h4 className="text-xl font-semibold">Barista CV Example (UK)</h4>
+                    <p className="mt-2 text-slate-300">
+                      Show speed during rush periods, consistency, customer service,
+                      POS/till confidence, and clean station habits.
+                    </p>
+                    <Link
+                      href="/cv-examples/barista-cv-example-uk"
+                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                    >
+                      View barista CV guide →
+                    </Link>
+                  </div>
+
+                  <div id="receptionist">
+                    <h4 className="text-xl font-semibold">
+                      Receptionist CV Example (UK)
+                    </h4>
+                    <p className="mt-2 text-slate-300">
+                      Show professionalism, call handling, diary management, and
+                      confidentiality — plus strong organisation.
+                    </p>
+                    <Link
+                      href="/cv-examples/receptionist-cv-example-uk"
+                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                    >
+                      View receptionist CV guide →
+                    </Link>
+                  </div>
+                </div>
               </div>
 
-              <div id="retail">
-                <h3 className="text-xl font-semibold">Retail CV Example (UK)</h3>
+              {/* ===== Group: Care, Support & Education ===== */}
+              <div className="rounded-3xl bg-white/5 ring-1 ring-white/10 p-6">
+                <h3 className="text-lg font-bold">Care, Support &amp; Education</h3>
                 <p className="mt-2 text-slate-300">
-                  Highlight customer service, sales targets, cash handling, and
-                  teamwork. Quantify performance where possible.
+                  Prioritise safeguarding, empathy, accurate records, and clear
+                  communication. Mention DBS/training if applicable.
                 </p>
-                <Link
-                  href="/retail-cv-example-uk"
-                  className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
-                >
-                  View retail CV guide →
-                </Link>
+
+                <div className="mt-6 space-y-8">
+                  <div id="care-assistant">
+                    <h4 className="text-xl font-semibold">
+                      Care Assistant CV Example (UK)
+                    </h4>
+                    <p className="mt-2 text-slate-300">
+                      Focus on compassion, safeguarding awareness, personal care,
+                      clear documentation and supporting vulnerable individuals.
+                    </p>
+                    <Link
+                      href="/cv-examples/care-assistant-cv-example-uk"
+                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                    >
+                      View care assistant CV guide →
+                    </Link>
+                  </div>
+
+                  <div id="support-worker">
+                    <h4 className="text-xl font-semibold">
+                      Support Worker CV Example (UK)
+                    </h4>
+                    <p className="mt-2 text-slate-300">
+                      Focus on person-centred care, accurate record keeping, safe
+                      handovers, and promoting independence.
+                    </p>
+                    <Link
+                      href="/cv-examples/support-worker-cv-example-uk"
+                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                    >
+                      View support worker CV guide →
+                    </Link>
+                  </div>
+
+                  <div id="teaching-assistant">
+                    <h4 className="text-xl font-semibold">
+                      Teaching Assistant CV Example (UK)
+                    </h4>
+                    <p className="mt-2 text-slate-300">
+                      Emphasise classroom support, behaviour support strategies,
+                      and strong safeguarding awareness. DBS is typically required.
+                    </p>
+                    <Link
+                      href="/cv-examples/teaching-assistant-cv-example-uk"
+                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                    >
+                      View teaching assistant CV guide →
+                    </Link>
+                  </div>
+
+                  <div id="security">
+                    <h4 className="text-xl font-semibold">
+                      Security Guard CV Example (UK)
+                    </h4>
+                    <p className="mt-2 text-slate-300">
+                      Highlight vigilance, incident reporting, access control, and
+                      calm conflict management. Mention SIA if applicable.
+                    </p>
+                    <Link
+                      href="/cv-examples/security-guard-cv-example-uk"
+                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                    >
+                      View security guard CV guide →
+                    </Link>
+                  </div>
+                </div>
               </div>
 
-              <div id="customer-service">
-                <h3 className="text-xl font-semibold">
-                  Customer Service CV Example
-                </h3>
+              {/* ===== Group: Office & Admin ===== */}
+              <div className="rounded-3xl bg-white/5 ring-1 ring-white/10 p-6">
+                <h3 className="text-lg font-bold">Office &amp; Admin</h3>
                 <p className="mt-2 text-slate-300">
-                  Demonstrate communication skills, conflict resolution, and
-                  problem solving. Mention KPIs or satisfaction scores.
+                  Highlight organisation, accuracy, communication, and confidence
+                  with systems (email, calendars, spreadsheets).
                 </p>
-                <Link
-                  href="/customer-service-cv-example-uk"
-                  className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
-                >
-                  View customer service CV guide →
-                </Link>
+
+                <div className="mt-6 space-y-8">
+                  <div id="admin">
+                    <h4 className="text-xl font-semibold">
+                      Admin Assistant CV Example (UK)
+                    </h4>
+                    <p className="mt-2 text-slate-300">
+                      Highlight accuracy, email management, spreadsheets, document
+                      control and strong organisation under deadlines.
+                    </p>
+                    <Link
+                      href="/cv-examples/admin-assistant-cv-example-uk"
+                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                    >
+                      View admin assistant CV guide →
+                    </Link>
+                  </div>
+                </div>
               </div>
 
-              <div id="no-experience">
-                <h3 className="text-xl font-semibold">
-                  CV With No Experience (UK)
-                </h3>
+              {/* ===== Group: First Job & Entry Level ===== */}
+              <div className="rounded-3xl bg-white/5 ring-1 ring-white/10 p-6">
+                <h3 className="text-lg font-bold">First Job &amp; Entry Level</h3>
                 <p className="mt-2 text-slate-300">
-                  Emphasise transferable skills, volunteering, education and
-                  personal strengths. This is ideal for first jobs and entry-level
-                  applications.
+                  Perfect if you&apos;re starting out. Focus on reliability,
+                  transferable skills, and achievements from school, hobbies,
+                  volunteering, or part-time work.
                 </p>
-                <Link
-                  href="/no-experience-cv-uk"
-                  className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
-                >
-                  View no experience CV guide →
-                </Link>
-              </div>
 
-              <div id="age-16">
-                <h3 className="text-xl font-semibold">CV for 16 Year Old (UK)</h3>
-                <p className="mt-2 text-slate-300">
-                  Focus on school achievements, teamwork, reliability and a clear
-                  personal statement. Perfect for weekend jobs and apprenticeships.
-                </p>
-                <Link
-                  href="/cv-for-16-year-old-uk"
-                  className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
-                >
-                  View 16 year old CV guide →
-                </Link>
-              </div>
+                <div className="mt-6 space-y-8">
+                  <div id="no-experience">
+                    <h4 className="text-xl font-semibold">
+                      CV With No Experience (UK)
+                    </h4>
+                    <p className="mt-2 text-slate-300">
+                      Emphasise transferable skills, volunteering, education and
+                      personal strengths. This is ideal for first jobs and entry-level
+                      applications.
+                    </p>
+                    <Link
+                      href="/no-experience-cv-uk"
+                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                    >
+                      View no experience CV guide →
+                    </Link>
+                  </div>
 
-              {/* New pages (in /cv-examples folder) */}
-              <div id="care-assistant">
-                <h3 className="text-xl font-semibold">
-                  Care Assistant CV Example (UK)
-                </h3>
-                <p className="mt-2 text-slate-300">
-                  Focus on compassion, safeguarding awareness, personal care,
-                  clear documentation and supporting vulnerable individuals.
-                </p>
-                <Link
-                  href="/cv-examples/care-assistant-cv-example-uk"
-                  className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
-                >
-                  View care assistant CV guide →
-                </Link>
-              </div>
-
-              <div id="cleaner">
-                <h3 className="text-xl font-semibold">Cleaner CV Example (UK)</h3>
-                <p className="mt-2 text-slate-300">
-                  Highlight reliability, attention to detail, hygiene standards,
-                  and the ability to follow checklists and routines.
-                </p>
-                <Link
-                  href="/cv-examples/cleaner-cv-example-uk"
-                  className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
-                >
-                  View cleaner CV guide →
-                </Link>
-              </div>
-
-              <div id="barista">
-                <h3 className="text-xl font-semibold">Barista CV Example (UK)</h3>
-                <p className="mt-2 text-slate-300">
-                  Show speed during rush periods, consistency, customer service,
-                  POS/till confidence, and clean station habits.
-                </p>
-                <Link
-                  href="/cv-examples/barista-cv-example-uk"
-                  className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
-                >
-                  View barista CV guide →
-                </Link>
-              </div>
-
-              <div id="delivery-driver">
-                <h3 className="text-xl font-semibold">
-                  Delivery Driver CV Example (UK)
-                </h3>
-                <p className="mt-2 text-slate-300">
-                  Highlight safe driving, timekeeping, route planning, proof of
-                  delivery, and good customer service. Mention licence type, van
-                  experience, and any multi-drop work.
-                </p>
-                <Link
-                  href="/cv-examples/delivery-driver-cv-example-uk"
-                  className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
-                >
-                  View delivery driver CV guide →
-                </Link>
-              </div>
-
-              <div id="construction">
-                <h3 className="text-xl font-semibold">
-                  Construction Labourer CV Example (UK)
-                </h3>
-                <p className="mt-2 text-slate-300">
-                  Focus on site safety, manual handling, assisting trades, and
-                  reliability. Mention CSCS if you have it.
-                </p>
-                <Link
-                  href="/cv-examples/construction-labourer-cv-example-uk"
-                  className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
-                >
-                  View construction labourer CV guide →
-                </Link>
-              </div>
-
-              <div id="security">
-                <h3 className="text-xl font-semibold">
-                  Security Guard CV Example (UK)
-                </h3>
-                <p className="mt-2 text-slate-300">
-                  Highlight vigilance, incident reporting, access control, and
-                  calm conflict management. Mention SIA if applicable.
-                </p>
-                <Link
-                  href="/cv-examples/security-guard-cv-example-uk"
-                  className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
-                >
-                  View security guard CV guide →
-                </Link>
-              </div>
-
-              <div id="teaching-assistant">
-                <h3 className="text-xl font-semibold">
-                  Teaching Assistant CV Example (UK)
-                </h3>
-                <p className="mt-2 text-slate-300">
-                  Emphasise classroom support, behaviour support strategies, and
-                  strong safeguarding awareness. DBS is typically required.
-                </p>
-                <Link
-                  href="/cv-examples/teaching-assistant-cv-example-uk"
-                  className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
-                >
-                  View teaching assistant CV guide →
-                </Link>
-              </div>
-
-              <div id="support-worker">
-                <h3 className="text-xl font-semibold">
-                  Support Worker CV Example (UK)
-                </h3>
-                <p className="mt-2 text-slate-300">
-                  Focus on person-centred care, accurate record keeping, safe
-                  handovers, and promoting independence.
-                </p>
-                <Link
-                  href="/cv-examples/support-worker-cv-example-uk"
-                  className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
-                >
-                  View support worker CV guide →
-                </Link>
-              </div>
-
-              <div id="receptionist">
-                <h3 className="text-xl font-semibold">
-                  Receptionist CV Example (UK)
-                </h3>
-                <p className="mt-2 text-slate-300">
-                  Show professionalism, call handling, diary management, and
-                  confidentiality — plus strong organisation.
-                </p>
-                <Link
-                  href="/cv-examples/receptionist-cv-example-uk"
-                  className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
-                >
-                  View receptionist CV guide →
-                </Link>
-              </div>
-
-              <div id="admin">
-                <h3 className="text-xl font-semibold">
-                  Admin Assistant CV Example (UK)
-                </h3>
-                <p className="mt-2 text-slate-300">
-                  Highlight accuracy, email management, spreadsheets, document
-                  control and strong organisation under deadlines.
-                </p>
-                <Link
-                  href="/cv-examples/admin-assistant-cv-example-uk"
-                  className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
-                >
-                  View admin assistant CV guide →
-                </Link>
-              </div>
-
-              <div id="sales-assistant">
-                <h3 className="text-xl font-semibold">
-                  Sales Assistant CV Example (UK)
-                </h3>
-                <p className="mt-2 text-slate-300">
-                  Focus on customer service, till confidence, store standards,
-                  and working to targets/KPIs where relevant.
-                </p>
-                <Link
-                  href="/cv-examples/sales-assistant-cv-example-uk"
-                  className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
-                >
-                  View sales assistant CV guide →
-                </Link>
+                  <div id="age-16">
+                    <h4 className="text-xl font-semibold">
+                      CV for 16 Year Old (UK)
+                    </h4>
+                    <p className="mt-2 text-slate-300">
+                      Focus on school achievements, teamwork, reliability and a clear
+                      personal statement. Perfect for weekend jobs and apprenticeships.
+                    </p>
+                    <Link
+                      href="/cv-for-16-year-old-uk"
+                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                    >
+                      View 16 year old CV guide →
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
