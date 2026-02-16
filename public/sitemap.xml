@@ -59,6 +59,12 @@
     <priority>0.7</priority>
   </url>
 
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-template-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
   <!-- CV Examples Hub -->
 
   <url>
