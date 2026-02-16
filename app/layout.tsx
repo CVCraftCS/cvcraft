@@ -1,10 +1,25 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CVCraft",
-  description: "Build your CV with confidence. No subscriptions.",
+  title: {
+    default: "CVCraft Classroom",
+    template: "%s | CVCraft Classroom",
+  },
+  description:
+    "Build your CV with confidence. No subscriptions. Classroom-ready CV builder and free cover letter generator.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" }, // Critical browser fallback
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
+  manifest: "/site.webmanifest",
 };
 
 function NavLink({
@@ -12,7 +27,7 @@ function NavLink({
   children,
 }: {
   href: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <Link href={href} className="text-sm text-white/80 hover:text-white">
@@ -24,7 +39,7 @@ function NavLink({
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <html lang="en">
@@ -38,7 +53,7 @@ export default function RootLayout({
             <div className="flex items-center gap-6">
               <NavLink href="/pricing">Pricing</NavLink>
 
-              {/* ✅ Cover Letter (Free) */}
+              {/* Cover Letter (Free) */}
               <Link
                 href="/cover-letter"
                 className="inline-flex items-center gap-2 text-sm text-white/80 hover:text-white"
@@ -49,7 +64,7 @@ export default function RootLayout({
                 </span>
               </Link>
 
-              {/* ✅ Always go to the builder */}
+              {/* Always go to the builder */}
               <Link
                 href="/cv"
                 className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-white/90"
