@@ -3,10 +3,7 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: {
-    default: "CVCraft",
-    template: "%s | CVCraft",
-  },
+  title: "CVCraft",
   description: "Build your CV with confidence. No subscriptions.",
   icons: {
     icon: [
@@ -32,7 +29,11 @@ function NavLink({
   );
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body className="min-h-screen bg-slate-950 text-white">
