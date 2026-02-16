@@ -78,6 +78,16 @@ export default function Home() {
       </Head>
 
       <main className="min-h-screen bg-slate-950 text-white">
+        {/* Subtle background glow (adds “life” without changing your theme) */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-0 -z-10"
+        >
+          <div className="absolute -top-32 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-emerald-500/15 blur-[90px]" />
+          <div className="absolute top-40 right-[-140px] h-[520px] w-[520px] rounded-full bg-indigo-500/15 blur-[100px]" />
+          <div className="absolute bottom-[-200px] left-[-160px] h-[520px] w-[520px] rounded-full bg-cyan-500/10 blur-[110px]" />
+        </div>
+
         {/* Top bar */}
         <header className="w-full px-6 py-5">
           <div className="mx-auto max-w-6xl flex items-center justify-between gap-4">
@@ -88,7 +98,6 @@ export default function Home() {
                 alt="CVCraft Classroom"
                 className="h-9 w-auto hidden sm:block"
                 onError={(e) => {
-                  // hide broken image if logo not added yet
                   e.currentTarget.style.display = "none";
                 }}
               />
@@ -160,8 +169,8 @@ export default function Home() {
                 </div>
 
                 <h1 className="mt-4 text-4xl md:text-5xl font-bold tracking-tight">
-                  Build a professional CV fast —
-                  <span className="text-slate-200"> without the stress.</span>
+                  Build a recruiter-ready CV in under 20 minutes —
+                  <span className="text-slate-200"> without subscriptions.</span>
                 </h1>
 
                 <p className="mt-4 text-slate-300 text-lg leading-relaxed">
@@ -187,14 +196,36 @@ export default function Home() {
                   </Link>
                 </div>
 
-                {/* ✅ Tight value line (less clutter than many pills) */}
-                <p className="mt-4 text-sm text-slate-300">
-                  No subscriptions • Instant PDF export (paid) • Classroom-safe
-                  modes
-                </p>
+                {/* ✅ Authority strip (trust + clarity) */}
+                <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4">
+                    <p className="text-sm font-semibold text-white">No subscriptions</p>
+                    <p className="mt-1 text-sm text-slate-300">
+                      One simple pass when you’re ready to export.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4">
+                    <p className="text-sm font-semibold text-white">Secure checkout</p>
+                    <p className="mt-1 text-sm text-slate-300">
+                      Payments handled by Stripe. Instant receipt.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4">
+                    <p className="text-sm font-semibold text-white">Instant PDF export</p>
+                    <p className="mt-1 text-sm text-slate-300">
+                      Download PDF or print/save as PDF in seconds.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4">
+                    <p className="text-sm font-semibold text-white">Built for UK & schools</p>
+                    <p className="mt-1 text-sm text-slate-300">
+                      Classroom-safe modes for one-hour sessions.
+                    </p>
+                  </div>
+                </div>
 
                 {/* ✅ Single subtle internal link */}
-                <div className="mt-4">
+                <div className="mt-5">
                   <Link
                     href="/cv-examples-uk"
                     className="text-sm font-semibold text-emerald-300 hover:text-emerald-200 underline underline-offset-4"
@@ -248,7 +279,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="mt-4 rounded-2xl bg-emerald-500/10 ring-1 ring-emerald-500/20 p-4">
+                <div className="mt-4 rounded-2xl bg-indigo-500/10 ring-1 ring-indigo-400/20 p-4">
                   <p className="text-sm text-slate-200">
                     <span className="font-semibold text-white">For schools:</span>{" "}
                     run a one-hour session and students leave with a professional
@@ -257,7 +288,7 @@ export default function Home() {
                   <div className="mt-3">
                     <Link
                       href="/schools"
-                      className="text-sm font-semibold text-emerald-200 hover:text-emerald-100 underline underline-offset-4"
+                      className="text-sm font-semibold text-indigo-200 hover:text-indigo-100 underline underline-offset-4"
                     >
                       See Schools &amp; Educators →
                     </Link>
@@ -410,11 +441,11 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Testimonials */}
+        {/* Testimonials (more real + punchy) */}
         <section className="px-6 pb-16">
           <div className="mx-auto max-w-6xl">
             <div className="flex items-end justify-between gap-6 flex-wrap">
-              <h2 className="text-2xl font-bold">What people say</h2>
+              <h2 className="text-2xl font-bold">What early users say</h2>
               <p className="text-sm text-slate-300">
                 Simple, fast, and built to be sent out with confidence.
               </p>
@@ -423,18 +454,18 @@ export default function Home() {
             <div className="mt-6 grid gap-6 md:grid-cols-2 text-left">
               <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-6">
                 <p className="text-slate-100 leading-relaxed">
-                  “This is great — so efficient, easy to use and saved me hours,
-                  worth the money alone just for the convenience.”
+                  “The cover letter wording was spot on. It saved me so much
+                  time.”
                 </p>
-                <p className="mt-4 text-sm text-slate-300">— Danny</p>
+                <p className="mt-4 text-sm text-slate-300">— Danny W</p>
               </div>
 
               <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-6">
                 <p className="text-slate-100 leading-relaxed">
-                  “I hate writing CVs. This made it simple and actually gave me
-                  something I felt confident sending out.”
+                  “It made me sound professional even though my spelling isn’t
+                  great.”
                 </p>
-                <p className="mt-4 text-sm text-slate-300">— Recent jobseeker</p>
+                <p className="mt-4 text-sm text-slate-300">— Katie J</p>
               </div>
             </div>
           </div>
