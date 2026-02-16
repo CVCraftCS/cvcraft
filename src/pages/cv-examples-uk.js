@@ -4,9 +4,10 @@ import Link from "next/link";
 
 export default function CvExamplesUk() {
   const title =
-    "CV Examples UK (2026) | Free CV Templates & Samples | CVCraft Classroom";
+    "CV Examples UK (2026) | Free CV Templates & Job-Specific Samples | CVCraft Classroom";
+
   const description =
-    "Real UK CV examples for warehouse, retail, customer service, care, cleaning, admin and more. See sample layouts and build your own professional CV in minutes.";
+    "Browse real UK CV examples for warehouse, retail, customer service, care, cleaning, admin and more. See professional CV samples and build your own recruiter-ready CV in minutes.";
 
   const canonical = "https://www.cvcraftclassroom.com/cv-examples-uk";
 
@@ -18,27 +19,27 @@ export default function CvExamplesUk() {
     {
       question: "What is the best CV format in the UK?",
       answer:
-        "Most UK CVs follow a simple structure: contact details, personal statement, employment history, education/qualifications, skills, and optional references. Keep it clear, easy to scan, and tailored to the role.",
+        "Most UK CVs follow a clear structure: contact details, personal statement, employment history, education/qualifications, skills, and optional references. Keep formatting clean and tailored to the role.",
     },
     {
       question: "How long should a UK CV be?",
       answer:
-        "For most people, one page is ideal (especially entry-level). Two pages is also acceptable for experienced candidates — keep it relevant and avoid filler.",
+        "One page is ideal for entry-level roles. Two pages is acceptable for experienced professionals. Keep content relevant and focused.",
     },
     {
       question: "Do employers prefer a CV or a résumé in the UK?",
       answer:
-        "In the UK, employers usually use the term CV. The layout is similar to a résumé, but UK CVs typically don’t include a photo and often include more detail about education and roles.",
+        "In the UK, employers use the term CV. The structure is similar to a résumé but typically includes more detail on education and job history.",
     },
     {
       question: "Should I include a photo on a UK CV?",
       answer:
-        "No. In the UK, it’s usually best not to include a photo. Focus on your skills, achievements, and experience instead.",
+        "No. UK CVs typically do not include a photo. Focus on skills and experience instead.",
     },
     {
       question: "Can I use a CV example and copy the structure?",
       answer:
-        "Yes — that’s the point of examples. Copy the structure, then rewrite the content to match your real skills, experience and the job you’re applying for.",
+        "Yes. Copy the structure, then rewrite the content so it reflects your real experience and matches the job description.",
     },
   ];
 
@@ -100,16 +101,47 @@ export default function CvExamplesUk() {
 
           {/* H1 */}
           <h1 className="mt-4 text-4xl font-bold tracking-tight">
-            CV Examples UK (2026 Guide)
+            UK CV Examples (2026 Guide)
           </h1>
 
-          <p className="mt-4 text-slate-300 text-lg leading-relaxed">
-            Looking for real UK CV examples? Below you&apos;ll find practical
-            examples for warehouse jobs, retail, customer service, care roles,
-            cleaning, admin and more — plus guidance on formatting your CV
-            correctly for UK employers.
-          </p>
+          {/* 🔥 SEO authority intro */}
+          <section className="mt-6 space-y-4 text-slate-300 leading-relaxed text-lg">
+            <p>
+              Looking for real UK CV examples you can actually use? This page
+              contains job-specific CV examples for the UK, including warehouse,
+              retail, customer service, care assistant, delivery driver, admin,
+              cleaning, and more.
+            </p>
 
+            <p>
+              Each example follows the correct UK CV format and shows you how to
+              structure your personal statement, employment history, skills and
+              qualifications clearly. Whether you&apos;re applying for your
+              first job or updating your CV for a new role, these examples help
+              you write a professional, recruiter-friendly CV.
+            </p>
+
+            <p>
+              If you&apos;d prefer to generate your CV automatically using a
+              clean, modern template, you can use our{" "}
+              <Link
+                href="/cv"
+                className="underline underline-offset-4 hover:text-white"
+              >
+                UK CV builder
+              </Link>{" "}
+              or try our{" "}
+              <Link
+                href="/cover-letter"
+                className="underline underline-offset-4 hover:text-white"
+              >
+                free cover letter generator
+              </Link>{" "}
+              to complete your application.
+            </p>
+          </section>
+
+          {/* Primary CTAs */}
           <div className="mt-6 flex flex-col sm:flex-row gap-3">
             <Link
               href="/cv"
@@ -203,7 +235,9 @@ export default function CvExamplesUk() {
                   href="#care-assistant"
                   className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
                 >
-                  <span className="font-semibold">Care Assistant CV Example</span>
+                  <span className="font-semibold">
+                    Care Assistant CV Example
+                  </span>
                   <span className="mt-1 block text-slate-300">
                     Compassion, safeguarding, care records
                   </span>
@@ -234,6 +268,21 @@ export default function CvExamplesUk() {
                 </a>
               </li>
 
+              {/* ✅ Added: Delivery driver */}
+              <li>
+                <a
+                  href="#delivery-driver"
+                  className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
+                >
+                  <span className="font-semibold">
+                    Delivery Driver CV Example
+                  </span>
+                  <span className="mt-1 block text-slate-300">
+                    Reliability, route planning, customer delivery
+                  </span>
+                </a>
+              </li>
+
               <li>
                 <a
                   href="#construction"
@@ -253,7 +302,9 @@ export default function CvExamplesUk() {
                   href="#security"
                   className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
                 >
-                  <span className="font-semibold">Security Guard CV Example</span>
+                  <span className="font-semibold">
+                    Security Guard CV Example
+                  </span>
                   <span className="mt-1 block text-slate-300">
                     Vigilance, reporting, de-escalation
                   </span>
@@ -279,7 +330,9 @@ export default function CvExamplesUk() {
                   href="#support-worker"
                   className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
                 >
-                  <span className="font-semibold">Support Worker CV Example</span>
+                  <span className="font-semibold">
+                    Support Worker CV Example
+                  </span>
                   <span className="mt-1 block text-slate-300">
                     Person-centred care, handovers
                   </span>
@@ -303,7 +356,9 @@ export default function CvExamplesUk() {
                   href="#admin"
                   className="block rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition"
                 >
-                  <span className="font-semibold">Admin Assistant CV Example</span>
+                  <span className="font-semibold">
+                    Admin Assistant CV Example
+                  </span>
                   <span className="mt-1 block text-slate-300">
                     Accuracy, inboxes, spreadsheets
                   </span>
@@ -333,8 +388,8 @@ export default function CvExamplesUk() {
               The best way to use a CV example is to copy the structure, then
               rewrite the wording so it matches your real experience. Aim for:
               clear headings, short bullet points, and proof you can do the job.
-              If you’re stuck on layout and wording, you can generate a clean CV
-              quickly with the{" "}
+              If you&apos;re stuck on layout and wording, you can generate a
+              clean CV quickly with the{" "}
               <Link
                 href="/cv"
                 className="underline underline-offset-4 hover:text-white"
@@ -370,7 +425,9 @@ export default function CvExamplesUk() {
             <div className="mt-6 space-y-10">
               {/* Existing pages (top-level routes) */}
               <div id="warehouse">
-                <h3 className="text-xl font-semibold">Warehouse CV Example (UK)</h3>
+                <h3 className="text-xl font-semibold">
+                  Warehouse CV Example (UK)
+                </h3>
                 <p className="mt-2 text-slate-300">
                   Focus on productivity, order accuracy, safety awareness and
                   teamwork. Mention daily order volumes, stock control systems
@@ -399,7 +456,9 @@ export default function CvExamplesUk() {
               </div>
 
               <div id="customer-service">
-                <h3 className="text-xl font-semibold">Customer Service CV Example</h3>
+                <h3 className="text-xl font-semibold">
+                  Customer Service CV Example
+                </h3>
                 <p className="mt-2 text-slate-300">
                   Demonstrate communication skills, conflict resolution, and
                   problem solving. Mention KPIs or satisfaction scores.
@@ -413,7 +472,9 @@ export default function CvExamplesUk() {
               </div>
 
               <div id="no-experience">
-                <h3 className="text-xl font-semibold">CV With No Experience (UK)</h3>
+                <h3 className="text-xl font-semibold">
+                  CV With No Experience (UK)
+                </h3>
                 <p className="mt-2 text-slate-300">
                   Emphasise transferable skills, volunteering, education and
                   personal strengths. This is ideal for first jobs and entry-level
@@ -443,7 +504,9 @@ export default function CvExamplesUk() {
 
               {/* New pages (in /cv-examples folder) */}
               <div id="care-assistant">
-                <h3 className="text-xl font-semibold">Care Assistant CV Example (UK)</h3>
+                <h3 className="text-xl font-semibold">
+                  Care Assistant CV Example (UK)
+                </h3>
                 <p className="mt-2 text-slate-300">
                   Focus on compassion, safeguarding awareness, personal care,
                   clear documentation and supporting vulnerable individuals.
@@ -484,6 +547,23 @@ export default function CvExamplesUk() {
                 </Link>
               </div>
 
+              <div id="delivery-driver">
+                <h3 className="text-xl font-semibold">
+                  Delivery Driver CV Example (UK)
+                </h3>
+                <p className="mt-2 text-slate-300">
+                  Highlight safe driving, timekeeping, route planning, proof of
+                  delivery, and good customer service. Mention licence type, van
+                  experience, and any multi-drop work.
+                </p>
+                <Link
+                  href="/cv-examples/delivery-driver-cv-example-uk"
+                  className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                >
+                  View delivery driver CV guide →
+                </Link>
+              </div>
+
               <div id="construction">
                 <h3 className="text-xl font-semibold">
                   Construction Labourer CV Example (UK)
@@ -501,7 +581,9 @@ export default function CvExamplesUk() {
               </div>
 
               <div id="security">
-                <h3 className="text-xl font-semibold">Security Guard CV Example (UK)</h3>
+                <h3 className="text-xl font-semibold">
+                  Security Guard CV Example (UK)
+                </h3>
                 <p className="mt-2 text-slate-300">
                   Highlight vigilance, incident reporting, access control, and
                   calm conflict management. Mention SIA if applicable.
@@ -519,8 +601,8 @@ export default function CvExamplesUk() {
                   Teaching Assistant CV Example (UK)
                 </h3>
                 <p className="mt-2 text-slate-300">
-                  Emphasise classroom support, behaviour support strategies,
-                  and strong safeguarding awareness. DBS is typically required.
+                  Emphasise classroom support, behaviour support strategies, and
+                  strong safeguarding awareness. DBS is typically required.
                 </p>
                 <Link
                   href="/cv-examples/teaching-assistant-cv-example-uk"
@@ -531,7 +613,9 @@ export default function CvExamplesUk() {
               </div>
 
               <div id="support-worker">
-                <h3 className="text-xl font-semibold">Support Worker CV Example (UK)</h3>
+                <h3 className="text-xl font-semibold">
+                  Support Worker CV Example (UK)
+                </h3>
                 <p className="mt-2 text-slate-300">
                   Focus on person-centred care, accurate record keeping, safe
                   handovers, and promoting independence.
@@ -545,7 +629,9 @@ export default function CvExamplesUk() {
               </div>
 
               <div id="receptionist">
-                <h3 className="text-xl font-semibold">Receptionist CV Example (UK)</h3>
+                <h3 className="text-xl font-semibold">
+                  Receptionist CV Example (UK)
+                </h3>
                 <p className="mt-2 text-slate-300">
                   Show professionalism, call handling, diary management, and
                   confidentiality — plus strong organisation.
@@ -559,7 +645,9 @@ export default function CvExamplesUk() {
               </div>
 
               <div id="admin">
-                <h3 className="text-xl font-semibold">Admin Assistant CV Example (UK)</h3>
+                <h3 className="text-xl font-semibold">
+                  Admin Assistant CV Example (UK)
+                </h3>
                 <p className="mt-2 text-slate-300">
                   Highlight accuracy, email management, spreadsheets, document
                   control and strong organisation under deadlines.
@@ -573,7 +661,9 @@ export default function CvExamplesUk() {
               </div>
 
               <div id="sales-assistant">
-                <h3 className="text-xl font-semibold">Sales Assistant CV Example (UK)</h3>
+                <h3 className="text-xl font-semibold">
+                  Sales Assistant CV Example (UK)
+                </h3>
                 <p className="mt-2 text-slate-300">
                   Focus on customer service, till confidence, store standards,
                   and working to targets/KPIs where relevant.
