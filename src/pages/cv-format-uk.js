@@ -68,7 +68,8 @@ export default function CvFormatUKPage() {
         url: ogImage,
       },
     },
-    dateModified: "2026-01-01",
+    // ✅ Keep this current (helps with SEO freshness signals)
+    dateModified: "2026-02-17",
   };
 
   return (
@@ -136,17 +137,10 @@ export default function CvFormatUKPage() {
 
         {/* Hero */}
         <header className="mx-auto max-w-5xl px-6 pb-10 pt-6">
-          {/* Breadcrumbs */}
+          {/* ✅ Breadcrumbs (fixed: this page is not under CV Examples UK) */}
           <nav className="text-sm text-white/60">
             <Link href="/" className="hover:text-white underline underline-offset-4">
               Home
-            </Link>{" "}
-            <span className="mx-2">→</span>
-            <Link
-              href="/cv-examples-uk"
-              className="hover:text-white underline underline-offset-4"
-            >
-              CV Examples UK
             </Link>{" "}
             <span className="mx-2">→</span>
             <span className="text-white/85">UK CV Format</span>
@@ -192,27 +186,42 @@ export default function CvFormatUKPage() {
             <div className="text-sm font-semibold text-white">On this page</div>
             <ul className="mt-3 grid gap-2 text-sm text-white/80 sm:grid-cols-2">
               <li>
-                <a href="#ideal-layout" className="hover:text-white underline underline-offset-4">
+                <a
+                  href="#ideal-layout"
+                  className="hover:text-white underline underline-offset-4"
+                >
                   The ideal UK CV layout
                 </a>
               </li>
               <li>
-                <a href="#structure" className="hover:text-white underline underline-offset-4">
+                <a
+                  href="#structure"
+                  className="hover:text-white underline underline-offset-4"
+                >
                   UK CV structure (copy this)
                 </a>
               </li>
               <li>
-                <a href="#include-remove" className="hover:text-white underline underline-offset-4">
+                <a
+                  href="#include-remove"
+                  className="hover:text-white underline underline-offset-4"
+                >
                   What to include (and remove)
                 </a>
               </li>
               <li>
-                <a href="#employment-example" className="hover:text-white underline underline-offset-4">
+                <a
+                  href="#employment-example"
+                  className="hover:text-white underline underline-offset-4"
+                >
                   Employment section example
                 </a>
               </li>
               <li>
-                <a href="#examples" className="hover:text-white underline underline-offset-4">
+                <a
+                  href="#examples"
+                  className="hover:text-white underline underline-offset-4"
+                >
                   UK CV examples by role
                 </a>
               </li>
@@ -392,9 +401,10 @@ export default function CvFormatUKPage() {
                   to copy the structure and match your situation:
                 </p>
 
+                {/* ✅ Updated links to the new folder-based routes */}
                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
                   <Link
-                    href="/warehouse-cv-example-uk"
+                    href="/cv-examples/warehouse-cv-example-uk"
                     className="rounded-xl bg-white/5 p-4 ring-1 ring-white/10 hover:bg-white/10 transition"
                   >
                     <div className="text-sm font-semibold">Warehouse CV Example UK</div>
@@ -404,7 +414,7 @@ export default function CvFormatUKPage() {
                   </Link>
 
                   <Link
-                    href="/retail-cv-example-uk"
+                    href="/cv-examples/retail-cv-example-uk"
                     className="rounded-xl bg-white/5 p-4 ring-1 ring-white/10 hover:bg-white/10 transition"
                   >
                     <div className="text-sm font-semibold">Retail CV Example UK</div>
@@ -414,7 +424,7 @@ export default function CvFormatUKPage() {
                   </Link>
 
                   <Link
-                    href="/customer-service-cv-example-uk"
+                    href="/cv-examples/customer-service-cv-example-uk"
                     className="rounded-xl bg-white/5 p-4 ring-1 ring-white/10 hover:bg-white/10 transition"
                   >
                     <div className="text-sm font-semibold">
