@@ -1,5 +1,5 @@
 // src/pages/retail-cv-example-uk.js
-import CvExamplePage from "../components/CvExamplePage";
+import CvExamplePage from "../../components/CvExamplePage";
 
 export default function RetailCvExampleUk() {
   const title =
