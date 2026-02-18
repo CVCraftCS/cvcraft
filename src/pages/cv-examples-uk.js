@@ -165,6 +165,185 @@ export default function CvExamplesUk() {
     },
   ];
 
+  /**
+   * ✅ Internal linking helper: “Related examples”
+   * Rule of thumb:
+   * - 1 link up (this pillar already does that implicitly)
+   * - sideways links (related roles)
+   * - 1–2 links down (builder + cover letter)
+   */
+  const RELATED = {
+    warehouse: [
+      { href: "/cv-examples/delivery-driver-cv-example-uk", label: "Delivery Driver CV" },
+      { href: "/cv-examples/construction-labourer-cv-example-uk", label: "Construction Labourer CV" },
+      { href: "/cv-examples/cleaner-cv-example-uk", label: "Cleaner CV" },
+      { href: "/cv-examples/security-guard-cv-example-uk", label: "Security Guard CV" },
+      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      { href: "/cv-template-uk", label: "UK CV Template" },
+    ],
+    "delivery-driver": [
+      { href: "/cv-examples/warehouse-cv-example-uk", label: "Warehouse CV" },
+      { href: "/cv-examples/construction-labourer-cv-example-uk", label: "Construction Labourer CV" },
+      { href: "/cv-examples/security-guard-cv-example-uk", label: "Security Guard CV" },
+      { href: "/cv-examples/customer-service-cv-example-uk", label: "Customer Service CV" },
+      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      { href: "/cv-template-uk", label: "UK CV Template" },
+    ],
+    construction: [
+      { href: "/cv-examples/warehouse-cv-example-uk", label: "Warehouse CV" },
+      { href: "/cv-examples/delivery-driver-cv-example-uk", label: "Delivery Driver CV" },
+      { href: "/cv-examples/cleaner-cv-example-uk", label: "Cleaner CV" },
+      { href: "/cv-examples/security-guard-cv-example-uk", label: "Security Guard CV" },
+      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      { href: "/cv-template-uk", label: "UK CV Template" },
+    ],
+    cleaner: [
+      { href: "/cv-examples/warehouse-cv-example-uk", label: "Warehouse CV" },
+      { href: "/cv-examples/care-assistant-cv-example-uk", label: "Care Assistant CV" },
+      { href: "/cv-examples/support-worker-cv-example-uk", label: "Support Worker CV" },
+      { href: "/cv-examples/admin-assistant-cv-example-uk", label: "Admin Assistant CV" },
+      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      { href: "/cv-template-uk", label: "UK CV Template" },
+    ],
+
+    retail: [
+      { href: "/cv-examples/sales-assistant-cv-example-uk", label: "Sales Assistant CV" },
+      { href: "/cv-examples/customer-service-cv-example-uk", label: "Customer Service CV" },
+      { href: "/cv-examples/receptionist-cv-example-uk", label: "Receptionist CV" },
+      { href: "/cv-examples/barista-cv-example-uk", label: "Barista CV" },
+      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      { href: "/cv-template-uk", label: "UK CV Template" },
+    ],
+    "sales-assistant": [
+      { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV" },
+      { href: "/cv-examples/customer-service-cv-example-uk", label: "Customer Service CV" },
+      { href: "/cv-examples/receptionist-cv-example-uk", label: "Receptionist CV" },
+      { href: "/cv-examples/barista-cv-example-uk", label: "Barista CV" },
+      { href: "/cv-examples/cv-for-16-year-old-uk", label: "CV for 16 Year Old" },
+      { href: "/cv-template-uk", label: "UK CV Template" },
+    ],
+    "customer-service": [
+      { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV" },
+      { href: "/cv-examples/receptionist-cv-example-uk", label: "Receptionist CV" },
+      { href: "/cv-examples/admin-assistant-cv-example-uk", label: "Admin Assistant CV" },
+      { href: "/cv-examples/sales-assistant-cv-example-uk", label: "Sales Assistant CV" },
+      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      { href: "/cv-template-uk", label: "UK CV Template" },
+    ],
+    barista: [
+      { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV" },
+      { href: "/cv-examples/sales-assistant-cv-example-uk", label: "Sales Assistant CV" },
+      { href: "/cv-examples/customer-service-cv-example-uk", label: "Customer Service CV" },
+      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      { href: "/cv-examples/cv-for-16-year-old-uk", label: "CV for 16 Year Old" },
+      { href: "/cv-template-uk", label: "UK CV Template" },
+    ],
+    receptionist: [
+      { href: "/cv-examples/admin-assistant-cv-example-uk", label: "Admin Assistant CV" },
+      { href: "/cv-examples/customer-service-cv-example-uk", label: "Customer Service CV" },
+      { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV" },
+      { href: "/cv-examples/sales-assistant-cv-example-uk", label: "Sales Assistant CV" },
+      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      { href: "/cv-template-uk", label: "UK CV Template" },
+    ],
+
+    "care-assistant": [
+      { href: "/cv-examples/support-worker-cv-example-uk", label: "Support Worker CV" },
+      { href: "/cv-examples/teaching-assistant-cv-example-uk", label: "Teaching Assistant CV" },
+      { href: "/cv-examples/cleaner-cv-example-uk", label: "Cleaner CV" },
+      { href: "/cv-examples/security-guard-cv-example-uk", label: "Security Guard CV" },
+      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      { href: "/cv-template-uk", label: "UK CV Template" },
+    ],
+    "support-worker": [
+      { href: "/cv-examples/care-assistant-cv-example-uk", label: "Care Assistant CV" },
+      { href: "/cv-examples/teaching-assistant-cv-example-uk", label: "Teaching Assistant CV" },
+      { href: "/cv-examples/cleaner-cv-example-uk", label: "Cleaner CV" },
+      { href: "/cv-examples/admin-assistant-cv-example-uk", label: "Admin Assistant CV" },
+      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      { href: "/cv-template-uk", label: "UK CV Template" },
+    ],
+    "teaching-assistant": [
+      { href: "/cv-examples/support-worker-cv-example-uk", label: "Support Worker CV" },
+      { href: "/cv-examples/care-assistant-cv-example-uk", label: "Care Assistant CV" },
+      { href: "/cv-examples/admin-assistant-cv-example-uk", label: "Admin Assistant CV" },
+      { href: "/cv-examples/receptionist-cv-example-uk", label: "Receptionist CV" },
+      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      { href: "/cv-template-uk", label: "UK CV Template" },
+    ],
+    security: [
+      { href: "/cv-examples/warehouse-cv-example-uk", label: "Warehouse CV" },
+      { href: "/cv-examples/delivery-driver-cv-example-uk", label: "Delivery Driver CV" },
+      { href: "/cv-examples/support-worker-cv-example-uk", label: "Support Worker CV" },
+      { href: "/cv-examples/care-assistant-cv-example-uk", label: "Care Assistant CV" },
+      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      { href: "/cv-template-uk", label: "UK CV Template" },
+    ],
+
+    admin: [
+      { href: "/cv-examples/receptionist-cv-example-uk", label: "Receptionist CV" },
+      { href: "/cv-examples/customer-service-cv-example-uk", label: "Customer Service CV" },
+      { href: "/cv-examples/sales-assistant-cv-example-uk", label: "Sales Assistant CV" },
+      { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV" },
+      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      { href: "/cv-template-uk", label: "UK CV Template" },
+    ],
+
+    "no-experience": [
+      { href: "/cv-examples/cv-for-16-year-old-uk", label: "CV for 16 Year Old" },
+      { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV" },
+      { href: "/cv-examples/sales-assistant-cv-example-uk", label: "Sales Assistant CV" },
+      { href: "/cv-examples/customer-service-cv-example-uk", label: "Customer Service CV" },
+      { href: "/cv-examples/warehouse-cv-example-uk", label: "Warehouse CV" },
+      { href: "/cv-template-uk", label: "UK CV Template" },
+    ],
+    "age-16": [
+      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV" },
+      { href: "/cv-examples/barista-cv-example-uk", label: "Barista CV" },
+      { href: "/cv-examples/sales-assistant-cv-example-uk", label: "Sales Assistant CV" },
+      { href: "/cv-examples/customer-service-cv-example-uk", label: "Customer Service CV" },
+      { href: "/cv-template-uk", label: "UK CV Template" },
+    ],
+  };
+
+  function RelatedExamples({ anchorKey }) {
+    const items = RELATED[anchorKey] || [];
+    if (!items.length) return null;
+
+    return (
+      <div className="mt-5 rounded-2xl bg-black/20 ring-1 ring-white/10 p-4">
+        <div className="text-sm font-semibold text-slate-100">Related CV examples</div>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          {items.map((it) => (
+            <Link
+              key={`${anchorKey}-${it.href}`}
+              href={it.href}
+              className="rounded-xl bg-black/20 ring-1 ring-white/10 px-4 py-3 text-sm text-slate-200 hover:bg-black/30 transition"
+            >
+              {it.label} →
+            </Link>
+          ))}
+        </div>
+
+        <div className="mt-4 flex flex-col sm:flex-row gap-2">
+          <Link
+            href="/cv"
+            className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-2.5 font-semibold text-slate-950 hover:bg-slate-200 transition"
+          >
+            Build your CV →
+          </Link>
+          <Link
+            href="/cover-letter"
+            className="inline-flex items-center justify-center rounded-xl bg-white/5 ring-1 ring-white/10 px-5 py-2.5 font-semibold text-white hover:bg-white/10 transition"
+          >
+            Free cover letter →
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Head>
@@ -198,10 +377,7 @@ export default function CvExamplesUk() {
         <div className="mx-auto max-w-4xl">
           {/* Breadcrumbs */}
           <nav className="text-sm text-slate-400">
-            <Link
-              href="/"
-              className="hover:text-white underline underline-offset-4"
-            >
+            <Link href="/" className="hover:text-white underline underline-offset-4">
               Home
             </Link>{" "}
             <span className="mx-2">→</span>
@@ -264,6 +440,13 @@ export default function CvExamplesUk() {
               className="inline-flex items-center justify-center rounded-xl bg-white/5 ring-1 ring-white/10 px-6 py-3 font-semibold text-white hover:bg-white/10 transition"
             >
               Free cover letter →
+            </Link>
+
+            <Link
+              href="/cv-template-uk"
+              className="inline-flex items-center justify-center rounded-xl bg-white/5 ring-1 ring-white/10 px-6 py-3 font-semibold text-white hover:bg-white/10 transition"
+            >
+              UK CV template →
             </Link>
           </div>
 
@@ -376,11 +559,13 @@ export default function CvExamplesUk() {
                       and physical workload.
                     </p>
                     <Link
-                      href="/warehouse-cv-example-uk"
+                      href="/cv-examples/warehouse-cv-example-uk"
                       className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
                     >
                       View warehouse CV guide →
                     </Link>
+
+                    <RelatedExamples anchorKey="warehouse" />
                   </div>
 
                   <div id="delivery-driver">
@@ -398,6 +583,8 @@ export default function CvExamplesUk() {
                     >
                       View delivery driver CV guide →
                     </Link>
+
+                    <RelatedExamples anchorKey="delivery-driver" />
                   </div>
 
                   <div id="construction">
@@ -414,6 +601,8 @@ export default function CvExamplesUk() {
                     >
                       View construction labourer CV guide →
                     </Link>
+
+                    <RelatedExamples anchorKey="construction" />
                   </div>
 
                   <div id="cleaner">
@@ -428,6 +617,8 @@ export default function CvExamplesUk() {
                     >
                       View cleaner CV guide →
                     </Link>
+
+                    <RelatedExamples anchorKey="cleaner" />
                   </div>
                 </div>
               </div>
@@ -450,11 +641,13 @@ export default function CvExamplesUk() {
                       teamwork. Quantify performance where possible.
                     </p>
                     <Link
-                      href="/retail-cv-example-uk"
+                      href="/cv-examples/retail-cv-example-uk"
                       className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
                     >
                       View retail CV guide →
                     </Link>
+
+                    <RelatedExamples anchorKey="retail" />
                   </div>
 
                   <div id="sales-assistant">
@@ -471,6 +664,8 @@ export default function CvExamplesUk() {
                     >
                       View sales assistant CV guide →
                     </Link>
+
+                    <RelatedExamples anchorKey="sales-assistant" />
                   </div>
 
                   <div id="customer-service">
@@ -482,11 +677,13 @@ export default function CvExamplesUk() {
                       problem solving. Mention KPIs or satisfaction scores.
                     </p>
                     <Link
-                      href="/customer-service-cv-example-uk"
+                      href="/cv-examples/customer-service-cv-example-uk"
                       className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
                     >
                       View customer service CV guide →
                     </Link>
+
+                    <RelatedExamples anchorKey="customer-service" />
                   </div>
 
                   <div id="barista">
@@ -501,6 +698,8 @@ export default function CvExamplesUk() {
                     >
                       View barista CV guide →
                     </Link>
+
+                    <RelatedExamples anchorKey="barista" />
                   </div>
 
                   <div id="receptionist">
@@ -517,6 +716,8 @@ export default function CvExamplesUk() {
                     >
                       View receptionist CV guide →
                     </Link>
+
+                    <RelatedExamples anchorKey="receptionist" />
                   </div>
                 </div>
               </div>
@@ -544,6 +745,8 @@ export default function CvExamplesUk() {
                     >
                       View care assistant CV guide →
                     </Link>
+
+                    <RelatedExamples anchorKey="care-assistant" />
                   </div>
 
                   <div id="support-worker">
@@ -560,6 +763,8 @@ export default function CvExamplesUk() {
                     >
                       View support worker CV guide →
                     </Link>
+
+                    <RelatedExamples anchorKey="support-worker" />
                   </div>
 
                   <div id="teaching-assistant">
@@ -576,6 +781,8 @@ export default function CvExamplesUk() {
                     >
                       View teaching assistant CV guide →
                     </Link>
+
+                    <RelatedExamples anchorKey="teaching-assistant" />
                   </div>
 
                   <div id="security">
@@ -592,6 +799,8 @@ export default function CvExamplesUk() {
                     >
                       View security guard CV guide →
                     </Link>
+
+                    <RelatedExamples anchorKey="security" />
                   </div>
                 </div>
               </div>
@@ -619,6 +828,8 @@ export default function CvExamplesUk() {
                     >
                       View admin assistant CV guide →
                     </Link>
+
+                    <RelatedExamples anchorKey="admin" />
                   </div>
                 </div>
               </div>
@@ -643,11 +854,13 @@ export default function CvExamplesUk() {
                       applications.
                     </p>
                     <Link
-                      href="/no-experience-cv-uk"
+                      href="/cv-examples/no-experience-cv-example-uk"
                       className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
                     >
                       View no experience CV guide →
                     </Link>
+
+                    <RelatedExamples anchorKey="no-experience" />
                   </div>
 
                   <div id="age-16">
@@ -659,11 +872,13 @@ export default function CvExamplesUk() {
                       personal statement. Perfect for weekend jobs and apprenticeships.
                     </p>
                     <Link
-                      href="/cv-for-16-year-old-uk"
+                      href="/cv-examples/cv-for-16-year-old-uk"
                       className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
                     >
                       View 16 year old CV guide →
                     </Link>
+
+                    <RelatedExamples anchorKey="age-16" />
                   </div>
                 </div>
               </div>
@@ -736,10 +951,34 @@ export default function CvExamplesUk() {
               </Link>
 
               <Link
+                href="/cover-letter"
+                className="rounded-xl bg-white/5 ring-1 ring-white/10 px-6 py-3 font-semibold text-white hover:bg-white/10 transition"
+              >
+                Free cover letter →
+              </Link>
+
+              <Link
                 href="/cv-writing-help"
                 className="rounded-xl bg-white/5 ring-1 ring-white/10 px-6 py-3 font-semibold text-white hover:bg-white/10 transition"
               >
                 CV Writing Help →
+              </Link>
+            </div>
+
+            <div className="mt-6 text-sm text-slate-300">
+              Also useful:{" "}
+              <Link
+                href="/cv-template-uk"
+                className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4"
+              >
+                UK CV template
+              </Link>
+              {" "}·{" "}
+              <Link
+                href="/cv"
+                className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4"
+              >
+                CV builder
               </Link>
             </div>
           </section>

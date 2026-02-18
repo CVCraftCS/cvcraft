@@ -48,12 +48,44 @@ const TEACHER_MODE_DEFAULTS = {
   enableReferences: false,
 };
 
+/**
+ * ✅ FIX: Ensure the UI shows ALL templates, even if TEMPLATE_ORDER wasn't updated.
+ * - Keep TEMPLATE_ORDER priority/order
+ * - Append any extra template keys found in TEMPLATE_META_LIB
+ */
+const TEMPLATE_ORDER_UI = (() => {
+  const order = Array.isArray(TEMPLATE_ORDER) ? TEMPLATE_ORDER : [];
+  const libKeys =
+    TEMPLATE_META_LIB && typeof TEMPLATE_META_LIB === "object"
+      ? Object.keys(TEMPLATE_META_LIB)
+      : [];
+
+  const seen = new Set();
+  const merged = [];
+
+  for (const k of order) {
+    if (!k) continue;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    merged.push(k);
+  }
+
+  for (const k of libKeys) {
+    if (!k) continue;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    merged.push(k);
+  }
+
+  return merged;
+})();
+
 // ---- Template meta ----
 // Product decision: "no free CV templates" — keep premium true for all.
 // NOTE: Users can still preview (paywall offers "preview anyway"); export is gated elsewhere.
 const TEMPLATE_META = (() => {
   const out = {};
-  for (const key of TEMPLATE_ORDER) {
+  for (const key of TEMPLATE_ORDER_UI) {
     const meta = TEMPLATE_META_LIB?.[key] || {};
     out[key] = {
       ...meta,
@@ -121,6 +153,24 @@ function jobsToExperienceText(jobs) {
   }
 
   return lines.join("\n").trim();
+}
+
+// ✅ Normalize "End" date inputs (Present / Current / Now)
+function normalizeEndDate(value) {
+  if (!value) return "";
+  const v = String(value).trim().toLowerCase();
+  if (v === "present" || v === "current" || v === "now") return "Present";
+  return String(value).trim();
+}
+
+// ✅ Year parsing helper for sorting (keeps it robust for "2024", "Mar 2024", etc.)
+function extractYear(value) {
+  if (!value) return 0;
+  const s = String(value);
+  const m = s.match(/(19|20)\d{2}/);
+  if (!m) return 0;
+  const n = parseInt(m[0], 10);
+  return Number.isFinite(n) ? n : 0;
 }
 
 // ✅ Language helpers (Phase 2: Spanish generation only)
@@ -739,6 +789,7 @@ export default function CVBuilderPage() {
       .filter((q) => q.title || q.provider || q.year || q.grade);
   }, [qualifications]);
 
+  // ✅ Present-normalised + auto-sorted (most recent first, Present always first)
   const cleanedJobs = useMemo(() => {
     return (employmentHistory || [])
       .map((j) => ({
@@ -746,10 +797,20 @@ export default function CVBuilderPage() {
         company: (j.company || "").trim(),
         location: (j.location || "").trim(),
         start: (j.start || "").trim(),
-        end: (j.end || "").trim(),
+        end: normalizeEndDate(j.end),
         bullets: parseBullets(j.bulletsText || ""),
       }))
-      .filter((j) => j.title || j.company || j.location || j.start || j.end || j.bullets.length);
+      .filter((j) => j.title || j.company || j.location || j.start || j.end || j.bullets.length)
+      .sort((a, b) => {
+        const endA = a.end === "Present" ? 9999 : extractYear(a.end) || 0;
+        const endB = b.end === "Present" ? 9999 : extractYear(b.end) || 0;
+        if (endB !== endA) return endB - endA;
+
+        // Tie-breaker: sort by start year descending
+        const startA = extractYear(a.start) || 0;
+        const startB = extractYear(b.start) || 0;
+        return startB - startA;
+      });
   }, [employmentHistory]);
 
   // Apply region defaults (references behaviour)
@@ -900,7 +961,7 @@ export default function CVBuilderPage() {
       const def = regionDefaults(next.region);
       setReferencesText(def.referencesText);
     },
-    [teacherConfig, applyRegionDefaults]
+    [teacherConfig, applyRegionDefaults, applyRegionDefaults]
   );
 
   const setTeacherModeEnabled = (enabled) => {
@@ -1058,10 +1119,10 @@ export default function CVBuilderPage() {
       out.error === "missing_code"
         ? "Please enter your school access code."
         : out.error === "invalid_code"
-        ? "That code wasn’t accepted. Check it and try again."
-        : out.error === "network_error"
-        ? "Couldn’t verify right now (network issue). Please try again."
-        : "Couldn’t verify that code. Please try again.";
+          ? "That code wasn’t accepted. Check it and try again."
+          : out.error === "network_error"
+            ? "Couldn’t verify right now (network issue). Please try again."
+            : "Couldn’t verify that code. Please try again.";
 
     console.warn("School verify failed:", out);
     setSchoolGate({ required: true, checking: false, ok: false });
@@ -1127,7 +1188,8 @@ export default function CVBuilderPage() {
 
     setTemplate(TEMPLATE_META[input.template] ? input.template : "classic");
 
-    const incomingCfg = input.sectionConfig && typeof input.sectionConfig === "object" ? input.sectionConfig : null;
+    const incomingCfg =
+      input.sectionConfig && typeof input.sectionConfig === "object" ? input.sectionConfig : null;
     if (incomingCfg) setSectionConfig({ ...DEFAULT_SECTION_CONFIG, ...incomingCfg });
 
     const incomingOrder = Array.isArray(input.sectionOrder) ? input.sectionOrder : null;
@@ -1171,7 +1233,7 @@ export default function CVBuilderPage() {
           company: j.company || "",
           location: j.location || "",
           start: j.start || "",
-          end: j.end || "",
+          end: normalizeEndDate(j.end),
           bulletsText: Array.isArray(j.bullets) ? j.bullets.join("\n") : j.bulletsText || "",
         }))
       );
@@ -1453,15 +1515,15 @@ export default function CVBuilderPage() {
     region === "UK"
       ? "Build a Professional CV Online UK | AI CV Builder | CVCraft"
       : region === "US"
-      ? "Build a Professional Résumé Online | AI Resume Builder | CVCraft"
-      : "Build a Professional CV Online | AI CV Builder | CVCraft";
+        ? "Build a Professional Résumé Online | AI Resume Builder | CVCraft"
+        : "Build a Professional CV Online | AI CV Builder | CVCraft";
 
   const seoDescription =
     region === "UK"
       ? "Build a recruiter-ready UK CV in minutes with modern templates, student presets, and classroom-safe modes. Preview instantly and export to PDF when you're ready."
       : region === "US"
-      ? "Build a recruiter-ready résumé in minutes with modern templates, student presets, and classroom-safe modes. Preview instantly and export to PDF when you're ready."
-      : "Build a recruiter-ready CV in minutes with modern templates, student presets, and classroom-safe modes. Preview instantly and export to PDF when you're ready.";
+        ? "Build a recruiter-ready résumé in minutes with modern templates, student presets, and classroom-safe modes. Preview instantly and export to PDF when you're ready."
+        : "Build a recruiter-ready CV in minutes with modern templates, student presets, and classroom-safe modes. Preview instantly and export to PDF when you're ready.";
 
   return (
     <>
@@ -1820,7 +1882,7 @@ export default function CVBuilderPage() {
               <p className="text-sm text-slate-300">Choose a style. This affects both the preview and the PDF.</p>
 
               <TemplateGrid
-                templateOrder={TEMPLATE_ORDER}
+                templateOrder={TEMPLATE_ORDER_UI}
                 templateMeta={TEMPLATE_META}
                 selectedTemplate={template}
                 onSelectTemplate={requestTemplateChange}
@@ -2182,14 +2244,47 @@ export default function CVBuilderPage() {
                           <label className="block text-sm font-semibold mb-2">End</label>
                           <input
                             value={j.end}
-                            onChange={(e) =>
+                            onChange={(e) => {
+                              const nextVal = e.target.value;
                               setEmploymentHistory((prev) =>
-                                (prev || []).map((x) => (x.id === j.id ? { ...x, end: e.target.value } : x))
-                              )
-                            }
+                                (prev || []).map((x) =>
+                                  x.id === j.id ? { ...x, end: nextVal } : x
+                                )
+                              );
+                            }}
+                            onBlur={() => {
+                              // ✅ Normalise on blur (so "present" becomes "Present")
+                              setEmploymentHistory((prev) =>
+                                (prev || []).map((x) =>
+                                  x.id === j.id ? { ...x, end: normalizeEndDate(x.end) } : x
+                                )
+                              );
+                            }}
                             placeholder="e.g. Present"
                             className="w-full rounded-xl px-4 py-3 text-black placeholder:text-slate-400"
                           />
+                        </div>
+                      </div>
+
+                      {/* ✅ Present checkbox (clean UX) */}
+                      <div className="md:col-span-2">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={normalizeEndDate(j.end) === "Present"}
+                            onChange={(e) =>
+                              setEmploymentHistory((prev) =>
+                                (prev || []).map((x) =>
+                                  x.id === j.id
+                                    ? { ...x, end: e.target.checked ? "Present" : "" }
+                                    : x
+                                )
+                              )
+                            }
+                          />
+                          <label className="text-sm text-slate-300">
+                            I currently work here
+                          </label>
                         </div>
                       </div>
 
