@@ -2,9 +2,11 @@ import CvExamplePage from "../../components/CvExamplePage";
 
 export default function TeachingAssistantCvExampleUk() {
   const title =
-    "Teaching Assistant CV Example UK (2026 Guide) | Free Template & Tips | CVCraft Classroom";
+    "Teaching Assistant CV Template UK (2026) | CV Example, Skills & Tips | CVCraft Classroom";
+
   const description =
-    "See a professional teaching assistant CV example for the UK. Includes a personal statement example, key TA skills, job description bullets, and tips to help you write a strong CV quickly.";
+    "Need a strong Teaching Assistant CV in the UK? Use this teaching assistant CV example (2026) with a proven personal statement, key TA skills, job bullet points, and a free CV builder.";
+
   const canonical =
     "https://www.cvcraftclassroom.com/cv-examples/teaching-assistant-cv-example-uk";
 
@@ -13,8 +15,8 @@ export default function TeachingAssistantCvExampleUk() {
       title={title}
       description={description}
       canonical={canonical}
-      h1="Teaching Assistant CV Example (UK 2026 Guide)"
-      intro="A strong UK teaching assistant CV should show patience, classroom support skills, and safeguarding awareness. Schools look for someone reliable who can support learning, behaviour, and pupil wellbeing — while working calmly as part of a team."
+      h1="Teaching Assistant CV Example (UK 2026) + Teaching Assistant CV Template"
+      intro="Looking for a strong Teaching Assistant CV in the UK? This example shows patience, classroom support skills, and safeguarding awareness. Schools look for someone reliable who can support learning, behaviour, and pupil wellbeing — while working calmly as part of a team.\n\nTeaching Assistant CV Template (UK format): keep it clear and easy to scan — personal details, a short personal statement, key skills, work history with bullet points, qualifications/training (DBS, safeguarding, first aid), and references (or “available on request”)."
       profileTitle="Example Personal Statement for a Teaching Assistant CV"
       profileText="Supportive and organised Teaching Assistant with 3+ years’ experience working in primary classrooms. Skilled in 1:1 and small-group support, classroom preparation, phonics and reading practice, and behaviour management strategies. Strong safeguarding awareness and clear communication with teachers, pupils, and parents."
       skillsTitle="Key Skills for a Teaching Assistant CV (UK)"
@@ -51,6 +53,16 @@ export default function TeachingAssistantCvExampleUk() {
         "Show safeguarding awareness clearly — it’s a must for school roles",
         "Use calm, practical bullet points focused on support outcomes and routines",
         "Add any interventions you’ve helped with (phonics groups, reading recovery, numeracy)",
+      ]}
+      faqItems={[
+        {
+          q: "What skills should a teaching assistant put on a CV?",
+          a: "Include 1:1 and small-group support, phonics/reading help, classroom preparation, behaviour support, communication, and organisation. In the UK, safeguarding awareness is essential — mention that you follow reporting procedures and work to school policies.",
+        },
+        {
+          q: "Do you need qualifications to be a teaching assistant in the UK?",
+          a: "Not always. Many schools value experience and attitude, but a Level 2/3 Teaching Assistant qualification can help. An enhanced DBS check is required, and safeguarding training is commonly provided. First aid is a useful extra for primary settings.",
+        },
       ]}
       ctaTitle="Create Your Own Teaching Assistant CV"
       ctaBody="Use our UK CV builder to create a recruiter-friendly teaching assistant CV in minutes. Choose a clean template, add your experience and skills, and download a polished PDF."
