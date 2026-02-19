@@ -1,8 +1,12 @@
 // src/pages/schools.js
 import Head from "next/head";
 import Link from "next/link";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/router";
 
 export default function SchoolsPage() {
+  const router = useRouter();
+
   const title =
     "Schools & Educators | Classroom-Safe CV Builder for UK Schools | CVCraft Classroom";
   const description =
@@ -12,66 +16,159 @@ export default function SchoolsPage() {
   // Optional OG image (add later if you want)
   const ogImage = "https://www.cvcraftclassroom.com/og/og-default.png";
 
-  // ⚠️ Replace with your real Stripe school licence checkout URL (or your internal /api/checkout route)
-  // Best practice: keep this as a local checkout route so price IDs stay server-side.
-  // Example: /api/checkout?product=school_licence  (you’ll wire this later)
-  const SCHOOL_CHECKOUT_HREF = "/api/checkout?product=school_licence";
-
   // ✅ Teacher Mode entrypoint
   const TEACHER_BUILDER_HREF = "/cv?teacher=1";
 
-  const faqItems = [
-    {
-      q: "Do students need to pay or create accounts?",
-      a: "No. Students do not pay and do not need accounts. Schools purchase one annual licence and can use CVCraft Classroom across unlimited sessions.",
-    },
-    {
-      q: "Is this GDPR-friendly for schools?",
-      a: "Yes. Student Safe Mode is designed for classroom use and avoids storing student personal data long-term. Students can complete a CV session and download without creating accounts.",
-    },
-    {
-      q: "What does the annual school licence include?",
-      a: "The licence includes Teacher Mode, Student Safe Mode, unlimited student use, and unlimited CV downloads for 12 months.",
-    },
-    {
-      q: "What age groups is this for?",
-      a: "It’s ideal for UK secondary schools, sixth forms and colleges. It works well for first CVs, part-time job applications, and apprenticeship preparation.",
-    },
-    {
-      q: "Can we use it across multiple classes?",
-      a: "Yes. One school licence covers unlimited classroom sessions for your school during the licence period.",
-    },
-  ];
+  // ---- School licence access (session-only) ----
+  // (Matches your existing project convention used elsewhere.)
+  const SCHOOL_ACCESS_SESSION_KEY = "cvcraft:schoolAccess";
 
-  const faqJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqItems.map((x) => ({
-      "@type": "Question",
-      name: x.q,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: x.a,
+  const [isBuying, setIsBuying] = useState(false);
+  const [buyError, setBuyError] = useState("");
+
+  const [schoolCode, setSchoolCode] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verifyError, setVerifyError] = useState("");
+  const [verifyOk, setVerifyOk] = useState(false);
+
+  const faqItems = useMemo(
+    () => [
+      {
+        q: "Do students need to pay or create accounts?",
+        a: "No. Students do not pay and do not need accounts. Schools purchase one annual licence and can use CVCraft Classroom across unlimited sessions.",
       },
-    })),
-  };
+      {
+        q: "Is this GDPR-friendly for schools?",
+        a: "Yes. Student Safe Mode is designed for classroom use and avoids storing student personal data long-term. Students can complete a CV session and download without creating accounts.",
+      },
+      {
+        q: "What does the annual school licence include?",
+        a: "The licence includes Teacher Mode, Student Safe Mode, unlimited student use, and unlimited CV downloads for 12 months.",
+      },
+      {
+        q: "What age groups is this for?",
+        a: "It’s ideal for UK secondary schools, sixth forms and colleges. It works well for first CVs, part-time job applications, and apprenticeship preparation.",
+      },
+      {
+        q: "Can we use it across multiple classes?",
+        a: "Yes. One school licence covers unlimited classroom sessions for your school during the licence period.",
+      },
+    ],
+    []
+  );
 
-  const articleJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: title,
-    description,
-    mainEntityOfPage: canonical,
-    url: canonical,
-    image: ogImage,
-    author: { "@type": "Organization", name: "CVCraft Classroom" },
-    publisher: {
-      "@type": "Organization",
-      name: "CVCraft Classroom",
-      logo: { "@type": "ImageObject", url: ogImage },
-    },
-    dateModified: "2026-02-17",
-  };
+  const faqJsonLd = useMemo(
+    () => ({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faqItems.map((x) => ({
+        "@type": "Question",
+        name: x.q,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: x.a,
+        },
+      })),
+    }),
+    [faqItems]
+  );
+
+  const articleJsonLd = useMemo(
+    () => ({
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: title,
+      description,
+      mainEntityOfPage: canonical,
+      url: canonical,
+      image: ogImage,
+      author: { "@type": "Organization", name: "CVCraft Classroom" },
+      publisher: {
+        "@type": "Organization",
+        name: "CVCraft Classroom",
+        logo: { "@type": "ImageObject", url: ogImage },
+      },
+      dateModified: "2026-02-19",
+    }),
+    [title, description, canonical, ogImage]
+  );
+
+  async function startSchoolCheckout() {
+    if (isBuying) return;
+    setIsBuying(true);
+    setBuyError("");
+
+    try {
+      const res = await fetch("/api/checkout/schools", { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data?.url) {
+        throw new Error(data?.error || "Checkout failed. Please try again.");
+      }
+
+      window.location.href = data.url;
+    } catch (e) {
+      setBuyError(e?.message || "Checkout failed. Please try again.");
+      setIsBuying(false);
+    }
+  }
+
+  async function verifySchoolCode(e) {
+    e.preventDefault();
+    setVerifyOk(false);
+    setVerifyError("");
+
+    const code = String(schoolCode || "").trim();
+    if (!code) {
+      setVerifyError("Please enter your school access code.");
+      return;
+    }
+
+    setIsVerifying(true);
+
+    try {
+      const res = await fetch("/api/school/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      const ok = !!(data?.ok || data?.valid);
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Could not verify code. Please try again.");
+      }
+
+      if (!ok) {
+        setVerifyError("That code is not valid (or may have expired).");
+        setIsVerifying(false);
+        return;
+      }
+
+      // ✅ Session-only grant for teacher flows
+      try {
+        sessionStorage.setItem(SCHOOL_ACCESS_SESSION_KEY, "1");
+        if (data?.expiresAt) {
+          sessionStorage.setItem(
+            `${SCHOOL_ACCESS_SESSION_KEY}:expiresAt`,
+            String(data.expiresAt)
+          );
+        }
+      } catch {
+        // ignore storage errors
+      }
+
+      setVerifyOk(true);
+      setIsVerifying(false);
+
+      // Send teacher straight into teacher mode
+      router.push(TEACHER_BUILDER_HREF);
+    } catch (e) {
+      setVerifyError(e?.message || "Could not verify code. Please try again.");
+      setIsVerifying(false);
+    }
+  }
 
   return (
     <>
@@ -134,12 +231,14 @@ export default function SchoolsPage() {
               Pricing
             </Link>
 
-            <a
-              href={SCHOOL_CHECKOUT_HREF}
-              className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-white/90"
+            <button
+              type="button"
+              onClick={startSchoolCheckout}
+              disabled={isBuying}
+              className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-white/90 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Buy school licence
-            </a>
+              {isBuying ? "Opening checkout…" : "Buy school licence"}
+            </button>
           </nav>
         </div>
 
@@ -172,13 +271,22 @@ export default function SchoolsPage() {
             privacy-friendly session mode.
           </p>
 
+          {buyError ? (
+            <div className="mt-4 max-w-3xl rounded-xl bg-red-500/10 p-4 text-sm text-red-100 ring-1 ring-red-500/20">
+              {buyError}
+            </div>
+          ) : null}
+
           <div className="mt-6 flex flex-wrap gap-3">
-            <a
-              href={SCHOOL_CHECKOUT_HREF}
-              className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-white/90"
+            <button
+              type="button"
+              onClick={startSchoolCheckout}
+              disabled={isBuying}
+              className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-white/90 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Buy annual school licence — £500
-            </a>
+              {isBuying ? "Opening checkout…" : "Buy annual school licence — £500"}
+            </button>
+
             <a
               href="#how-it-works"
               className="rounded-xl bg-white/10 px-5 py-3 text-sm font-semibold text-white ring-1 ring-white/15 hover:bg-white/15"
@@ -222,8 +330,54 @@ export default function SchoolsPage() {
 
         {/* Body */}
         <section className="mx-auto max-w-6xl px-6 pb-16">
-          {/* Problem */}
+          {/* Access panel */}
           <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10">
+            <h2 className="text-2xl font-bold">Already purchased?</h2>
+            <p className="mt-2 text-white/75 leading-relaxed">
+              Enter your school access code to unlock Teacher Mode for this session.
+            </p>
+
+            <form onSubmit={verifySchoolCode} className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <input
+                value={schoolCode}
+                onChange={(e) => setSchoolCode(e.target.value)}
+                placeholder="Enter school code"
+                className="w-full rounded-xl bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/50 ring-1 ring-white/15 focus:outline-none focus:ring-2 focus:ring-emerald-400/60"
+              />
+              <button
+                type="submit"
+                disabled={isVerifying}
+                className="rounded-xl bg-emerald-400 px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-emerald-300 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isVerifying ? "Verifying…" : "Unlock Teacher Mode"}
+              </button>
+              <Link
+                href={TEACHER_BUILDER_HREF}
+                className="rounded-xl bg-white/10 px-5 py-3 text-sm font-semibold text-white ring-1 ring-white/15 hover:bg-white/15 text-center"
+              >
+                Open Teacher Mode
+              </Link>
+            </form>
+
+            {verifyError ? (
+              <div className="mt-3 rounded-xl bg-red-500/10 p-4 text-sm text-red-100 ring-1 ring-red-500/20">
+                {verifyError}
+              </div>
+            ) : null}
+
+            {verifyOk ? (
+              <div className="mt-3 rounded-xl bg-emerald-500/10 p-4 text-sm text-emerald-100 ring-1 ring-emerald-500/20">
+                Code verified — opening Teacher Mode…
+              </div>
+            ) : null}
+
+            <p className="mt-3 text-xs text-white/60">
+              Tip: The school code is session-only on this device. If you refresh or return later, you may need to re-enter it.
+            </p>
+          </div>
+
+          {/* Problem */}
+          <div className="mt-8 rounded-2xl bg-white/5 p-6 ring-1 ring-white/10">
             <h2 className="text-2xl font-bold">
               Why most CV builders don’t work in schools
             </h2>
@@ -310,12 +464,14 @@ export default function SchoolsPage() {
               </div>
 
               <div className="mt-6">
-                <a
-                  href={SCHOOL_CHECKOUT_HREF}
-                  className="inline-flex w-full items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-white/90"
+                <button
+                  type="button"
+                  onClick={startSchoolCheckout}
+                  disabled={isBuying}
+                  className="inline-flex w-full items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-white/90 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Buy annual school licence — £500
-                </a>
+                  {isBuying ? "Opening checkout…" : "Buy annual school licence — £500"}
+                </button>
                 <p className="mt-3 text-xs text-white/60">
                   After purchase, you’ll see confirmation on-screen. If you need
                   help setting up Teacher Mode for your classroom, contact us
@@ -348,12 +504,14 @@ export default function SchoolsPage() {
             </ol>
 
             <div className="mt-6 flex flex-wrap gap-3">
-              <a
-                href={SCHOOL_CHECKOUT_HREF}
-                className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-white/90"
+              <button
+                type="button"
+                onClick={startSchoolCheckout}
+                disabled={isBuying}
+                className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-white/90 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Purchase licence
-              </a>
+                {isBuying ? "Opening checkout…" : "Purchase licence"}
+              </button>
 
               {/* ✅ Teacher Mode entry (useful in schools flow) */}
               <Link
@@ -399,12 +557,14 @@ export default function SchoolsPage() {
                   <li>• UK-focused templates</li>
                 </ul>
 
-                <a
-                  href={SCHOOL_CHECKOUT_HREF}
-                  className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-white/90"
+                <button
+                  type="button"
+                  onClick={startSchoolCheckout}
+                  disabled={isBuying}
+                  className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-white/90 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Buy annual school licence
-                </a>
+                  {isBuying ? "Opening checkout…" : "Buy annual school licence"}
+                </button>
 
                 <p className="mt-3 text-xs text-white/60">
                   Need a VAT invoice or purchase order process? Contact us and
@@ -515,12 +675,14 @@ export default function SchoolsPage() {
             </div>
 
             <div className="mt-6 flex flex-wrap gap-3">
-              <a
-                href={SCHOOL_CHECKOUT_HREF}
-                className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-white/90"
+              <button
+                type="button"
+                onClick={startSchoolCheckout}
+                disabled={isBuying}
+                className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-white/90 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Buy annual school licence — £500
-              </a>
+                {isBuying ? "Opening checkout…" : "Buy annual school licence — £500"}
+              </button>
               <Link
                 href="/pricing"
                 className="rounded-xl bg-white/10 px-5 py-3 text-sm font-semibold text-white ring-1 ring-white/15 hover:bg-white/15"

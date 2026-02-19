@@ -1,11 +1,19 @@
 // src/pages/api/school/verify.js
 import crypto from "crypto";
+import { createClient } from "@supabase/supabase-js";
+
+// ✅ Server-only Supabase client (service role key). NEVER expose this to the browser.
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 function normalize(v) {
-  // Keep it forgiving: trim + remove all whitespace
+  // forgiving: trim + remove all whitespace + uppercase
   return String(v || "")
     .trim()
-    .replace(/\s+/g, "");
+    .replace(/\s+/g, "")
+    .toUpperCase();
 }
 
 function sha256Hex(str) {
@@ -18,13 +26,11 @@ export default async function handler(req, res) {
     return res.status(405).json({ ok: false, error: "Method not allowed" });
   }
 
-  const expectedRaw = (process.env.SCHOOL_ACCESS_CODE || "").trim();
-
   // Misconfiguration safety
-  if (!expectedRaw) {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return res.status(500).json({
       ok: false,
-      error: "Server not configured (SCHOOL_ACCESS_CODE missing).",
+      error: "Server not configured (SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY missing).",
     });
   }
 
@@ -32,23 +38,50 @@ export default async function handler(req, res) {
   const body = req.body || {};
   const incomingRaw = body.code ?? body.password ?? body.pin ?? "";
 
-  const expected = normalize(expectedRaw);
   const incoming = normalize(incomingRaw);
 
   if (!incoming) {
     return res.status(401).json({ ok: false, valid: false, error: "Invalid code" });
   }
 
-  // ✅ Constant-time compare without length constraints:
-  // compare fixed-length SHA256 hex strings
-  const expectedHash = Buffer.from(sha256Hex(expected), "utf8");
-  const incomingHash = Buffer.from(sha256Hex(incoming), "utf8");
+  try {
+    const code_hash = sha256Hex(incoming);
 
-  const match = crypto.timingSafeEqual(incomingHash, expectedHash);
+    const { data, error } = await supabase
+      .from("school_licences")
+      .select("status, expires_at")
+      .eq("code_hash", code_hash)
+      .maybeSingle();
 
-  if (!match) {
-    return res.status(401).json({ ok: false, valid: false, error: "Invalid code" });
+    if (error) {
+      return res.status(500).json({ ok: false, error: error.message });
+    }
+
+    if (!data) {
+      return res.status(401).json({ ok: false, valid: false, error: "Invalid code" });
+    }
+
+    const status = String(data.status || "").toLowerCase();
+    const expiresAt = data.expires_at ? new Date(data.expires_at) : null;
+    const now = new Date();
+
+    const active = status === "active" && expiresAt && expiresAt > now;
+
+    if (!active) {
+      return res.status(401).json({
+        ok: false,
+        valid: false,
+        error: "Code is not active (expired or revoked).",
+        expiresAt: data.expires_at || null,
+      });
+    }
+
+    return res.status(200).json({
+      ok: true,
+      valid: true,
+      expiresAt: data.expires_at || null,
+    });
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: e?.message || "Unknown error" });
   }
-
-  return res.status(200).json({ ok: true, valid: true });
 }
