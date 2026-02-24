@@ -5,7 +5,7 @@ export default function BaristaCvExampleUk() {
     "Barista CV Example UK (2026) | Free Template, Skills & No Experience Tips | CVCraft Classroom";
 
   const description =
-    "See a professional Barista CV example for the UK (2026). Includes a personal statement, key skills, bullet-point responsibilities, common mistakes, FAQs, and a free CV builder.";
+    "See a professional Barista CV example for the UK (2026). Includes a personal statement, key skills, full CV sample, salary guidance, no experience tips, common mistakes, FAQs, and a free CV builder.";
 
   const canonical =
     "https://www.cvcraftclassroom.com/cv-examples/barista-cv-example-uk";
@@ -16,22 +16,15 @@ export default function BaristaCvExampleUk() {
       description={description}
       canonical={canonical}
 
-      /* =========================
-         PAGE HEADER
-      ========================== */
       h1="Barista CV Example (UK 2026) + Free Barista CV Template"
 
-      intro="A strong barista CV shows customer service, speed, cleanliness and consistency. UK employers want someone who can handle busy rushes, take accurate orders, keep standards high, and support the team during peak periods.\n\nUse this barista CV example as a template: keep it simple — contact details, a short personal statement, key skills, bullet-point experience, and qualifications (food hygiene/allergen training if you have it)."
+      intro="A strong barista CV shows customer service, speed, cleanliness and consistency. UK employers want someone who can handle busy rushes, take accurate orders, keep standards high, and support the team during peak periods.
 
-      /* =========================
-         PROFILE SECTION
-      ========================== */
+Use this barista CV example as a template: keep it simple — contact details, a short personal statement, key skills, bullet-point experience, and qualifications (food hygiene/allergen training if you have it)."
+
       profileTitle="Example Personal Statement for a Barista CV"
       profileText="Friendly and energetic Barista with 2+ years’ experience in high-footfall cafés. Skilled in espresso-based drinks, milk texturing, POS systems and maintaining excellent hygiene standards. Known for fast service during peak hours, accurate order handling and creating a welcoming customer experience."
 
-      /* =========================
-         SKILLS SECTION
-      ========================== */
       skillsTitle="Key Skills to Include on a Barista CV (UK)"
       skills={[
         "Espresso-based coffee preparation",
@@ -46,9 +39,6 @@ export default function BaristaCvExampleUk() {
         "Clear communication during busy service",
       ]}
 
-      /* =========================
-         EXPERIENCE SECTION
-      ========================== */
       jobTitle="Barista — Riverside Coffee House"
       jobMeta="Bristol | 2023 – Present"
       bullets={[
@@ -60,67 +50,123 @@ export default function BaristaCvExampleUk() {
         "Provided friendly service, upsold add-ons where appropriate, and handled customer queries calmly",
       ]}
 
-      /* =========================
-         QUALIFICATIONS SECTION
-      ========================== */
       qualificationsTitle="Qualifications & Training (Helpful in the UK)"
       qualifications={[
         "Level 2 Food Safety / Hygiene (if applicable)",
         "Allergen awareness training (if applicable)",
         "Coffee training or latte art (optional)",
-        "Basic maths and confident communication (always valuable)",
+        "Basic maths and confident communication",
       ]}
 
-      /* =========================
-         EXTRA VALUE SECTION
-      ========================== */
+      /* 🔥 FULL CV EXAMPLE BLOCK */
+
+      fullExampleTitle="Full Barista CV Example (Copy & Adapt)"
+
+      fullExampleText={`
+
+Emily Carter  
+Bristol  
+07123 456789  
+emilycarter@email.com  
+
+Personal Statement  
+Friendly and reliable Barista with 2 years’ experience in busy high-street cafés. Confident preparing espresso-based drinks, maintaining hygiene standards, and delivering fast, friendly customer service during peak hours.
+
+Key Skills  
+• Espresso and milk texturing  
+• POS/till systems and cash handling  
+• Customer service and upselling  
+• Allergen awareness  
+• Cleaning routines and hygiene compliance  
+• Working efficiently under pressure  
+
+Work Experience  
+Barista — Riverside Coffee House  
+Bristol | 2023 – Present  
+
+• Prepared 150+ drinks per shift during busy weekend periods  
+• Maintained consistent drink quality and presentation  
+• Processed payments accurately and balanced tills at close  
+• Followed strict food hygiene and allergen procedures  
+• Supported stock checks and daily opening/closing routines  
+
+Qualifications  
+Level 2 Food Safety  
+Allergen Awareness Training  
+
+References available on request.
+`}
+
+      /* 🔥 SALARY SECTION */
+
+      extraSectionTitle="Barista Salary in the UK (2026)"
+
+      extraSectionText={`
+
+Barista salaries in the UK typically range from £10.50–£12.50 per hour depending on location and experience.
+
+• Entry-level baristas: £10.50–£11.50 per hour  
+• Experienced baristas: £11.50–£12.50+ per hour  
+• London and major cities may offer higher hourly rates  
+
+Supervisory responsibilities or specialist coffee training (latte art, machine calibration) can increase earning potential.
+`}
+
+      /* 🔥 NO EXPERIENCE SECTION */
+
+      secondExtraSectionTitle="How to Write a Barista CV With No Experience"
+
+      secondExtraSectionText={`
+
+If you have no barista experience, focus on transferable skills:
+
+• Customer service and communication  
+• Handling pressure during busy periods  
+• Teamwork and reliability  
+• Basic maths and cash handling  
+• Hygiene awareness  
+
+Mention retail, hospitality, volunteering, or school activities that show responsibility and teamwork. Employers often value attitude and work ethic as much as experience for entry-level café roles.
+`}
+
       tipsTitle="How to Make Your Barista CV Stand Out"
       tips={[
-        "Mention speed and accuracy during peak rush times (e.g., weekends, mornings)",
-        "Show hygiene and cleaning habits clearly (this matters a lot in food/drink roles)",
-        "Include upselling or customer service wins if you have them",
-        "Keep your CV to 1 page if you have under 3–4 years’ experience",
-        "Use bullet points and avoid long paragraphs",
-        "If you’ve worked with allergens, say you understand safe procedures and accurate labelling",
+        "Mention speed and accuracy during peak rush times",
+        "Show hygiene and cleaning habits clearly",
+        "Include upselling or customer service wins",
+        "Keep your CV to 1 page if under 3–4 years’ experience",
+        "Use bullet points instead of long paragraphs",
+        "Highlight allergen awareness if applicable",
       ]}
 
-      /* =========================
-         ✅ NEW: COMMON MISTAKES (ranking fuel)
-      ========================== */
       mistakesTitle="Common Barista CV Mistakes to Avoid"
       mistakes={[
-        "Listing only duties (“made coffees”) instead of showing pace/accuracy (rush periods, consistency, reduced errors)",
-        "Not mentioning hygiene standards, cleaning routines, or food safety awareness",
-        "Forgetting to include POS/till experience (it’s a big part of the job)",
-        "Skipping allergen awareness (especially if you handled food or custom orders)",
-        "Using long paragraphs instead of short, scannable bullet points",
+        "Listing only duties instead of showing speed or consistency",
+        "Not mentioning hygiene standards or food safety",
+        "Forgetting POS/till experience",
+        "Skipping allergen awareness",
+        "Using long, hard-to-scan paragraphs",
       ]}
 
-      /* =========================
-         ✅ NEW: FAQ (more long-tail coverage)
-      ========================== */
       faqItems={[
         {
           q: "What skills should I put on a barista CV?",
-          a: "Include espresso-based drink preparation, milk steaming, customer service, POS/till use, hygiene/cleaning routines, teamwork, speed under pressure, and accurate order handling (including allergens). If you have food safety training, list it clearly.",
+          a: "Include espresso preparation, milk steaming, POS/till use, hygiene routines, teamwork, speed under pressure, and customer service skills.",
         },
         {
           q: "How long should a barista CV be in the UK?",
-          a: "Aim for 1 page if you’re entry-level or have under 3–4 years’ experience. Use a short personal statement, a focused skills section, and bullet points for experience to keep it easy to scan.",
+          a: "One page is ideal for entry-level or junior baristas. Keep formatting clean and easy to scan.",
         },
         {
           q: "How do I write a barista CV with no experience?",
-          a: "Focus on transferable skills: customer service, reliability, teamwork, handling pressure, and attention to detail. Use examples from retail, hospitality, volunteering, or school/work placements, and highlight willingness to learn and strong hygiene habits.",
+          a: "Focus on transferable skills like customer service, reliability, handling pressure, and hygiene awareness.",
         },
         {
-          q: "Do I need food hygiene training on my barista CV?",
-          a: "If you have it, yes — add it under Qualifications/Training. If you don’t, you can still mention hygiene awareness and cleaning routines in your experience or skills section.",
+          q: "Do I need food hygiene training on my CV?",
+          a: "If you have it, list it clearly under qualifications. If not, mention hygiene awareness and cleaning routines.",
         },
       ]}
 
-      /* =========================
-         ✅ NEW: INTERNAL LINKS CLUSTER
-      ========================== */
       relatedLinksTitle="Related CV Examples"
       relatedLinks={[
         { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV Example (UK)" },
@@ -130,9 +176,6 @@ export default function BaristaCvExampleUk() {
         { href: "/cv-examples/cv-for-16-year-old-uk", label: "CV for 16 Year Old (UK)" },
       ]}
 
-      /* =========================
-         CALL TO ACTION
-      ========================== */
       ctaTitle="Create Your Own Barista CV"
       ctaBody="Use our UK CV builder to create a recruiter-ready barista CV in minutes. Choose a clean template, customise your sections, and download a polished PDF instantly."
       ctaButton="Build Your Barista CV Now"
