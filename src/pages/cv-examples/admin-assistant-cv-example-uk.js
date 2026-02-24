@@ -2,10 +2,10 @@ import CvExamplePage from "../../components/CvExamplePage";
 
 export default function AdminAssistantCvExampleUk() {
   const title =
-    "Admin Assistant CV Example UK (2026 Guide) | Free Template & Skills | CVCraft Classroom";
+    "Admin Assistant CV Example UK (2026) | Free Template, Skills & No Experience Tips | CVCraft Classroom";
 
   const description =
-    "See a professional Admin Assistant CV example for the UK. Includes skills, profile example, responsibilities, formatting tips and a free CV builder to create your own.";
+    "See a professional Admin Assistant CV example for the UK (2026). Includes a personal statement, key skills, job bullet points, common mistakes, FAQs, internal links, and a free CV builder.";
 
   const canonical =
     "https://www.cvcraftclassroom.com/cv-examples/admin-assistant-cv-example-uk";
@@ -14,14 +14,13 @@ export default function AdminAssistantCvExampleUk() {
     <CvExamplePage
       title={title}
       description={description}
-      canonical={canonical}
 
       /* =========================
          PAGE HEADER
       ========================== */
-      h1="Admin Assistant CV Example (UK 2026 Guide)"
+      h1="Admin Assistant CV Example (UK 2026) + Free Admin CV Template"
 
-      intro="Writing an admin assistant CV in the UK requires clarity, organisation, and strong attention to detail. Employers want someone reliable who can manage records, support teams, and keep operations running smoothly. Below is a full example with structure, skills and formatting guidance."
+      intro="Writing an admin assistant CV in the UK requires clarity, organisation, and strong attention to detail. Employers want someone reliable who can manage records, support teams, and keep operations running smoothly.\n\nAdmin Assistant CV template (UK format): include contact details, a short personal statement, key skills, bullet-point experience, and relevant qualifications. Use measurable improvements where possible (time saved, accuracy improved, inbox volumes handled)."
 
       /* =========================
          PROFILE SECTION
@@ -44,6 +43,8 @@ export default function AdminAssistantCvExampleUk() {
         "Microsoft Office (Word, Excel, Outlook)",
         "Google Workspace familiarity",
         "Task prioritisation and deadline management",
+        "Minute taking and meeting coordination",
+        "Data protection and GDPR awareness",
       ]}
 
       /* =========================
@@ -59,6 +60,7 @@ export default function AdminAssistantCvExampleUk() {
         "Prepared documents, reports and meeting minutes for senior staff",
         "Handled incoming calls and directed queries efficiently",
         "Improved filing systems which reduced document retrieval time by 20%",
+        "Supported scheduling of meetings and maintained team calendars",
       ]}
 
       /* =========================
@@ -81,9 +83,58 @@ export default function AdminAssistantCvExampleUk() {
       tips={[
         "Keep formatting clean and structured — admin roles require organisation",
         "Highlight accuracy and attention to detail",
-        "Mention measurable improvements where possible",
+        "Mention measurable improvements where possible (time saved, errors reduced)",
+        "Include systems you’ve used (CRM, spreadsheets, booking systems)",
         "Use bullet points instead of long paragraphs",
         "Keep your CV to 1–2 pages maximum",
+      ]}
+
+      /* =========================
+         ✅ NEW: COMMON MISTAKES
+      ========================== */
+      mistakesTitle="Common Admin Assistant CV Mistakes to Avoid"
+
+      mistakes={[
+        "Being too vague about responsibilities (specify systems and tools used)",
+        "Not showing measurable impact (time saved, accuracy improved)",
+        "Forgetting to mention Microsoft Office or key software skills",
+        "Writing long paragraphs instead of structured bullet points",
+        "Poor formatting or inconsistent layout (important in admin roles)",
+      ]}
+
+      /* =========================
+         ✅ NEW: FAQ SECTION
+      ========================== */
+      faqItems={[
+        {
+          q: "What skills should I include on an admin assistant CV?",
+          a: "Include data entry, organisation, Microsoft Office, inbox management, scheduling, communication, accuracy, and task prioritisation.",
+        },
+        {
+          q: "How long should an admin CV be in the UK?",
+          a: "1 page is ideal for junior roles. Two pages is acceptable if you have several years of office experience.",
+        },
+        {
+          q: "How do I write an admin CV with no experience?",
+          a: "Focus on transferable skills such as organisation, time management, communication, IT skills, and any school, volunteering or part-time roles where you handled responsibility.",
+        },
+        {
+          q: "Should I list Microsoft Office on my CV?",
+          a: "Yes. Admin roles almost always require Microsoft Office or Google Workspace skills. Be specific (Word, Excel, Outlook).",
+        },
+      ]}
+
+      /* =========================
+         ✅ NEW: INTERNAL LINKS
+      ========================== */
+      relatedLinksTitle="Related CV Examples"
+
+      relatedLinks={[
+        { href: "/cv-examples/receptionist-cv-example-uk", label: "Receptionist CV Example (UK)" },
+        { href: "/cv-examples/customer-service-cv-example-uk", label: "Customer Service CV Example (UK)" },
+        { href: "/cv-examples/sales-assistant-cv-example-uk", label: "Sales Assistant CV Example (UK)" },
+        { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV Example (UK)" },
+        { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV Example (UK)" },
       ]}
 
       /* =========================
