@@ -23,7 +23,7 @@
 
   <url>
     <loc>https://www.cvcraftclassroom.com/pricing</loc>
-    <changefreq>weekly</changefreq>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
@@ -73,33 +73,7 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- Standalone Example Pages -->
-
-  <url>
-    <loc>https://www.cvcraftclassroom.com/warehouse-cv-example-uk</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://www.cvcraftclassroom.com/customer-service-cv-example-uk</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://www.cvcraftclassroom.com/no-experience-cv-uk</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://www.cvcraftclassroom.com/cv-for-16-year-old-uk</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <!-- Folder-Based CV Example Pages -->
+  <!-- CV Example Pages (All Standardised Under /cv-examples/) -->
 
   <url>
     <loc>https://www.cvcraftclassroom.com/cv-examples/admin-assistant-cv-example-uk</loc>
@@ -132,6 +106,12 @@
   </url>
 
   <url>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/customer-service-cv-example-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
     <loc>https://www.cvcraftclassroom.com/cv-examples/delivery-driver-cv-example-uk</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -139,6 +119,12 @@
 
   <url>
     <loc>https://www.cvcraftclassroom.com/cv-examples/receptionist-cv-example-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/retail-cv-example-uk</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
