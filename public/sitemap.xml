@@ -153,22 +153,48 @@
     <priority>0.6</priority>
   </url>
 
-<url>
-  <loc>https://www.cvcraftclassroom.com/cv-examples/kitchen-assistant-cv-example-uk</loc>
-  <changefreq>monthly</changefreq>
-  <priority>0.6</priority>
-</url>
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/kitchen-assistant-cv-example-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
 
-<url>
-  <loc>https://www.cvcraftclassroom.com/cv-examples/factory-operative-cv-example-uk</loc>
-  <changefreq>monthly</changefreq>
-  <priority>0.6</priority>
-</url>
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/factory-operative-cv-example-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
 
-<url>
-  <loc>https://www.cvcraftclassroom.com/cv-examples/call-centre-cv-example-uk</loc>
-  <changefreq>monthly</changefreq>
-  <priority>0.6</priority>
-</url>
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/call-centre-cv-example-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- ✅ NEW CV Example Pages (added from highlighted files) -->
+
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/night-shift-warehouse-operative-cv-example-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/picker-packer-cv-example-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/hotel-housekeeper-cv-example-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/nhs-healthcare-assistant-cv-example-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
 
 </urlset>
