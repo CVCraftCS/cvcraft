@@ -4,10 +4,11 @@ import Link from "next/link";
 
 export default function CvExamplesUk() {
   const title =
-    "CV Examples UK (2026) | Free CV Templates & Job-Specific Samples | CVCraft Classroom";
+    "CV Examples UK (2026) | UK CV Templates & Job-Specific Samples | CVCraft Classroom";
 
+  // ✅ Updated: mentions the free cover letter (truthful + higher-intent)
   const description =
-    "Browse real UK CV examples for warehouse, retail, customer service, care, cleaning, admin and more. See professional CV samples and build your own recruiter-ready CV in minutes.";
+    "Browse real UK CV examples for warehouse, retail, customer service, care, cleaning, admin and more. See job-specific CV samples, then build a recruiter-ready CV — plus generate a free cover letter in minutes.";
 
   const canonical = "https://www.cvcraftclassroom.com/cv-examples-uk";
 
@@ -252,101 +253,248 @@ export default function CvExamplesUk() {
    */
   const RELATED = {
     warehouse: [
-      { href: "/cv-examples/night-shift-warehouse-operative-cv-example-uk", label: "Night Shift Warehouse Operative CV" },
-      { href: "/cv-examples/picker-packer-cv-example-uk", label: "Picker Packer CV" },
-      { href: "/cv-examples/delivery-driver-cv-example-uk", label: "Delivery Driver CV" },
-      { href: "/cv-examples/factory-operative-cv-example-uk", label: "Factory Operative CV" },
-      { href: "/cv-examples/construction-labourer-cv-example-uk", label: "Construction Labourer CV" },
+      {
+        href: "/cv-examples/night-shift-warehouse-operative-cv-example-uk",
+        label: "Night Shift Warehouse Operative CV",
+      },
+      {
+        href: "/cv-examples/picker-packer-cv-example-uk",
+        label: "Picker Packer CV",
+      },
+      {
+        href: "/cv-examples/delivery-driver-cv-example-uk",
+        label: "Delivery Driver CV",
+      },
+      {
+        href: "/cv-examples/factory-operative-cv-example-uk",
+        label: "Factory Operative CV",
+      },
+      {
+        href: "/cv-examples/construction-labourer-cv-example-uk",
+        label: "Construction Labourer CV",
+      },
       { href: "/cv-examples/cleaner-cv-example-uk", label: "Cleaner CV" },
-      { href: "/cv-examples/security-guard-cv-example-uk", label: "Security Guard CV" },
-      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      {
+        href: "/cv-examples/security-guard-cv-example-uk",
+        label: "Security Guard CV",
+      },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
     // ✅ NEW
     "night-shift-warehouse": [
       { href: "/cv-examples/warehouse-cv-example-uk", label: "Warehouse CV" },
-      { href: "/cv-examples/picker-packer-cv-example-uk", label: "Picker Packer CV" },
-      { href: "/cv-examples/factory-operative-cv-example-uk", label: "Factory Operative CV" },
-      { href: "/cv-examples/delivery-driver-cv-example-uk", label: "Delivery Driver CV" },
-      { href: "/cv-examples/security-guard-cv-example-uk", label: "Security Guard CV" },
-      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      {
+        href: "/cv-examples/picker-packer-cv-example-uk",
+        label: "Picker Packer CV",
+      },
+      {
+        href: "/cv-examples/factory-operative-cv-example-uk",
+        label: "Factory Operative CV",
+      },
+      {
+        href: "/cv-examples/delivery-driver-cv-example-uk",
+        label: "Delivery Driver CV",
+      },
+      {
+        href: "/cv-examples/security-guard-cv-example-uk",
+        label: "Security Guard CV",
+      },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
     // ✅ NEW
     "picker-packer": [
       { href: "/cv-examples/warehouse-cv-example-uk", label: "Warehouse CV" },
-      { href: "/cv-examples/night-shift-warehouse-operative-cv-example-uk", label: "Night Shift Warehouse Operative CV" },
-      { href: "/cv-examples/factory-operative-cv-example-uk", label: "Factory Operative CV" },
-      { href: "/cv-examples/delivery-driver-cv-example-uk", label: "Delivery Driver CV" },
-      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      {
+        href: "/cv-examples/night-shift-warehouse-operative-cv-example-uk",
+        label: "Night Shift Warehouse Operative CV",
+      },
+      {
+        href: "/cv-examples/factory-operative-cv-example-uk",
+        label: "Factory Operative CV",
+      },
+      {
+        href: "/cv-examples/delivery-driver-cv-example-uk",
+        label: "Delivery Driver CV",
+      },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
     "delivery-driver": [
       { href: "/cv-examples/warehouse-cv-example-uk", label: "Warehouse CV" },
-      { href: "/cv-examples/night-shift-warehouse-operative-cv-example-uk", label: "Night Shift Warehouse Operative CV" },
-      { href: "/cv-examples/picker-packer-cv-example-uk", label: "Picker Packer CV" },
-      { href: "/cv-examples/factory-operative-cv-example-uk", label: "Factory Operative CV" },
-      { href: "/cv-examples/construction-labourer-cv-example-uk", label: "Construction Labourer CV" },
-      { href: "/cv-examples/security-guard-cv-example-uk", label: "Security Guard CV" },
-      { href: "/cv-examples/customer-service-cv-example-uk", label: "Customer Service CV" },
-      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      {
+        href: "/cv-examples/night-shift-warehouse-operative-cv-example-uk",
+        label: "Night Shift Warehouse Operative CV",
+      },
+      {
+        href: "/cv-examples/picker-packer-cv-example-uk",
+        label: "Picker Packer CV",
+      },
+      {
+        href: "/cv-examples/factory-operative-cv-example-uk",
+        label: "Factory Operative CV",
+      },
+      {
+        href: "/cv-examples/construction-labourer-cv-example-uk",
+        label: "Construction Labourer CV",
+      },
+      {
+        href: "/cv-examples/security-guard-cv-example-uk",
+        label: "Security Guard CV",
+      },
+      {
+        href: "/cv-examples/customer-service-cv-example-uk",
+        label: "Customer Service CV",
+      },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
     construction: [
       { href: "/cv-examples/warehouse-cv-example-uk", label: "Warehouse CV" },
-      { href: "/cv-examples/night-shift-warehouse-operative-cv-example-uk", label: "Night Shift Warehouse Operative CV" },
-      { href: "/cv-examples/factory-operative-cv-example-uk", label: "Factory Operative CV" },
-      { href: "/cv-examples/delivery-driver-cv-example-uk", label: "Delivery Driver CV" },
+      {
+        href: "/cv-examples/night-shift-warehouse-operative-cv-example-uk",
+        label: "Night Shift Warehouse Operative CV",
+      },
+      {
+        href: "/cv-examples/factory-operative-cv-example-uk",
+        label: "Factory Operative CV",
+      },
+      {
+        href: "/cv-examples/delivery-driver-cv-example-uk",
+        label: "Delivery Driver CV",
+      },
       { href: "/cv-examples/cleaner-cv-example-uk", label: "Cleaner CV" },
-      { href: "/cv-examples/security-guard-cv-example-uk", label: "Security Guard CV" },
-      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      {
+        href: "/cv-examples/security-guard-cv-example-uk",
+        label: "Security Guard CV",
+      },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
     "factory-operative": [
       { href: "/cv-examples/warehouse-cv-example-uk", label: "Warehouse CV" },
-      { href: "/cv-examples/night-shift-warehouse-operative-cv-example-uk", label: "Night Shift Warehouse Operative CV" },
-      { href: "/cv-examples/picker-packer-cv-example-uk", label: "Picker Packer CV" },
-      { href: "/cv-examples/construction-labourer-cv-example-uk", label: "Construction Labourer CV" },
-      { href: "/cv-examples/delivery-driver-cv-example-uk", label: "Delivery Driver CV" },
+      {
+        href: "/cv-examples/night-shift-warehouse-operative-cv-example-uk",
+        label: "Night Shift Warehouse Operative CV",
+      },
+      {
+        href: "/cv-examples/picker-packer-cv-example-uk",
+        label: "Picker Packer CV",
+      },
+      {
+        href: "/cv-examples/construction-labourer-cv-example-uk",
+        label: "Construction Labourer CV",
+      },
+      {
+        href: "/cv-examples/delivery-driver-cv-example-uk",
+        label: "Delivery Driver CV",
+      },
       { href: "/cv-examples/cleaner-cv-example-uk", label: "Cleaner CV" },
-      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
     cleaner: [
-      { href: "/cv-examples/hotel-housekeeper-cv-example-uk", label: "Hotel Housekeeper CV" },
+      {
+        href: "/cv-examples/hotel-housekeeper-cv-example-uk",
+        label: "Hotel Housekeeper CV",
+      },
       { href: "/cv-examples/warehouse-cv-example-uk", label: "Warehouse CV" },
-      { href: "/cv-examples/kitchen-assistant-cv-example-uk", label: "Kitchen Assistant CV" },
-      { href: "/cv-examples/care-assistant-cv-example-uk", label: "Care Assistant CV" },
-      { href: "/cv-examples/support-worker-cv-example-uk", label: "Support Worker CV" },
-      { href: "/cv-examples/admin-assistant-cv-example-uk", label: "Admin Assistant CV" },
-      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      {
+        href: "/cv-examples/kitchen-assistant-cv-example-uk",
+        label: "Kitchen Assistant CV",
+      },
+      {
+        href: "/cv-examples/care-assistant-cv-example-uk",
+        label: "Care Assistant CV",
+      },
+      {
+        href: "/cv-examples/support-worker-cv-example-uk",
+        label: "Support Worker CV",
+      },
+      {
+        href: "/cv-examples/admin-assistant-cv-example-uk",
+        label: "Admin Assistant CV",
+      },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
     // ✅ NEW
     "hotel-housekeeper": [
       { href: "/cv-examples/cleaner-cv-example-uk", label: "Cleaner CV" },
-      { href: "/cv-examples/kitchen-assistant-cv-example-uk", label: "Kitchen Assistant CV" },
-      { href: "/cv-examples/receptionist-cv-example-uk", label: "Receptionist CV" },
+      {
+        href: "/cv-examples/kitchen-assistant-cv-example-uk",
+        label: "Kitchen Assistant CV",
+      },
+      {
+        href: "/cv-examples/receptionist-cv-example-uk",
+        label: "Receptionist CV",
+      },
       { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV" },
-      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
 
     retail: [
-      { href: "/cv-examples/sales-assistant-cv-example-uk", label: "Sales Assistant CV" },
-      { href: "/cv-examples/customer-service-cv-example-uk", label: "Customer Service CV" },
+      {
+        href: "/cv-examples/sales-assistant-cv-example-uk",
+        label: "Sales Assistant CV",
+      },
+      {
+        href: "/cv-examples/customer-service-cv-example-uk",
+        label: "Customer Service CV",
+      },
       { href: "/cv-examples/call-centre-cv-example-uk", label: "Call Centre CV" },
-      { href: "/cv-examples/receptionist-cv-example-uk", label: "Receptionist CV" },
+      {
+        href: "/cv-examples/receptionist-cv-example-uk",
+        label: "Receptionist CV",
+      },
       { href: "/cv-examples/barista-cv-example-uk", label: "Barista CV" },
-      { href: "/cv-examples/kitchen-assistant-cv-example-uk", label: "Kitchen Assistant CV" },
-      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      {
+        href: "/cv-examples/kitchen-assistant-cv-example-uk",
+        label: "Kitchen Assistant CV",
+      },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
     "sales-assistant": [
       { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV" },
-      { href: "/cv-examples/customer-service-cv-example-uk", label: "Customer Service CV" },
+      {
+        href: "/cv-examples/customer-service-cv-example-uk",
+        label: "Customer Service CV",
+      },
       { href: "/cv-examples/call-centre-cv-example-uk", label: "Call Centre CV" },
-      { href: "/cv-examples/receptionist-cv-example-uk", label: "Receptionist CV" },
+      {
+        href: "/cv-examples/receptionist-cv-example-uk",
+        label: "Receptionist CV",
+      },
       { href: "/cv-examples/barista-cv-example-uk", label: "Barista CV" },
       { href: "/cv-examples/cv-for-16-year-old-uk", label: "CV for 16 Year Old" },
       { href: "/cv-template-uk", label: "UK CV Template" },
@@ -354,122 +502,293 @@ export default function CvExamplesUk() {
     "customer-service": [
       { href: "/cv-examples/call-centre-cv-example-uk", label: "Call Centre CV" },
       { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV" },
-      { href: "/cv-examples/receptionist-cv-example-uk", label: "Receptionist CV" },
-      { href: "/cv-examples/admin-assistant-cv-example-uk", label: "Admin Assistant CV" },
-      { href: "/cv-examples/sales-assistant-cv-example-uk", label: "Sales Assistant CV" },
-      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      {
+        href: "/cv-examples/receptionist-cv-example-uk",
+        label: "Receptionist CV",
+      },
+      {
+        href: "/cv-examples/admin-assistant-cv-example-uk",
+        label: "Admin Assistant CV",
+      },
+      {
+        href: "/cv-examples/sales-assistant-cv-example-uk",
+        label: "Sales Assistant CV",
+      },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
     "call-centre": [
-      { href: "/cv-examples/customer-service-cv-example-uk", label: "Customer Service CV" },
-      { href: "/cv-examples/receptionist-cv-example-uk", label: "Receptionist CV" },
-      { href: "/cv-examples/admin-assistant-cv-example-uk", label: "Admin Assistant CV" },
-      { href: "/cv-examples/sales-assistant-cv-example-uk", label: "Sales Assistant CV" },
+      {
+        href: "/cv-examples/customer-service-cv-example-uk",
+        label: "Customer Service CV",
+      },
+      {
+        href: "/cv-examples/receptionist-cv-example-uk",
+        label: "Receptionist CV",
+      },
+      {
+        href: "/cv-examples/admin-assistant-cv-example-uk",
+        label: "Admin Assistant CV",
+      },
+      {
+        href: "/cv-examples/sales-assistant-cv-example-uk",
+        label: "Sales Assistant CV",
+      },
       { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV" },
-      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
     barista: [
-      { href: "/cv-examples/kitchen-assistant-cv-example-uk", label: "Kitchen Assistant CV" },
+      {
+        href: "/cv-examples/kitchen-assistant-cv-example-uk",
+        label: "Kitchen Assistant CV",
+      },
       { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV" },
-      { href: "/cv-examples/sales-assistant-cv-example-uk", label: "Sales Assistant CV" },
-      { href: "/cv-examples/customer-service-cv-example-uk", label: "Customer Service CV" },
-      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      {
+        href: "/cv-examples/sales-assistant-cv-example-uk",
+        label: "Sales Assistant CV",
+      },
+      {
+        href: "/cv-examples/customer-service-cv-example-uk",
+        label: "Customer Service CV",
+      },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
       { href: "/cv-examples/cv-for-16-year-old-uk", label: "CV for 16 Year Old" },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
     "kitchen-assistant": [
       { href: "/cv-examples/barista-cv-example-uk", label: "Barista CV" },
       { href: "/cv-examples/cleaner-cv-example-uk", label: "Cleaner CV" },
-      { href: "/cv-examples/hotel-housekeeper-cv-example-uk", label: "Hotel Housekeeper CV" },
+      {
+        href: "/cv-examples/hotel-housekeeper-cv-example-uk",
+        label: "Hotel Housekeeper CV",
+      },
       { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV" },
-      { href: "/cv-examples/customer-service-cv-example-uk", label: "Customer Service CV" },
-      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      {
+        href: "/cv-examples/customer-service-cv-example-uk",
+        label: "Customer Service CV",
+      },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
     receptionist: [
-      { href: "/cv-examples/admin-assistant-cv-example-uk", label: "Admin Assistant CV" },
+      {
+        href: "/cv-examples/admin-assistant-cv-example-uk",
+        label: "Admin Assistant CV",
+      },
       { href: "/cv-examples/call-centre-cv-example-uk", label: "Call Centre CV" },
-      { href: "/cv-examples/customer-service-cv-example-uk", label: "Customer Service CV" },
+      {
+        href: "/cv-examples/customer-service-cv-example-uk",
+        label: "Customer Service CV",
+      },
       { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV" },
-      { href: "/cv-examples/sales-assistant-cv-example-uk", label: "Sales Assistant CV" },
-      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      {
+        href: "/cv-examples/sales-assistant-cv-example-uk",
+        label: "Sales Assistant CV",
+      },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
 
     "care-assistant": [
-      { href: "/cv-examples/nhs-healthcare-assistant-cv-example-uk", label: "NHS Healthcare Assistant CV" },
-      { href: "/cv-examples/support-worker-cv-example-uk", label: "Support Worker CV" },
-      { href: "/cv-examples/teaching-assistant-cv-example-uk", label: "Teaching Assistant CV" },
+      {
+        href: "/cv-examples/nhs-healthcare-assistant-cv-example-uk",
+        label: "NHS Healthcare Assistant CV",
+      },
+      {
+        href: "/cv-examples/support-worker-cv-example-uk",
+        label: "Support Worker CV",
+      },
+      {
+        href: "/cv-examples/teaching-assistant-cv-example-uk",
+        label: "Teaching Assistant CV",
+      },
       { href: "/cv-examples/cleaner-cv-example-uk", label: "Cleaner CV" },
-      { href: "/cv-examples/security-guard-cv-example-uk", label: "Security Guard CV" },
-      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      {
+        href: "/cv-examples/security-guard-cv-example-uk",
+        label: "Security Guard CV",
+      },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
     // ✅ NEW
     "nhs-healthcare-assistant": [
-      { href: "/cv-examples/care-assistant-cv-example-uk", label: "Care Assistant CV" },
-      { href: "/cv-examples/support-worker-cv-example-uk", label: "Support Worker CV" },
-      { href: "/cv-examples/teaching-assistant-cv-example-uk", label: "Teaching Assistant CV" },
-      { href: "/cv-examples/admin-assistant-cv-example-uk", label: "Admin Assistant CV" },
-      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      {
+        href: "/cv-examples/care-assistant-cv-example-uk",
+        label: "Care Assistant CV",
+      },
+      {
+        href: "/cv-examples/support-worker-cv-example-uk",
+        label: "Support Worker CV",
+      },
+      {
+        href: "/cv-examples/teaching-assistant-cv-example-uk",
+        label: "Teaching Assistant CV",
+      },
+      {
+        href: "/cv-examples/admin-assistant-cv-example-uk",
+        label: "Admin Assistant CV",
+      },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
     "support-worker": [
-      { href: "/cv-examples/nhs-healthcare-assistant-cv-example-uk", label: "NHS Healthcare Assistant CV" },
-      { href: "/cv-examples/care-assistant-cv-example-uk", label: "Care Assistant CV" },
-      { href: "/cv-examples/teaching-assistant-cv-example-uk", label: "Teaching Assistant CV" },
+      {
+        href: "/cv-examples/nhs-healthcare-assistant-cv-example-uk",
+        label: "NHS Healthcare Assistant CV",
+      },
+      {
+        href: "/cv-examples/care-assistant-cv-example-uk",
+        label: "Care Assistant CV",
+      },
+      {
+        href: "/cv-examples/teaching-assistant-cv-example-uk",
+        label: "Teaching Assistant CV",
+      },
       { href: "/cv-examples/cleaner-cv-example-uk", label: "Cleaner CV" },
-      { href: "/cv-examples/admin-assistant-cv-example-uk", label: "Admin Assistant CV" },
-      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      {
+        href: "/cv-examples/admin-assistant-cv-example-uk",
+        label: "Admin Assistant CV",
+      },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
     "teaching-assistant": [
-      { href: "/cv-examples/support-worker-cv-example-uk", label: "Support Worker CV" },
-      { href: "/cv-examples/care-assistant-cv-example-uk", label: "Care Assistant CV" },
-      { href: "/cv-examples/nhs-healthcare-assistant-cv-example-uk", label: "NHS Healthcare Assistant CV" },
-      { href: "/cv-examples/admin-assistant-cv-example-uk", label: "Admin Assistant CV" },
-      { href: "/cv-examples/receptionist-cv-example-uk", label: "Receptionist CV" },
-      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      {
+        href: "/cv-examples/support-worker-cv-example-uk",
+        label: "Support Worker CV",
+      },
+      {
+        href: "/cv-examples/care-assistant-cv-example-uk",
+        label: "Care Assistant CV",
+      },
+      {
+        href: "/cv-examples/nhs-healthcare-assistant-cv-example-uk",
+        label: "NHS Healthcare Assistant CV",
+      },
+      {
+        href: "/cv-examples/admin-assistant-cv-example-uk",
+        label: "Admin Assistant CV",
+      },
+      {
+        href: "/cv-examples/receptionist-cv-example-uk",
+        label: "Receptionist CV",
+      },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
     security: [
       { href: "/cv-examples/warehouse-cv-example-uk", label: "Warehouse CV" },
-      { href: "/cv-examples/night-shift-warehouse-operative-cv-example-uk", label: "Night Shift Warehouse Operative CV" },
-      { href: "/cv-examples/delivery-driver-cv-example-uk", label: "Delivery Driver CV" },
-      { href: "/cv-examples/support-worker-cv-example-uk", label: "Support Worker CV" },
-      { href: "/cv-examples/care-assistant-cv-example-uk", label: "Care Assistant CV" },
-      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      {
+        href: "/cv-examples/night-shift-warehouse-operative-cv-example-uk",
+        label: "Night Shift Warehouse Operative CV",
+      },
+      {
+        href: "/cv-examples/delivery-driver-cv-example-uk",
+        label: "Delivery Driver CV",
+      },
+      {
+        href: "/cv-examples/support-worker-cv-example-uk",
+        label: "Support Worker CV",
+      },
+      {
+        href: "/cv-examples/care-assistant-cv-example-uk",
+        label: "Care Assistant CV",
+      },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
 
     admin: [
-      { href: "/cv-examples/receptionist-cv-example-uk", label: "Receptionist CV" },
+      {
+        href: "/cv-examples/receptionist-cv-example-uk",
+        label: "Receptionist CV",
+      },
       { href: "/cv-examples/call-centre-cv-example-uk", label: "Call Centre CV" },
-      { href: "/cv-examples/customer-service-cv-example-uk", label: "Customer Service CV" },
-      { href: "/cv-examples/sales-assistant-cv-example-uk", label: "Sales Assistant CV" },
+      {
+        href: "/cv-examples/customer-service-cv-example-uk",
+        label: "Customer Service CV",
+      },
+      {
+        href: "/cv-examples/sales-assistant-cv-example-uk",
+        label: "Sales Assistant CV",
+      },
       { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV" },
-      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
 
     "no-experience": [
       { href: "/cv-examples/cv-for-16-year-old-uk", label: "CV for 16 Year Old" },
       { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV" },
-      { href: "/cv-examples/sales-assistant-cv-example-uk", label: "Sales Assistant CV" },
-      { href: "/cv-examples/customer-service-cv-example-uk", label: "Customer Service CV" },
+      {
+        href: "/cv-examples/sales-assistant-cv-example-uk",
+        label: "Sales Assistant CV",
+      },
+      {
+        href: "/cv-examples/customer-service-cv-example-uk",
+        label: "Customer Service CV",
+      },
       { href: "/cv-examples/call-centre-cv-example-uk", label: "Call Centre CV" },
       { href: "/cv-examples/warehouse-cv-example-uk", label: "Warehouse CV" },
-      { href: "/cv-examples/picker-packer-cv-example-uk", label: "Picker Packer CV" },
+      {
+        href: "/cv-examples/picker-packer-cv-example-uk",
+        label: "Picker Packer CV",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
     "age-16": [
-      { href: "/cv-examples/no-experience-cv-example-uk", label: "No Experience CV" },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
       { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV" },
       { href: "/cv-examples/barista-cv-example-uk", label: "Barista CV" },
-      { href: "/cv-examples/kitchen-assistant-cv-example-uk", label: "Kitchen Assistant CV" },
-      { href: "/cv-examples/sales-assistant-cv-example-uk", label: "Sales Assistant CV" },
-      { href: "/cv-examples/customer-service-cv-example-uk", label: "Customer Service CV" },
+      {
+        href: "/cv-examples/kitchen-assistant-cv-example-uk",
+        label: "Kitchen Assistant CV",
+      },
+      {
+        href: "/cv-examples/sales-assistant-cv-example-uk",
+        label: "Sales Assistant CV",
+      },
+      {
+        href: "/cv-examples/customer-service-cv-example-uk",
+        label: "Customer Service CV",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
   };
@@ -480,7 +799,9 @@ export default function CvExamplesUk() {
 
     return (
       <div className="mt-5 rounded-2xl bg-black/20 ring-1 ring-white/10 p-4">
-        <div className="text-sm font-semibold text-slate-100">Related CV examples</div>
+        <div className="text-sm font-semibold text-slate-100">
+          Related CV examples
+        </div>
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
           {items.map((it) => (
             <Link
@@ -751,7 +1072,10 @@ export default function CvExamplesUk() {
           <section className="mt-14">
             <h2 className="text-2xl font-bold">Common UK CV Mistakes to Avoid</h2>
             <ul className="mt-4 list-disc pl-6 space-y-2 text-slate-300">
-              <li>Using a messy layout that’s hard to scan (keep headings clear)</li>
+              <li>
+                Using a messy layout that&apos;s hard to scan (keep headings
+                clear)
+              </li>
               <li>Writing long paragraphs instead of short bullet points</li>
               <li>Not tailoring the personal statement to the role</li>
               <li>Missing key keywords from the job description</li>
@@ -766,7 +1090,9 @@ export default function CvExamplesUk() {
             <div className="mt-6 space-y-12">
               {/* ===== Group: Logistics & Physical ===== */}
               <div className="rounded-3xl bg-white/5 ring-1 ring-white/10 p-6">
-                <h3 className="text-lg font-bold">Logistics &amp; Physical Roles</h3>
+                <h3 className="text-lg font-bold">
+                  Logistics &amp; Physical Roles
+                </h3>
                 <p className="mt-2 text-slate-300">
                   Roles focused on reliability, pace, safety, and practical work.
                   Use numbers where possible (drops/day, orders/day, sites worked).
@@ -878,7 +1204,7 @@ export default function CvExamplesUk() {
                     <p className="mt-2 text-slate-300">
                       Highlight pace, accuracy, quality checks, and safe working.
                       Mention shift reliability, line work, targets, and any basic
-                      machine operation you’ve done.
+                      machine operation you&apos;ve done.
                     </p>
                     <Link
                       href="/cv-examples/factory-operative-cv-example-uk"
@@ -891,7 +1217,9 @@ export default function CvExamplesUk() {
                   </div>
 
                   <div id="cleaner">
-                    <h4 className="text-xl font-semibold">Cleaner CV Example (UK)</h4>
+                    <h4 className="text-xl font-semibold">
+                      Cleaner CV Example (UK)
+                    </h4>
                     <p className="mt-2 text-slate-300">
                       Highlight reliability, attention to detail, hygiene standards,
                       and the ability to follow checklists and routines.
@@ -940,7 +1268,9 @@ export default function CvExamplesUk() {
 
                 <div className="mt-6 space-y-8">
                   <div id="retail">
-                    <h4 className="text-xl font-semibold">Retail CV Example (UK)</h4>
+                    <h4 className="text-xl font-semibold">
+                      Retail CV Example (UK)
+                    </h4>
                     <p className="mt-2 text-slate-300">
                       Highlight customer service, sales targets, cash handling, and
                       teamwork. Quantify performance where possible.
@@ -1012,7 +1342,9 @@ export default function CvExamplesUk() {
                   </div>
 
                   <div id="barista">
-                    <h4 className="text-xl font-semibold">Barista CV Example (UK)</h4>
+                    <h4 className="text-xl font-semibold">
+                      Barista CV Example (UK)
+                    </h4>
                     <p className="mt-2 text-slate-300">
                       Show speed during rush periods, consistency, customer service,
                       POS/till confidence, and clean station habits.
@@ -1069,7 +1401,9 @@ export default function CvExamplesUk() {
 
               {/* ===== Group: Care, Support & Education ===== */}
               <div className="rounded-3xl bg-white/5 ring-1 ring-white/10 p-6">
-                <h3 className="text-lg font-bold">Care, Support &amp; Education</h3>
+                <h3 className="text-lg font-bold">
+                  Care, Support &amp; Education
+                </h3>
                 <p className="mt-2 text-slate-300">
                   Prioritise safeguarding, empathy, accurate records, and clear
                   communication. Mention DBS/training if applicable.
@@ -1267,8 +1601,8 @@ export default function CvExamplesUk() {
             </ol>
 
             <p className="mt-4 text-slate-300 leading-relaxed">
-              If you want a deeper breakdown (length, layout, and what to
-              include), see{" "}
+              If you want a deeper breakdown (length, layout, and what to include),
+              see{" "}
               <Link
                 href="/cv-format-uk"
                 className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4"
@@ -1337,8 +1671,8 @@ export default function CvExamplesUk() {
                 className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4"
               >
                 UK CV template
-              </Link>
-              {" "}·{" "}
+              </Link>{" "}
+              ·{" "}
               <Link
                 href="/cv"
                 className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4"
