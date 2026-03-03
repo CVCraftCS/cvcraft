@@ -107,11 +107,21 @@ ADDITIONAL INFORMATION (optional)
         <title>{title}</title>
         <meta name="description" content={description} />
         <link rel="canonical" href={canonical} />
+
+        {/* Open Graph */}
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
         <meta property="og:url" content={canonical} />
         <meta property="og:image" content={ogImage} />
+        <meta property="og:type" content="website" />
+
+        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={ogImage} />
+
+        {/* FAQ schema */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
@@ -143,7 +153,14 @@ ADDITIONAL INFORMATION (optional)
             roles.
           </p>
 
-          <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div
+            style={{
+              marginTop: 14,
+              display: "flex",
+              gap: 10,
+              flexWrap: "wrap",
+            }}
+          >
             <Link
               href="/cv"
               style={{
@@ -249,7 +266,7 @@ ADDITIONAL INFORMATION (optional)
               “high pick accuracy”, “met daily KPIs”.
             </li>
             <li>
-              Keep work history bullet points <strong>task + tool + outcome</strong>
+              Keep work history bullet points <strong>task + tool + outcome</strong>{" "}
               (e.g., “picked using RF scanner to meet dispatch deadlines”).
             </li>
             <li>
@@ -264,9 +281,7 @@ ADDITIONAL INFORMATION (optional)
 
         {/* Internal links */}
         <section style={{ marginTop: 26 }}>
-          <h2 style={{ fontSize: 22, margin: "0 0 10px" }}>
-            More UK CV examples
-          </h2>
+          <h2 style={{ fontSize: 22, margin: "0 0 10px" }}>More UK CV examples</h2>
           <div style={{ display: "grid", gap: 10 }}>
             <Link href="/cv-examples/order-picker-cv-example-uk">
               Order Picker CV Example (UK)
@@ -316,9 +331,7 @@ ADDITIONAL INFORMATION (optional)
             background: "rgba(0,0,0,0.02)",
           }}
         >
-          <h2 style={{ fontSize: 22, margin: "0 0 8px" }}>
-            Build your CV in minutes
-          </h2>
+          <h2 style={{ fontSize: 22, margin: "0 0 8px" }}>Build your CV in minutes</h2>
           <p style={{ margin: "0 0 12px", lineHeight: 1.6 }}>
             Use the builder to generate a recruiter-ready CV with clean UK
             formatting.
