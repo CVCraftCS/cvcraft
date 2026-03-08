@@ -6,14 +6,10 @@ export default function CvExamplesUk() {
   const title =
     "CV Examples UK (2026) | UK CV Templates & Job-Specific Samples | CVCraft Classroom";
 
-  // ✅ Updated: mentions the free cover letter (truthful + higher-intent)
   const description =
     "Browse real UK CV examples for warehouse, retail, customer service, care, cleaning, admin and more. See job-specific CV samples, then build a recruiter-ready CV — plus generate a free cover letter in minutes.";
 
   const canonical = "https://www.cvcraftclassroom.com/cv-examples-uk";
-
-  // Optional OG image (add this file later if you want)
-  // Create: /public/og/og-default.png
   const ogImage = "https://www.cvcraftclassroom.com/og/og-default.png";
 
   const faqItems = [
@@ -42,7 +38,6 @@ export default function CvExamplesUk() {
       answer:
         "Yes. Copy the structure, then rewrite the content so it reflects your real experience and matches the job description.",
     },
-    // ✅ Added: matches “template/layout/certificates” intent (and your GSC queries)
     {
       question: "Can I use a CV template in the UK?",
       answer:
@@ -54,9 +49,14 @@ export default function CvExamplesUk() {
         "A clean, single-column layout works best: short profile, skills, experience with bullet points, then qualifications. Avoid heavy graphics that can confuse ATS systems.",
     },
     {
-      question: "Should I include certificates like CSCS/DBS/SIA on my CV?",
+      question: "Should I include certificates like CSCS, DBS, or SIA on my CV?",
       answer:
-        "Yes. If a role requires a certificate, list it clearly under Qualifications/Training so employers can confirm you meet the requirements quickly.",
+        "Yes. If a role requires a certificate, list it clearly under Qualifications or Training so employers can confirm you meet the requirements quickly.",
+    },
+    {
+      question: "How do I write a CV for a kitchen assistant job with no experience?",
+      answer:
+        "Focus on reliability, hygiene awareness, teamwork, and working at pace. Include transferable skills from school, volunteering, or other roles, and keep the layout simple and easy to scan.",
     },
   ];
 
@@ -73,8 +73,6 @@ export default function CvExamplesUk() {
     })),
   };
 
-  // ✅ NEW: TOC items now include a direct page link (extra internal links from the pillar)
-  // Grouped TOC (pro feel + clearer topical clustering)
   const tocGroups = [
     {
       title: "Logistics & Physical Roles",
@@ -85,14 +83,12 @@ export default function CvExamplesUk() {
           blurb: "Productivity, safety, order volumes",
           pageHref: "/cv-examples/warehouse-cv-example-uk",
         },
-        // ✅ NEW (from highlighted pages)
         {
           href: "#night-shift-warehouse",
           label: "Night Shift Warehouse Operative CV Example",
           blurb: "Night shift reliability, accuracy, pace",
           pageHref: "/cv-examples/night-shift-warehouse-operative-cv-example-uk",
         },
-        // ✅ NEW (from highlighted pages)
         {
           href: "#picker-packer",
           label: "Picker Packer CV Example",
@@ -106,10 +102,22 @@ export default function CvExamplesUk() {
           pageHref: "/cv-examples/delivery-driver-cv-example-uk",
         },
         {
+          href: "#labourer",
+          label: "Labourer CV Example",
+          blurb: "Manual work, site support, reliability",
+          pageHref: "/cv-examples/labourer-cv-example-uk",
+        },
+        {
           href: "#construction",
           label: "Construction Labourer CV Example",
           blurb: "Site safety, manual handling, teamwork",
           pageHref: "/cv-examples/construction-labourer-cv-example-uk",
+        },
+        {
+          href: "#groundworker",
+          label: "Groundworker CV Example",
+          blurb: "Groundworks, CSCS, drainage, site prep",
+          pageHref: "/cv-examples/groundworker-cv-example-uk",
         },
         {
           href: "#factory-operative",
@@ -118,12 +126,23 @@ export default function CvExamplesUk() {
           pageHref: "/cv-examples/factory-operative-cv-example-uk",
         },
         {
+          href: "#production-operative",
+          label: "Production Operative CV Example",
+          blurb: "Line work, targets, quality, safety",
+          pageHref: "/cv-examples/production-operative-cv-example-uk",
+        },
+        {
           href: "#cleaner",
           label: "Cleaner CV Example",
           blurb: "Checklists, hygiene, reliability",
           pageHref: "/cv-examples/cleaner-cv-example-uk",
         },
-        // ✅ NEW (from highlighted pages)
+        {
+          href: "#housekeeper",
+          label: "Housekeeper CV Example",
+          blurb: "Cleanliness, room standards, detail",
+          pageHref: "/cv-examples/housekeeper-cv-example-uk",
+        },
         {
           href: "#hotel-housekeeper",
           label: "Hotel Housekeeper CV Example",
@@ -188,7 +207,6 @@ export default function CvExamplesUk() {
           blurb: "Compassion, safeguarding, care records",
           pageHref: "/cv-examples/care-assistant-cv-example-uk",
         },
-        // ✅ NEW (from highlighted pages)
         {
           href: "#nhs-healthcare-assistant",
           label: "NHS Healthcare Assistant CV Example",
@@ -245,12 +263,6 @@ export default function CvExamplesUk() {
     },
   ];
 
-  /**
-   * ✅ Internal linking helper: “Related examples”
-   * Rule of thumb:
-   * - sideways links (related roles)
-   * - 1–2 links down (builder + template)
-   */
   const RELATED = {
     warehouse: [
       {
@@ -262,6 +274,10 @@ export default function CvExamplesUk() {
         label: "Picker Packer CV",
       },
       {
+        href: "/cv-examples/production-operative-cv-example-uk",
+        label: "Production Operative CV",
+      },
+      {
         href: "/cv-examples/delivery-driver-cv-example-uk",
         label: "Delivery Driver CV",
       },
@@ -270,13 +286,12 @@ export default function CvExamplesUk() {
         label: "Factory Operative CV",
       },
       {
+        href: "/cv-examples/labourer-cv-example-uk",
+        label: "Labourer CV",
+      },
+      {
         href: "/cv-examples/construction-labourer-cv-example-uk",
         label: "Construction Labourer CV",
-      },
-      { href: "/cv-examples/cleaner-cv-example-uk", label: "Cleaner CV" },
-      {
-        href: "/cv-examples/security-guard-cv-example-uk",
-        label: "Security Guard CV",
       },
       {
         href: "/cv-examples/no-experience-cv-example-uk",
@@ -284,7 +299,6 @@ export default function CvExamplesUk() {
       },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
-    // ✅ NEW
     "night-shift-warehouse": [
       { href: "/cv-examples/warehouse-cv-example-uk", label: "Warehouse CV" },
       {
@@ -292,6 +306,10 @@ export default function CvExamplesUk() {
         label: "Picker Packer CV",
       },
       {
+        href: "/cv-examples/production-operative-cv-example-uk",
+        label: "Production Operative CV",
+      },
+      {
         href: "/cv-examples/factory-operative-cv-example-uk",
         label: "Factory Operative CV",
       },
@@ -309,12 +327,15 @@ export default function CvExamplesUk() {
       },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
-    // ✅ NEW
     "picker-packer": [
       { href: "/cv-examples/warehouse-cv-example-uk", label: "Warehouse CV" },
       {
         href: "/cv-examples/night-shift-warehouse-operative-cv-example-uk",
         label: "Night Shift Warehouse Operative CV",
+      },
+      {
+        href: "/cv-examples/production-operative-cv-example-uk",
+        label: "Production Operative CV",
       },
       {
         href: "/cv-examples/factory-operative-cv-example-uk",
@@ -341,6 +362,10 @@ export default function CvExamplesUk() {
         label: "Picker Packer CV",
       },
       {
+        href: "/cv-examples/production-operative-cv-example-uk",
+        label: "Production Operative CV",
+      },
+      {
         href: "/cv-examples/factory-operative-cv-example-uk",
         label: "Factory Operative CV",
       },
@@ -362,12 +387,37 @@ export default function CvExamplesUk() {
       },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
-    construction: [
+    labourer: [
+      {
+        href: "/cv-examples/construction-labourer-cv-example-uk",
+        label: "Construction Labourer CV",
+      },
+      {
+        href: "/cv-examples/groundworker-cv-example-uk",
+        label: "Groundworker CV",
+      },
       { href: "/cv-examples/warehouse-cv-example-uk", label: "Warehouse CV" },
       {
-        href: "/cv-examples/night-shift-warehouse-operative-cv-example-uk",
-        label: "Night Shift Warehouse Operative CV",
+        href: "/cv-examples/factory-operative-cv-example-uk",
+        label: "Factory Operative CV",
       },
+      {
+        href: "/cv-examples/production-operative-cv-example-uk",
+        label: "Production Operative CV",
+      },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
+      { href: "/cv-template-uk", label: "UK CV Template" },
+    ],
+    construction: [
+      { href: "/cv-examples/labourer-cv-example-uk", label: "Labourer CV" },
+      {
+        href: "/cv-examples/groundworker-cv-example-uk",
+        label: "Groundworker CV",
+      },
+      { href: "/cv-examples/warehouse-cv-example-uk", label: "Warehouse CV" },
       {
         href: "/cv-examples/factory-operative-cv-example-uk",
         label: "Factory Operative CV",
@@ -387,8 +437,33 @@ export default function CvExamplesUk() {
       },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
+    groundworker: [
+      { href: "/cv-examples/labourer-cv-example-uk", label: "Labourer CV" },
+      {
+        href: "/cv-examples/construction-labourer-cv-example-uk",
+        label: "Construction Labourer CV",
+      },
+      { href: "/cv-examples/warehouse-cv-example-uk", label: "Warehouse CV" },
+      {
+        href: "/cv-examples/factory-operative-cv-example-uk",
+        label: "Factory Operative CV",
+      },
+      {
+        href: "/cv-examples/production-operative-cv-example-uk",
+        label: "Production Operative CV",
+      },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
+      { href: "/cv-template-uk", label: "UK CV Template" },
+    ],
     "factory-operative": [
       { href: "/cv-examples/warehouse-cv-example-uk", label: "Warehouse CV" },
+      {
+        href: "/cv-examples/production-operative-cv-example-uk",
+        label: "Production Operative CV",
+      },
       {
         href: "/cv-examples/night-shift-warehouse-operative-cv-example-uk",
         label: "Night Shift Warehouse Operative CV",
@@ -412,7 +487,32 @@ export default function CvExamplesUk() {
       },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
+    "production-operative": [
+      { href: "/cv-examples/factory-operative-cv-example-uk", label: "Factory Operative CV" },
+      { href: "/cv-examples/warehouse-cv-example-uk", label: "Warehouse CV" },
+      {
+        href: "/cv-examples/picker-packer-cv-example-uk",
+        label: "Picker Packer CV",
+      },
+      {
+        href: "/cv-examples/night-shift-warehouse-operative-cv-example-uk",
+        label: "Night Shift Warehouse Operative CV",
+      },
+      {
+        href: "/cv-examples/labourer-cv-example-uk",
+        label: "Labourer CV",
+      },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
+      { href: "/cv-template-uk", label: "UK CV Template" },
+    ],
     cleaner: [
+      {
+        href: "/cv-examples/housekeeper-cv-example-uk",
+        label: "Housekeeper CV",
+      },
       {
         href: "/cv-examples/hotel-housekeeper-cv-example-uk",
         label: "Hotel Housekeeper CV",
@@ -440,8 +540,8 @@ export default function CvExamplesUk() {
       },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
-    // ✅ NEW
-    "hotel-housekeeper": [
+    housekeeper: [
+      { href: "/cv-examples/hotel-housekeeper-cv-example-uk", label: "Hotel Housekeeper CV" },
       { href: "/cv-examples/cleaner-cv-example-uk", label: "Cleaner CV" },
       {
         href: "/cv-examples/kitchen-assistant-cv-example-uk",
@@ -458,7 +558,24 @@ export default function CvExamplesUk() {
       },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
-
+    "hotel-housekeeper": [
+      { href: "/cv-examples/housekeeper-cv-example-uk", label: "Housekeeper CV" },
+      { href: "/cv-examples/cleaner-cv-example-uk", label: "Cleaner CV" },
+      {
+        href: "/cv-examples/kitchen-assistant-cv-example-uk",
+        label: "Kitchen Assistant CV",
+      },
+      {
+        href: "/cv-examples/receptionist-cv-example-uk",
+        label: "Receptionist CV",
+      },
+      { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV" },
+      {
+        href: "/cv-examples/no-experience-cv-example-uk",
+        label: "No Experience CV",
+      },
+      { href: "/cv-template-uk", label: "UK CV Template" },
+    ],
     retail: [
       {
         href: "/cv-examples/sales-assistant-cv-example-uk",
@@ -468,7 +585,10 @@ export default function CvExamplesUk() {
         href: "/cv-examples/customer-service-cv-example-uk",
         label: "Customer Service CV",
       },
-      { href: "/cv-examples/call-centre-cv-example-uk", label: "Call Centre CV" },
+      {
+        href: "/cv-examples/call-centre-cv-example-uk",
+        label: "Call Centre CV",
+      },
       {
         href: "/cv-examples/receptionist-cv-example-uk",
         label: "Receptionist CV",
@@ -490,17 +610,26 @@ export default function CvExamplesUk() {
         href: "/cv-examples/customer-service-cv-example-uk",
         label: "Customer Service CV",
       },
-      { href: "/cv-examples/call-centre-cv-example-uk", label: "Call Centre CV" },
+      {
+        href: "/cv-examples/call-centre-cv-example-uk",
+        label: "Call Centre CV",
+      },
       {
         href: "/cv-examples/receptionist-cv-example-uk",
         label: "Receptionist CV",
       },
       { href: "/cv-examples/barista-cv-example-uk", label: "Barista CV" },
-      { href: "/cv-examples/cv-for-16-year-old-uk", label: "CV for 16 Year Old" },
+      {
+        href: "/cv-examples/cv-for-16-year-old-uk",
+        label: "CV for 16 Year Old",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
     "customer-service": [
-      { href: "/cv-examples/call-centre-cv-example-uk", label: "Call Centre CV" },
+      {
+        href: "/cv-examples/call-centre-cv-example-uk",
+        label: "Call Centre CV",
+      },
       { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV" },
       {
         href: "/cv-examples/receptionist-cv-example-uk",
@@ -562,12 +691,19 @@ export default function CvExamplesUk() {
         href: "/cv-examples/no-experience-cv-example-uk",
         label: "No Experience CV",
       },
-      { href: "/cv-examples/cv-for-16-year-old-uk", label: "CV for 16 Year Old" },
+      {
+        href: "/cv-examples/cv-for-16-year-old-uk",
+        label: "CV for 16 Year Old",
+      },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
     "kitchen-assistant": [
       { href: "/cv-examples/barista-cv-example-uk", label: "Barista CV" },
       { href: "/cv-examples/cleaner-cv-example-uk", label: "Cleaner CV" },
+      {
+        href: "/cv-examples/housekeeper-cv-example-uk",
+        label: "Housekeeper CV",
+      },
       {
         href: "/cv-examples/hotel-housekeeper-cv-example-uk",
         label: "Hotel Housekeeper CV",
@@ -588,7 +724,10 @@ export default function CvExamplesUk() {
         href: "/cv-examples/admin-assistant-cv-example-uk",
         label: "Admin Assistant CV",
       },
-      { href: "/cv-examples/call-centre-cv-example-uk", label: "Call Centre CV" },
+      {
+        href: "/cv-examples/call-centre-cv-example-uk",
+        label: "Call Centre CV",
+      },
       {
         href: "/cv-examples/customer-service-cv-example-uk",
         label: "Customer Service CV",
@@ -604,7 +743,6 @@ export default function CvExamplesUk() {
       },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
-
     "care-assistant": [
       {
         href: "/cv-examples/nhs-healthcare-assistant-cv-example-uk",
@@ -629,7 +767,6 @@ export default function CvExamplesUk() {
       },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
-    // ✅ NEW
     "nhs-healthcare-assistant": [
       {
         href: "/cv-examples/care-assistant-cv-example-uk",
@@ -728,13 +865,15 @@ export default function CvExamplesUk() {
       },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
-
     admin: [
       {
         href: "/cv-examples/receptionist-cv-example-uk",
         label: "Receptionist CV",
       },
-      { href: "/cv-examples/call-centre-cv-example-uk", label: "Call Centre CV" },
+      {
+        href: "/cv-examples/call-centre-cv-example-uk",
+        label: "Call Centre CV",
+      },
       {
         href: "/cv-examples/customer-service-cv-example-uk",
         label: "Customer Service CV",
@@ -750,9 +889,11 @@ export default function CvExamplesUk() {
       },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
-
     "no-experience": [
-      { href: "/cv-examples/cv-for-16-year-old-uk", label: "CV for 16 Year Old" },
+      {
+        href: "/cv-examples/cv-for-16-year-old-uk",
+        label: "CV for 16 Year Old",
+      },
       { href: "/cv-examples/retail-cv-example-uk", label: "Retail CV" },
       {
         href: "/cv-examples/sales-assistant-cv-example-uk",
@@ -762,11 +903,18 @@ export default function CvExamplesUk() {
         href: "/cv-examples/customer-service-cv-example-uk",
         label: "Customer Service CV",
       },
-      { href: "/cv-examples/call-centre-cv-example-uk", label: "Call Centre CV" },
+      {
+        href: "/cv-examples/call-centre-cv-example-uk",
+        label: "Call Centre CV",
+      },
       { href: "/cv-examples/warehouse-cv-example-uk", label: "Warehouse CV" },
       {
         href: "/cv-examples/picker-packer-cv-example-uk",
         label: "Picker Packer CV",
+      },
+      {
+        href: "/cv-examples/kitchen-assistant-cv-example-uk",
+        label: "Kitchen Assistant CV",
       },
       { href: "/cv-template-uk", label: "UK CV Template" },
     ],
@@ -798,7 +946,7 @@ export default function CvExamplesUk() {
     if (!items.length) return null;
 
     return (
-      <div className="mt-5 rounded-2xl bg-black/20 ring-1 ring-white/10 p-4">
+      <div className="mt-5 rounded-2xl bg-black/20 p-4 ring-1 ring-white/10">
         <div className="text-sm font-semibold text-slate-100">
           Related CV examples
         </div>
@@ -807,23 +955,23 @@ export default function CvExamplesUk() {
             <Link
               key={`${anchorKey}-${it.href}`}
               href={it.href}
-              className="rounded-xl bg-black/20 ring-1 ring-white/10 px-4 py-3 text-sm text-slate-200 hover:bg-black/30 transition"
+              className="rounded-xl bg-black/20 px-4 py-3 text-sm text-slate-200 ring-1 ring-white/10 transition hover:bg-black/30"
             >
               {it.label} →
             </Link>
           ))}
         </div>
 
-        <div className="mt-4 flex flex-col sm:flex-row gap-2">
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
           <Link
             href="/cv"
-            className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-2.5 font-semibold text-slate-950 hover:bg-slate-200 transition"
+            className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-2.5 font-semibold text-slate-950 transition hover:bg-slate-200"
           >
             Build your CV →
           </Link>
           <Link
             href="/cover-letter"
-            className="inline-flex items-center justify-center rounded-xl bg-white/5 ring-1 ring-white/10 px-5 py-2.5 font-semibold text-white hover:bg-white/10 transition"
+            className="inline-flex items-center justify-center rounded-xl bg-white/5 px-5 py-2.5 font-semibold text-white ring-1 ring-white/10 transition hover:bg-white/10"
           >
             Free cover letter →
           </Link>
@@ -840,20 +988,17 @@ export default function CvExamplesUk() {
         <meta name="robots" content="index,follow" />
         <link rel="canonical" href={canonical} />
 
-        {/* Open Graph */}
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={canonical} />
         <meta property="og:image" content={ogImage} />
 
-        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
         <meta name="twitter:image" content={ogImage} />
 
-        {/* FAQ Schema */}
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
@@ -861,34 +1006,35 @@ export default function CvExamplesUk() {
         />
       </Head>
 
-      <main className="min-h-screen bg-slate-950 text-white px-6 py-14">
+      <main className="min-h-screen bg-slate-950 px-6 py-14 text-white">
         <div className="mx-auto max-w-4xl">
-          {/* Breadcrumbs */}
           <nav className="text-sm text-slate-400">
-            <Link href="/" className="hover:text-white underline underline-offset-4">
+            <Link
+              href="/"
+              className="underline underline-offset-4 hover:text-white"
+            >
               Home
             </Link>{" "}
             <span className="mx-2">→</span>
             <span className="text-slate-200">CV Examples UK</span>
           </nav>
 
-          {/* H1 */}
           <h1 className="mt-4 text-4xl font-bold tracking-tight">
             UK CV Examples (2026 Guide)
           </h1>
 
-          {/* 🔥 SEO authority intro */}
-          <section className="mt-6 space-y-4 text-slate-300 leading-relaxed text-lg">
+          <section className="mt-6 space-y-4 text-lg leading-relaxed text-slate-300">
             <p>
               Looking for real UK CV examples you can actually use? This page
               contains job-specific CV examples for the UK, including warehouse,
-              retail, customer service, care assistant, delivery driver, admin,
-              cleaning, and more.
+              labourer, groundworker, production operative, retail, customer
+              service, care assistant, delivery driver, admin, cleaning, and
+              more.
             </p>
 
             <p>
               Each example follows the correct UK CV format and shows you how to
-              structure your personal statement, employment history, skills and
+              structure your personal statement, employment history, skills, and
               qualifications clearly. Whether you&apos;re applying for your
               first job or updating your CV for a new role, these examples help
               you write a professional, recruiter-friendly CV.
@@ -914,8 +1060,7 @@ export default function CvExamplesUk() {
             </p>
           </section>
 
-          {/* ✅ NEW: Most popular / highest-intent links near the top */}
-          <section className="mt-10 rounded-3xl bg-black/20 ring-1 ring-white/10 p-6">
+          <section className="mt-10 rounded-3xl bg-black/20 p-6 ring-1 ring-white/10">
             <h2 className="text-xl font-bold">Most Popular CV Examples</h2>
             <p className="mt-2 text-slate-300">
               Quick links to high-intent UK roles and formats.
@@ -923,59 +1068,57 @@ export default function CvExamplesUk() {
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <Link
-                className="rounded-xl bg-black/20 ring-1 ring-white/10 px-4 py-3 hover:bg-black/30 transition"
-                href="/cv-examples/construction-labourer-cv-example-uk"
+                className="rounded-xl bg-black/20 px-4 py-3 ring-1 ring-white/10 transition hover:bg-black/30"
+                href="/cv-examples/kitchen-assistant-cv-example-uk"
               >
-                Construction Labourer CV →
+                Kitchen Assistant CV →
               </Link>
               <Link
-                className="rounded-xl bg-black/20 ring-1 ring-white/10 px-4 py-3 hover:bg-black/30 transition"
-                href="/cv-examples/warehouse-cv-example-uk"
+                className="rounded-xl bg-black/20 px-4 py-3 ring-1 ring-white/10 transition hover:bg-black/30"
+                href="/cv-examples/labourer-cv-example-uk"
               >
-                Warehouse CV →
+                Labourer CV →
               </Link>
               <Link
-                className="rounded-xl bg-black/20 ring-1 ring-white/10 px-4 py-3 hover:bg-black/30 transition"
-                href="/cv-examples/receptionist-cv-example-uk"
+                className="rounded-xl bg-black/20 px-4 py-3 ring-1 ring-white/10 transition hover:bg-black/30"
+                href="/cv-examples/groundworker-cv-example-uk"
               >
-                Receptionist CV →
+                Groundworker CV →
               </Link>
               <Link
-                className="rounded-xl bg-black/20 ring-1 ring-white/10 px-4 py-3 hover:bg-black/30 transition"
-                href="/cv-format-uk"
+                className="rounded-xl bg-black/20 px-4 py-3 ring-1 ring-white/10 transition hover:bg-black/30"
+                href="/cv-examples/production-operative-cv-example-uk"
               >
-                Best UK CV Format →
+                Production Operative CV →
               </Link>
             </div>
           </section>
 
-          {/* Primary CTAs */}
-          <div className="mt-6 flex flex-col sm:flex-row gap-3">
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Link
               href="/cv"
-              className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 hover:bg-slate-200 transition"
+              className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200"
             >
               Build your CV now →
             </Link>
 
             <Link
               href="/cover-letter"
-              className="inline-flex items-center justify-center rounded-xl bg-white/5 ring-1 ring-white/10 px-6 py-3 font-semibold text-white hover:bg-white/10 transition"
+              className="inline-flex items-center justify-center rounded-xl bg-white/5 px-6 py-3 font-semibold text-white ring-1 ring-white/10 transition hover:bg-white/10"
             >
               Free cover letter →
             </Link>
 
             <Link
               href="/cv-template-uk"
-              className="inline-flex items-center justify-center rounded-xl bg-white/5 ring-1 ring-white/10 px-6 py-3 font-semibold text-white hover:bg-white/10 transition"
+              className="inline-flex items-center justify-center rounded-xl bg-white/5 px-6 py-3 font-semibold text-white ring-1 ring-white/10 transition hover:bg-white/10"
             >
               UK CV template →
             </Link>
           </div>
 
-          {/* Grouped Table of contents */}
-          <section className="mt-10 rounded-3xl bg-white/5 ring-1 ring-white/10 p-6">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <section className="mt-10 rounded-3xl bg-white/5 p-6 ring-1 ring-white/10">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h2 className="text-xl font-bold">Jump to a CV example</h2>
                 <p className="mt-2 text-slate-300">
@@ -985,7 +1128,7 @@ export default function CvExamplesUk() {
 
               <a
                 href="#examples"
-                className="text-sm text-emerald-400 hover:text-emerald-300 underline underline-offset-4"
+                className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
               >
                 Skip to full examples ↓
               </a>
@@ -995,17 +1138,16 @@ export default function CvExamplesUk() {
               {tocGroups.map((group) => (
                 <div
                   key={group.title}
-                  className="rounded-2xl bg-black/20 ring-1 ring-white/10 p-5"
+                  className="rounded-2xl bg-black/20 p-5 ring-1 ring-white/10"
                 >
                   <h3 className="text-base font-semibold text-slate-100">
                     {group.title}
                   </h3>
 
-                  <ul className="mt-4 grid gap-3 sm:grid-cols-2 text-sm">
+                  <ul className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
                     {group.items.map((item) => (
                       <li key={item.href}>
-                        <div className="rounded-xl bg-black/20 ring-1 ring-white/10 p-4 hover:bg-black/30 transition">
-                          {/* Anchor jump */}
+                        <div className="rounded-xl bg-black/20 p-4 ring-1 ring-white/10 transition hover:bg-black/30">
                           <a href={item.href} className="block">
                             <span className="font-semibold">{item.label}</span>
                             <span className="mt-1 block text-slate-300">
@@ -1013,11 +1155,10 @@ export default function CvExamplesUk() {
                             </span>
                           </a>
 
-                          {/* ✅ Direct internal link to the actual CV page */}
                           {item.pageHref ? (
                             <Link
                               href={item.pageHref}
-                              className="mt-3 inline-block text-emerald-400 hover:text-emerald-300 underline underline-offset-4"
+                              className="mt-3 inline-block text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                             >
                               View guide →
                             </Link>
@@ -1031,10 +1172,9 @@ export default function CvExamplesUk() {
             </div>
           </section>
 
-          {/* How to use these examples */}
           <section className="mt-14">
             <h2 className="text-2xl font-bold">How to Use These UK CV Examples</h2>
-            <p className="mt-3 text-slate-300 leading-relaxed">
+            <p className="mt-3 leading-relaxed text-slate-300">
               The best way to use a CV example is to copy the structure, then
               rewrite the wording so it matches your real experience. Aim for:
               clear headings, short bullet points, and proof you can do the job.
@@ -1050,52 +1190,49 @@ export default function CvExamplesUk() {
             </p>
           </section>
 
-          {/* Section: What makes a good UK CV */}
           <section className="mt-14">
             <h2 className="text-2xl font-bold">What Makes a Good UK CV?</h2>
-            <p className="mt-3 text-slate-300 leading-relaxed">
-              A strong UK CV should be clear, structured and easy to scan. Most
+            <p className="mt-3 leading-relaxed text-slate-300">
+              A strong UK CV should be clear, structured, and easy to scan. Most
               recruiters spend less than 30 seconds reviewing a CV. That means
               formatting and clarity matter just as much as content.
             </p>
 
-            <ul className="mt-4 list-disc pl-6 space-y-2 text-slate-300">
+            <ul className="mt-4 list-disc space-y-2 pl-6 text-slate-300">
               <li>Keep it to 1–2 pages maximum</li>
               <li>Use clear section headings</li>
-              <li>Include measurable achievements (numbers help)</li>
+              <li>Include measurable achievements where possible</li>
               <li>Tailor it to the job role</li>
               <li>Use UK spelling and formatting</li>
             </ul>
           </section>
 
-          {/* ✅ NEW: Pillar-level mistakes section */}
           <section className="mt-14">
             <h2 className="text-2xl font-bold">Common UK CV Mistakes to Avoid</h2>
-            <ul className="mt-4 list-disc pl-6 space-y-2 text-slate-300">
+            <ul className="mt-4 list-disc space-y-2 pl-6 text-slate-300">
               <li>
-                Using a messy layout that&apos;s hard to scan (keep headings
-                clear)
+                Using a messy layout that&apos;s hard to scan instead of clear
+                headings
               </li>
               <li>Writing long paragraphs instead of short bullet points</li>
               <li>Not tailoring the personal statement to the role</li>
               <li>Missing key keywords from the job description</li>
-              <li>Forgetting certificates/tickets (CSCS, DBS, SIA, first aid)</li>
+              <li>Forgetting certificates or tickets like CSCS, DBS, SIA, or first aid</li>
             </ul>
           </section>
 
-          {/* Section: Example Types */}
           <section className="mt-14" id="examples">
             <h2 className="text-2xl font-bold">UK CV Example Types</h2>
 
             <div className="mt-6 space-y-12">
-              {/* ===== Group: Logistics & Physical ===== */}
-              <div className="rounded-3xl bg-white/5 ring-1 ring-white/10 p-6">
+              <div className="rounded-3xl bg-white/5 p-6 ring-1 ring-white/10">
                 <h3 className="text-lg font-bold">
                   Logistics &amp; Physical Roles
                 </h3>
                 <p className="mt-2 text-slate-300">
                   Roles focused on reliability, pace, safety, and practical work.
-                  Use numbers where possible (drops/day, orders/day, sites worked).
+                  Use numbers where possible, such as drops per day, orders per
+                  shift, or sites worked.
                 </p>
 
                 <div className="mt-6 space-y-8">
@@ -1104,13 +1241,13 @@ export default function CvExamplesUk() {
                       Warehouse CV Example (UK)
                     </h4>
                     <p className="mt-2 text-slate-300">
-                      Focus on productivity, order accuracy, safety awareness and
-                      teamwork. Mention daily order volumes, stock control systems
-                      and physical workload.
+                      Focus on productivity, order accuracy, safety awareness,
+                      and teamwork. Mention daily order volumes, stock control
+                      systems, and physical workload.
                     </p>
                     <Link
                       href="/cv-examples/warehouse-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View warehouse CV guide →
                     </Link>
@@ -1118,7 +1255,6 @@ export default function CvExamplesUk() {
                     <RelatedExamples anchorKey="warehouse" />
                   </div>
 
-                  {/* ✅ NEW (from highlighted pages) */}
                   <div id="night-shift-warehouse">
                     <h4 className="text-xl font-semibold">
                       Night Shift Warehouse Operative CV Example (UK)
@@ -1126,12 +1262,12 @@ export default function CvExamplesUk() {
                     <p className="mt-2 text-slate-300">
                       Emphasise night shift reliability, accuracy under pressure,
                       and the ability to hit targets with minimal supervision.
-                      Mention picking/packing, scanning, loading, and safety checks
-                      if relevant.
+                      Mention picking, packing, scanning, loading, and safety
+                      checks if relevant.
                     </p>
                     <Link
                       href="/cv-examples/night-shift-warehouse-operative-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View night shift warehouse operative CV guide →
                     </Link>
@@ -1139,19 +1275,18 @@ export default function CvExamplesUk() {
                     <RelatedExamples anchorKey="night-shift-warehouse" />
                   </div>
 
-                  {/* ✅ NEW (from highlighted pages) */}
                   <div id="picker-packer">
                     <h4 className="text-xl font-semibold">
                       Picker Packer CV Example (UK)
                     </h4>
                     <p className="mt-2 text-slate-300">
-                      Focus on picking accuracy, speed, scanning systems (RF guns),
-                      meeting KPIs/targets, and keeping quality high. Mention any
+                      Focus on picking accuracy, speed, scanning systems, meeting
+                      KPIs or targets, and keeping quality high. Mention any
                       experience with returns, dispatch, or stock rotation.
                     </p>
                     <Link
                       href="/cv-examples/picker-packer-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View picker packer CV guide →
                     </Link>
@@ -1165,12 +1300,12 @@ export default function CvExamplesUk() {
                     </h4>
                     <p className="mt-2 text-slate-300">
                       Highlight safe driving, timekeeping, route planning, proof
-                      of delivery, and good customer service. Mention licence type,
-                      van experience, and any multi-drop work.
+                      of delivery, and good customer service. Mention licence
+                      type, van experience, and any multi-drop work.
                     </p>
                     <Link
                       href="/cv-examples/delivery-driver-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View delivery driver CV guide →
                     </Link>
@@ -1178,17 +1313,37 @@ export default function CvExamplesUk() {
                     <RelatedExamples anchorKey="delivery-driver" />
                   </div>
 
+                  <div id="labourer">
+                    <h4 className="text-xl font-semibold">
+                      Labourer CV Example (UK)
+                    </h4>
+                    <p className="mt-2 text-slate-300">
+                      Highlight physical reliability, manual handling, teamwork,
+                      following instructions, and keeping work areas safe and
+                      organised. Mention site support, loading, unloading, and
+                      any tickets if you have them.
+                    </p>
+                    <Link
+                      href="/cv-examples/labourer-cv-example-uk"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
+                    >
+                      View labourer CV guide →
+                    </Link>
+
+                    <RelatedExamples anchorKey="labourer" />
+                  </div>
+
                   <div id="construction">
                     <h4 className="text-xl font-semibold">
                       Construction Labourer CV Example (UK)
                     </h4>
                     <p className="mt-2 text-slate-300">
-                      Focus on site safety, manual handling, assisting trades, and
-                      reliability. Mention CSCS if you have it.
+                      Focus on site safety, manual handling, assisting trades,
+                      and reliability. Mention CSCS if you have it.
                     </p>
                     <Link
                       href="/cv-examples/construction-labourer-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View construction labourer CV guide →
                     </Link>
@@ -1196,19 +1351,38 @@ export default function CvExamplesUk() {
                     <RelatedExamples anchorKey="construction" />
                   </div>
 
-                  {/* ✅ NEW */}
+                  <div id="groundworker">
+                    <h4 className="text-xl font-semibold">
+                      Groundworker CV Example (UK)
+                    </h4>
+                    <p className="mt-2 text-slate-300">
+                      Highlight groundwork tasks such as drainage, trenching,
+                      kerbing, concreting, site preparation, and working safely
+                      around plant and utilities. Mention CSCS and any plant or
+                      streetworks tickets if relevant.
+                    </p>
+                    <Link
+                      href="/cv-examples/groundworker-cv-example-uk"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
+                    >
+                      View groundworker CV guide →
+                    </Link>
+
+                    <RelatedExamples anchorKey="groundworker" />
+                  </div>
+
                   <div id="factory-operative">
                     <h4 className="text-xl font-semibold">
                       Factory Operative CV Example (UK)
                     </h4>
                     <p className="mt-2 text-slate-300">
                       Highlight pace, accuracy, quality checks, and safe working.
-                      Mention shift reliability, line work, targets, and any basic
-                      machine operation you&apos;ve done.
+                      Mention shift reliability, line work, targets, and any
+                      basic machine operation you&apos;ve done.
                     </p>
                     <Link
                       href="/cv-examples/factory-operative-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View factory operative CV guide →
                     </Link>
@@ -1216,17 +1390,38 @@ export default function CvExamplesUk() {
                     <RelatedExamples anchorKey="factory-operative" />
                   </div>
 
+                  <div id="production-operative">
+                    <h4 className="text-xl font-semibold">
+                      Production Operative CV Example (UK)
+                    </h4>
+                    <p className="mt-2 text-slate-300">
+                      Emphasise production line work, hitting targets, quality
+                      control, hygiene or safety procedures, and reliable shift
+                      attendance. Mention packaging, machine feeding, or end-of-line
+                      checks if relevant.
+                    </p>
+                    <Link
+                      href="/cv-examples/production-operative-cv-example-uk"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
+                    >
+                      View production operative CV guide →
+                    </Link>
+
+                    <RelatedExamples anchorKey="production-operative" />
+                  </div>
+
                   <div id="cleaner">
                     <h4 className="text-xl font-semibold">
                       Cleaner CV Example (UK)
                     </h4>
                     <p className="mt-2 text-slate-300">
-                      Highlight reliability, attention to detail, hygiene standards,
-                      and the ability to follow checklists and routines.
+                      Highlight reliability, attention to detail, hygiene
+                      standards, and the ability to follow checklists and
+                      routines.
                     </p>
                     <Link
                       href="/cv-examples/cleaner-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View cleaner CV guide →
                     </Link>
@@ -1234,19 +1429,37 @@ export default function CvExamplesUk() {
                     <RelatedExamples anchorKey="cleaner" />
                   </div>
 
-                  {/* ✅ NEW (from highlighted pages) */}
+                  <div id="housekeeper">
+                    <h4 className="text-xl font-semibold">
+                      Housekeeper CV Example (UK)
+                    </h4>
+                    <p className="mt-2 text-slate-300">
+                      Highlight cleanliness standards, attention to detail, room
+                      presentation, and working efficiently to checklists. Mention
+                      laundry, restocking, or guest-facing duties where relevant.
+                    </p>
+                    <Link
+                      href="/cv-examples/housekeeper-cv-example-uk"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
+                    >
+                      View housekeeper CV guide →
+                    </Link>
+
+                    <RelatedExamples anchorKey="housekeeper" />
+                  </div>
+
                   <div id="hotel-housekeeper">
                     <h4 className="text-xl font-semibold">
                       Hotel Housekeeper CV Example (UK)
                     </h4>
                     <p className="mt-2 text-slate-300">
                       Highlight high standards, speed, and attention to detail.
-                      Mention room turnaround, checklists, handling guest requests,
-                      linen routines, and working to brand standards.
+                      Mention room turnaround, checklists, handling guest
+                      requests, linen routines, and working to brand standards.
                     </p>
                     <Link
                       href="/cv-examples/hotel-housekeeper-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View hotel housekeeper CV guide →
                     </Link>
@@ -1256,14 +1469,13 @@ export default function CvExamplesUk() {
                 </div>
               </div>
 
-              {/* ===== Group: Retail & Customer-Facing ===== */}
-              <div className="rounded-3xl bg-white/5 ring-1 ring-white/10 p-6">
+              <div className="rounded-3xl bg-white/5 p-6 ring-1 ring-white/10">
                 <h3 className="text-lg font-bold">
                   Retail &amp; Customer-Facing Roles
                 </h3>
                 <p className="mt-2 text-slate-300">
-                  Emphasise customer service, speed, accuracy, and hitting targets.
-                  Use metrics (sales, baskets, upsells, satisfaction scores).
+                  Emphasise customer service, speed, accuracy, and hitting
+                  targets. Use metrics where possible.
                 </p>
 
                 <div className="mt-6 space-y-8">
@@ -1272,12 +1484,12 @@ export default function CvExamplesUk() {
                       Retail CV Example (UK)
                     </h4>
                     <p className="mt-2 text-slate-300">
-                      Highlight customer service, sales targets, cash handling, and
-                      teamwork. Quantify performance where possible.
+                      Highlight customer service, sales targets, cash handling,
+                      and teamwork. Quantify performance where possible.
                     </p>
                     <Link
                       href="/cv-examples/retail-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View retail CV guide →
                     </Link>
@@ -1290,12 +1502,12 @@ export default function CvExamplesUk() {
                       Sales Assistant CV Example (UK)
                     </h4>
                     <p className="mt-2 text-slate-300">
-                      Focus on customer service, till confidence, store standards,
-                      and working to targets/KPIs where relevant.
+                      Focus on customer service, till confidence, store
+                      standards, and working to targets or KPIs where relevant.
                     </p>
                     <Link
                       href="/cv-examples/sales-assistant-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View sales assistant CV guide →
                     </Link>
@@ -1313,7 +1525,7 @@ export default function CvExamplesUk() {
                     </p>
                     <Link
                       href="/cv-examples/customer-service-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View customer service CV guide →
                     </Link>
@@ -1321,19 +1533,18 @@ export default function CvExamplesUk() {
                     <RelatedExamples anchorKey="customer-service" />
                   </div>
 
-                  {/* ✅ NEW */}
                   <div id="call-centre">
                     <h4 className="text-xl font-semibold">
                       Call Centre CV Example (UK)
                     </h4>
                     <p className="mt-2 text-slate-300">
                       Show calm communication, fast systems use, and working to
-                      KPIs. Mention CRM tools, note taking, and complaint handling
-                      if relevant.
+                      KPIs. Mention CRM tools, note taking, and complaint
+                      handling if relevant.
                     </p>
                     <Link
                       href="/cv-examples/call-centre-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View call centre CV guide →
                     </Link>
@@ -1346,12 +1557,12 @@ export default function CvExamplesUk() {
                       Barista CV Example (UK)
                     </h4>
                     <p className="mt-2 text-slate-300">
-                      Show speed during rush periods, consistency, customer service,
-                      POS/till confidence, and clean station habits.
+                      Show speed during rush periods, consistency, customer
+                      service, POS confidence, and clean station habits.
                     </p>
                     <Link
                       href="/cv-examples/barista-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View barista CV guide →
                     </Link>
@@ -1359,19 +1570,19 @@ export default function CvExamplesUk() {
                     <RelatedExamples anchorKey="barista" />
                   </div>
 
-                  {/* ✅ NEW */}
                   <div id="kitchen-assistant">
                     <h4 className="text-xl font-semibold">
                       Kitchen Assistant CV Example (UK)
                     </h4>
                     <p className="mt-2 text-slate-300">
                       Highlight hygiene, prep work, speed, teamwork, and staying
-                      organised during busy service. Mention food safety awareness
-                      and keeping stations clean.
+                      organised during busy service. Mention food safety
+                      awareness and keeping stations clean. This is also a strong
+                      option for entry-level applicants with no direct experience.
                     </p>
                     <Link
                       href="/cv-examples/kitchen-assistant-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View kitchen assistant CV guide →
                     </Link>
@@ -1385,11 +1596,11 @@ export default function CvExamplesUk() {
                     </h4>
                     <p className="mt-2 text-slate-300">
                       Show professionalism, call handling, diary management, and
-                      confidentiality — plus strong organisation.
+                      confidentiality, plus strong organisation.
                     </p>
                     <Link
                       href="/cv-examples/receptionist-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View receptionist CV guide →
                     </Link>
@@ -1399,14 +1610,13 @@ export default function CvExamplesUk() {
                 </div>
               </div>
 
-              {/* ===== Group: Care, Support & Education ===== */}
-              <div className="rounded-3xl bg-white/5 ring-1 ring-white/10 p-6">
+              <div className="rounded-3xl bg-white/5 p-6 ring-1 ring-white/10">
                 <h3 className="text-lg font-bold">
                   Care, Support &amp; Education
                 </h3>
                 <p className="mt-2 text-slate-300">
                   Prioritise safeguarding, empathy, accurate records, and clear
-                  communication. Mention DBS/training if applicable.
+                  communication. Mention DBS or training if applicable.
                 </p>
 
                 <div className="mt-6 space-y-8">
@@ -1415,12 +1625,13 @@ export default function CvExamplesUk() {
                       Care Assistant CV Example (UK)
                     </h4>
                     <p className="mt-2 text-slate-300">
-                      Focus on compassion, safeguarding awareness, personal care,
-                      clear documentation and supporting vulnerable individuals.
+                      Focus on compassion, safeguarding awareness, personal
+                      care, clear documentation, and supporting vulnerable
+                      individuals.
                     </p>
                     <Link
                       href="/cv-examples/care-assistant-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View care assistant CV guide →
                     </Link>
@@ -1428,19 +1639,19 @@ export default function CvExamplesUk() {
                     <RelatedExamples anchorKey="care-assistant" />
                   </div>
 
-                  {/* ✅ NEW (from highlighted pages) */}
                   <div id="nhs-healthcare-assistant">
                     <h4 className="text-xl font-semibold">
                       NHS Healthcare Assistant CV Example (UK)
                     </h4>
                     <p className="mt-2 text-slate-300">
-                      Emphasise patient-centred care, NHS ward routines, supporting
-                      nurses, basic observations (if trained), infection control,
-                      and clear communication with patients and families.
+                      Emphasise patient-centred care, NHS ward routines,
+                      supporting nurses, basic observations if trained,
+                      infection control, and clear communication with patients
+                      and families.
                     </p>
                     <Link
                       href="/cv-examples/nhs-healthcare-assistant-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View NHS healthcare assistant CV guide →
                     </Link>
@@ -1453,12 +1664,12 @@ export default function CvExamplesUk() {
                       Support Worker CV Example (UK)
                     </h4>
                     <p className="mt-2 text-slate-300">
-                      Focus on person-centred care, accurate record keeping, safe
-                      handovers, and promoting independence.
+                      Focus on person-centred care, accurate record keeping,
+                      safe handovers, and promoting independence.
                     </p>
                     <Link
                       href="/cv-examples/support-worker-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View support worker CV guide →
                     </Link>
@@ -1472,11 +1683,12 @@ export default function CvExamplesUk() {
                     </h4>
                     <p className="mt-2 text-slate-300">
                       Emphasise classroom support, behaviour support strategies,
-                      and strong safeguarding awareness. DBS is typically required.
+                      and strong safeguarding awareness. DBS is typically
+                      required.
                     </p>
                     <Link
                       href="/cv-examples/teaching-assistant-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View teaching assistant CV guide →
                     </Link>
@@ -1489,12 +1701,12 @@ export default function CvExamplesUk() {
                       Security Guard CV Example (UK)
                     </h4>
                     <p className="mt-2 text-slate-300">
-                      Highlight vigilance, incident reporting, access control, and
-                      calm conflict management. Mention SIA if applicable.
+                      Highlight vigilance, incident reporting, access control,
+                      and calm conflict management. Mention SIA if applicable.
                     </p>
                     <Link
                       href="/cv-examples/security-guard-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View security guard CV guide →
                     </Link>
@@ -1504,12 +1716,12 @@ export default function CvExamplesUk() {
                 </div>
               </div>
 
-              {/* ===== Group: Office & Admin ===== */}
-              <div className="rounded-3xl bg-white/5 ring-1 ring-white/10 p-6">
+              <div className="rounded-3xl bg-white/5 p-6 ring-1 ring-white/10">
                 <h3 className="text-lg font-bold">Office &amp; Admin</h3>
                 <p className="mt-2 text-slate-300">
-                  Highlight organisation, accuracy, communication, and confidence
-                  with systems (email, calendars, spreadsheets).
+                  Highlight organisation, accuracy, communication, and
+                  confidence with systems such as email, calendars, and
+                  spreadsheets.
                 </p>
 
                 <div className="mt-6 space-y-8">
@@ -1518,12 +1730,12 @@ export default function CvExamplesUk() {
                       Admin Assistant CV Example (UK)
                     </h4>
                     <p className="mt-2 text-slate-300">
-                      Highlight accuracy, email management, spreadsheets, document
-                      control and strong organisation under deadlines.
+                      Highlight accuracy, email management, spreadsheets,
+                      document control, and strong organisation under deadlines.
                     </p>
                     <Link
                       href="/cv-examples/admin-assistant-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View admin assistant CV guide →
                     </Link>
@@ -1533,8 +1745,7 @@ export default function CvExamplesUk() {
                 </div>
               </div>
 
-              {/* ===== Group: First Job & Entry Level ===== */}
-              <div className="rounded-3xl bg-white/5 ring-1 ring-white/10 p-6">
+              <div className="rounded-3xl bg-white/5 p-6 ring-1 ring-white/10">
                 <h3 className="text-lg font-bold">First Job &amp; Entry Level</h3>
                 <p className="mt-2 text-slate-300">
                   Perfect if you&apos;re starting out. Focus on reliability,
@@ -1548,13 +1759,13 @@ export default function CvExamplesUk() {
                       CV With No Experience (UK)
                     </h4>
                     <p className="mt-2 text-slate-300">
-                      Emphasise transferable skills, volunteering, education and
-                      personal strengths. This is ideal for first jobs and entry-level
-                      applications.
+                      Emphasise transferable skills, volunteering, education,
+                      and personal strengths. This is ideal for first jobs and
+                      entry-level applications.
                     </p>
                     <Link
                       href="/cv-examples/no-experience-cv-example-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View no experience CV guide →
                     </Link>
@@ -1567,12 +1778,13 @@ export default function CvExamplesUk() {
                       CV for 16 Year Old (UK)
                     </h4>
                     <p className="mt-2 text-slate-300">
-                      Focus on school achievements, teamwork, reliability and a clear
-                      personal statement. Perfect for weekend jobs and apprenticeships.
+                      Focus on school achievements, teamwork, reliability, and
+                      a clear personal statement. Perfect for weekend jobs and
+                      apprenticeships.
                     </p>
                     <Link
                       href="/cv-examples/cv-for-16-year-old-uk"
-                      className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 text-sm"
+                      className="text-sm text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
                     >
                       View 16 year old CV guide →
                     </Link>
@@ -1584,14 +1796,13 @@ export default function CvExamplesUk() {
             </div>
           </section>
 
-          {/* Formatting Section */}
           <section className="mt-14">
             <h2 className="text-2xl font-bold">Correct UK CV Format</h2>
-            <p className="mt-3 text-slate-300 leading-relaxed">
+            <p className="mt-3 leading-relaxed text-slate-300">
               Standard UK CV structure:
             </p>
 
-            <ol className="mt-4 list-decimal pl-6 space-y-2 text-slate-300">
+            <ol className="mt-4 list-decimal space-y-2 pl-6 text-slate-300">
               <li>Full Name &amp; Contact Details</li>
               <li>Personal Statement</li>
               <li>Employment History</li>
@@ -1600,12 +1811,12 @@ export default function CvExamplesUk() {
               <li>References (optional)</li>
             </ol>
 
-            <p className="mt-4 text-slate-300 leading-relaxed">
-              If you want a deeper breakdown (length, layout, and what to include),
-              see{" "}
+            <p className="mt-4 leading-relaxed text-slate-300">
+              If you want a deeper breakdown of length, layout, and what to
+              include, see{" "}
               <Link
                 href="/cv-format-uk"
-                className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4"
+                className="text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
               >
                 Best CV format (UK)
               </Link>
@@ -1613,19 +1824,18 @@ export default function CvExamplesUk() {
             </p>
           </section>
 
-          {/* FAQ (visible) */}
           <section className="mt-16">
             <h2 className="text-2xl font-bold">FAQ</h2>
             <div className="mt-6 space-y-4">
               {faqItems.map((item) => (
                 <details
                   key={item.question}
-                  className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-5"
+                  className="rounded-2xl bg-white/5 p-5 ring-1 ring-white/10"
                 >
                   <summary className="cursor-pointer font-semibold text-slate-100">
                     {item.question}
                   </summary>
-                  <p className="mt-3 text-slate-300 leading-relaxed">
+                  <p className="mt-3 leading-relaxed text-slate-300">
                     {item.answer}
                   </p>
                 </details>
@@ -1633,32 +1843,31 @@ export default function CvExamplesUk() {
             </div>
           </section>
 
-          {/* CTA Section */}
-          <section className="mt-16 rounded-3xl bg-white/5 ring-1 ring-white/10 p-8 text-center">
+          <section className="mt-16 rounded-3xl bg-white/5 p-8 text-center ring-1 ring-white/10">
             <h2 className="text-2xl font-bold">Ready to Build Your UK CV?</h2>
             <p className="mt-3 text-slate-300">
               Use a structured, recruiter-ready template and generate your CV in
               under 20 minutes.
             </p>
 
-            <div className="mt-6 flex justify-center gap-4 flex-wrap">
+            <div className="mt-6 flex flex-wrap justify-center gap-4">
               <Link
                 href="/cv"
-                className="rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 hover:bg-slate-200 transition"
+                className="rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200"
               >
                 Build CV →
               </Link>
 
               <Link
                 href="/cover-letter"
-                className="rounded-xl bg-white/5 ring-1 ring-white/10 px-6 py-3 font-semibold text-white hover:bg-white/10 transition"
+                className="rounded-xl bg-white/5 px-6 py-3 font-semibold text-white ring-1 ring-white/10 transition hover:bg-white/10"
               >
                 Free cover letter →
               </Link>
 
               <Link
                 href="/cv-writing-help"
-                className="rounded-xl bg-white/5 ring-1 ring-white/10 px-6 py-3 font-semibold text-white hover:bg-white/10 transition"
+                className="rounded-xl bg-white/5 px-6 py-3 font-semibold text-white ring-1 ring-white/10 transition hover:bg-white/10"
               >
                 CV Writing Help →
               </Link>
@@ -1668,14 +1877,14 @@ export default function CvExamplesUk() {
               Also useful:{" "}
               <Link
                 href="/cv-template-uk"
-                className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4"
+                className="text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
               >
                 UK CV template
               </Link>{" "}
               ·{" "}
               <Link
                 href="/cv"
-                className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4"
+                className="text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
               >
                 CV builder
               </Link>

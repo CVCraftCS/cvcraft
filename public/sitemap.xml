@@ -73,7 +73,7 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- CV Example Pages (All Standardised Under /cv-examples/) -->
+  <!-- CV Example Pages -->
 
   <url>
     <loc>https://www.cvcraftclassroom.com/cv-examples/admin-assistant-cv-example-uk</loc>
@@ -83,6 +83,12 @@
 
   <url>
     <loc>https://www.cvcraftclassroom.com/cv-examples/barista-cv-example-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/call-centre-cv-example-uk</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -113,6 +119,72 @@
 
   <url>
     <loc>https://www.cvcraftclassroom.com/cv-examples/delivery-driver-cv-example-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/factory-operative-cv-example-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/hotel-housekeeper-cv-example-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/housekeeper-cv-example-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/kitchen-assistant-cv-example-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/labourer-cv-example-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/nhs-healthcare-assistant-cv-example-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/night-shift-warehouse-operative-cv-example-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/no-experience-cv-example-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/picker-packer-cv-example-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/production-operative-cv-example-uk</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/groundworker-cv-example-uk</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -154,45 +226,13 @@
   </url>
 
   <url>
-    <loc>https://www.cvcraftclassroom.com/cv-examples/kitchen-assistant-cv-example-uk</loc>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/warehouse-cv-example-uk</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
-    <loc>https://www.cvcraftclassroom.com/cv-examples/factory-operative-cv-example-uk</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://www.cvcraftclassroom.com/cv-examples/call-centre-cv-example-uk</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <!-- ✅ NEW CV Example Pages (added from highlighted files) -->
-
-  <url>
-    <loc>https://www.cvcraftclassroom.com/cv-examples/night-shift-warehouse-operative-cv-example-uk</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://www.cvcraftclassroom.com/cv-examples/picker-packer-cv-example-uk</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://www.cvcraftclassroom.com/cv-examples/hotel-housekeeper-cv-example-uk</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://www.cvcraftclassroom.com/cv-examples/nhs-healthcare-assistant-cv-example-uk</loc>
+    <loc>https://www.cvcraftclassroom.com/cv-examples/cv-for-16-year-old-uk</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

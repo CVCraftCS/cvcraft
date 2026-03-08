@@ -3,55 +3,56 @@ import CvExamplePage from "../../components/CvExamplePage";
 
 export default function SupportWorkerCvExampleUk() {
   const title =
-    "Support Worker CV Example UK (2026) | Free Template, Skills & No Experience Tips | CVCraft Classroom";
+    "Support Worker CV Example UK (2026) | Free Sample + Skills & No Experience Tips | CVCraft Classroom";
 
   const description =
-    "See a professional Support Worker CV example for the UK (2026). Includes personal statement options, key skills, strong job bullet points, no-experience tips, FAQs, and related CV examples.";
+    "A professional Support Worker CV example for UK care roles (2026). Includes a strong personal statement, key skills, job bullet points, training/DBS guidance, and FAQs to help you get interviews.";
 
   const canonical =
     "https://www.cvcraftclassroom.com/cv-examples/support-worker-cv-example-uk";
 
   const hero = {
-    eyebrow: "CV Examples UK • Health & Social Care",
+    eyebrow: "CV Examples UK • Care & Support",
     heading: "Support Worker CV Example (UK)",
     subheading:
-      "A UK-ready support worker CV example focused on person-centred care, safeguarding, clear documentation, and promoting independence — plus tips for no experience.",
+      "A UK-ready support worker CV example focused on person-centred care, safeguarding, documentation and calm communication — plus simple tips for no experience.",
   };
 
   const quickFacts = [
-    { label: "Best for", value: "Supported living, residential, outreach, care roles" },
+    { label: "Best for", value: "Supported living, residential, outreach roles" },
     { label: "Format", value: "UK CV (not résumé)" },
     { label: "Length", value: "1 page (2 max if experienced)" },
-    { label: "Tip", value: "Lead with safeguarding + documentation + person-centred care" },
+    { label: "Tip", value: "Always mention safeguarding + accurate records" },
   ];
 
   const tableOfContents = [
     { id: "cv-example", label: "Copyable CV example" },
     { id: "personal-statement", label: "Personal statement (3 options)" },
-    { id: "skills", label: "Key skills for support workers" },
-    { id: "experience", label: "Experience bullets that get interviews" },
-    { id: "training", label: "Training, DBS & qualifications" },
-    { id: "no-experience", label: "No experience tips" },
+    { id: "skills", label: "Key support worker skills" },
+    { id: "experience", label: "Care/support bullets that get interviews" },
+    { id: "education", label: "Training, DBS & qualifications" },
     { id: "faq", label: "FAQ" },
   ];
 
   const cv = {
-    name: "Aisha Bennett",
-    locationLine: "Liverpool, UK • 07xxx xxx xxx • aisha.bennett@email.com",
-    linksLine: "LinkedIn: linkedin.com/in/aishabennett (optional)",
+    name: "Aisha Patel",
+    locationLine: "Liverpool, UK • 07xxx xxx xxx • aisha.patel@email.com",
+    linksLine: "LinkedIn: linkedin.com/in/aishapatel (optional)",
     profile:
-      "Compassionate and dependable Support Worker with 3+ years’ experience supporting adults with learning disabilities and complex needs. Skilled in person-centred care, daily living support, safeguarding procedures, and accurate record keeping. Known for building trust, promoting independence, and remaining calm under pressure while working reliably across shifts.",
+      "Compassionate and dependable Support Worker with 3+ years’ experience supporting adults with learning disabilities and complex needs in supported living settings. Skilled in person-centred care, daily living support, safeguarding procedures and accurate documentation. Known for building trust, promoting independence, and staying calm during challenging situations. Confident supporting medication routines (where trained), maintaining dignity and respect, and working effectively with colleagues and external professionals.",
     coreSkills: [
-      "Person-centred support & care planning",
+      "Person-centred care & support planning",
       "Daily living support (meals, hygiene, routines)",
-      "Safeguarding awareness & incident reporting",
+      "Safeguarding awareness & reporting procedures",
+      "Accurate record keeping & shift handovers",
+      "De-escalation and calm communication",
+      "Encouraging independence and life skills",
       "Medication support (where trained)",
-      "Accurate care notes & shift handovers",
-      "De-escalation & calm communication",
-      "Promoting independence & life skills",
-      "Working with families / multi-agency teams",
       "Behaviour support strategies (where applicable)",
-      "Flexible shift work (days/nights/weekends)",
+      "Teamwork and multi-agency collaboration",
+      "Flexible shifts (days/nights/weekends)",
+      "Professional boundaries & confidentiality",
+      "Community support and appointments",
     ],
     experience: [
       {
@@ -59,47 +60,37 @@ export default function SupportWorkerCvExampleUk() {
         company: "BrightPath Supported Living, Liverpool",
         dates: "2022 – Present",
         bullets: [
-          "Support individuals with daily routines (personal care, meals, household tasks) while promoting independence, dignity and choice.",
-          "Maintain accurate care notes and complete clear shift handovers to ensure safe, consistent support across the team.",
-          "Follow safeguarding procedures, recording concerns and escalating appropriately to protect service users and maintain compliance.",
-          "Support medication routines in line with training and company policy, completing MAR documentation where required.",
-          "Use calm communication and de-escalation approaches to reduce incidents and support wellbeing during challenging moments.",
-          "Encourage participation in community activities and life skills development (appointments, budgeting, travel training where appropriate).",
-          "Work closely with colleagues, families and external professionals to support plans, reviews and agreed outcomes.",
+          "Support individuals with daily routines while promoting independence, dignity and choice in line with person-centred plans.",
+          "Record clear care notes and complete accurate shift handovers to keep support consistent and safe.",
+          "Follow safeguarding procedures, escalating concerns promptly and documenting actions correctly.",
+          "Support medication routines in line with training and company policies, maintaining accurate MAR records where required.",
+          "Use calm communication and de-escalation techniques to support wellbeing during distressed or challenging moments.",
+          "Encourage participation in community activities, budgeting, cooking and life skills to build confidence and independence.",
+          "Work closely with colleagues and external professionals to support appointments and care reviews.",
         ],
       },
       {
-        role: "Care / Support Assistant (Agency / Bank)",
-        company: "Various Care Providers, Merseyside",
-        dates: "2021 – 2022",
+        role: "Care / Support Assistant (Bank)",
+        company: "Residential & Outreach Sites, Merseyside",
+        dates: "2020 – 2022",
         bullets: [
-          "Worked across supported living and residential settings, adapting quickly to different routines, policies and service-user needs.",
-          "Supported personal care, meals, mobility assistance and household tasks while respecting privacy and preferences.",
-          "Completed essential documentation accurately and reported concerns promptly to senior staff on shift.",
-          "Maintained high standards of infection control and safe working practice, including PPE use and cleaning routines.",
-        ],
-      },
-      {
-        role: "Customer Service Assistant (Transferable Skills)",
-        company: "Retail Site, Liverpool",
-        dates: "2019 – 2021",
-        bullets: [
-          "Developed strong communication, patience and conflict resolution skills in a busy public-facing environment.",
-          "Handled sensitive situations calmly, listening carefully and resolving issues professionally.",
-          "Built reliability through consistent attendance, teamwork and supporting colleagues during peak periods.",
+          "Provided flexible cover across shifts, supporting residents with personal care, meals, activities and routine support.",
+          "Maintained confidentiality and professional boundaries while building trust and positive relationships.",
+          "Supported safe moving/handling practices and followed site health & safety procedures.",
+          "Handled documentation carefully, reporting concerns and changes in wellbeing to seniors promptly.",
         ],
       },
     ],
     education: [
       "Care Certificate (if completed) — Provider (Year)",
-      "Level 2/3 Diploma in Health & Social Care (helpful for progression) — Provider (Year)",
-      "First Aid training — Provider (Year)",
-      "Safeguarding Adults/Children — Provider (Year)",
-      "Enhanced DBS — (state: “in date / on update service / in progress”)",
+      "Safeguarding Adults training — Provider (Year)",
+      "First Aid (optional but helpful) — Provider (Year)",
+      "GCSEs (including English & Maths) — School Name (Year)",
+      "Level 2/3 Health & Social Care (optional) — College (Year)",
+      "Enhanced DBS — (state: Valid / In progress)",
     ],
     additional: [
-      "Availability: Immediate (edit as needed)",
-      "Driving licence: Yes/No (if relevant)",
+      "Full UK driving licence (optional) / willingness to travel (edit as needed)",
       "Right to work in the UK",
       "References available on request",
     ],
@@ -109,116 +100,78 @@ export default function SupportWorkerCvExampleUk() {
     {
       title: "Option 1 (Strong all-rounder)",
       text:
-        "Compassionate and dependable support worker with experience in person-centred care, daily living support, and safeguarding. I build trust quickly, keep clear and accurate notes, and remain calm under pressure. I’m reliable across shift work and focused on promoting independence, dignity and wellbeing in supported living or residential settings.",
+        "Compassionate support worker with experience in person-centred care, daily living support and safeguarding procedures. I build trust through calm communication and reliable routines, while keeping documentation accurate and handovers clear. Comfortable supporting independence, community activities and wellbeing, with a professional, respectful approach and strong attendance on shift.",
     },
     {
-      title: "Option 2 (If you’re newer / less experience)",
+      title: "Option 2 (No experience / career change)",
       text:
-        "Caring and reliable candidate seeking a support worker role. I’m patient, calm and confident supporting people with routines and day-to-day tasks while respecting privacy and choice. I have strong communication and teamwork skills, I’m willing to complete all required training, and I understand the importance of safeguarding and accurate documentation.",
+        "Reliable and caring candidate seeking a support worker role in a UK care setting. I’m patient, calm and respectful, and I’m confident supporting others with routines, practical tasks and emotional wellbeing. I take safeguarding seriously, follow instructions carefully and I’m willing to complete training and an enhanced DBS to support safe, high-quality care.",
     },
     {
-      title: "Option 3 (If you support complex needs / behaviours)",
+      title: "Option 3 (If you’ve handled complex needs)",
       text:
-        "Support worker with experience supporting adults with complex needs, using calm communication and de-escalation approaches to maintain safety and wellbeing. Confident following support plans, recording events clearly, and escalating safeguarding concerns appropriately. Known for dependable shift attendance and consistent, respectful care.",
+        "Support worker experienced supporting adults with complex needs, including challenging behaviour, distress and health concerns. Confident using de-escalation techniques, following safeguarding procedures and keeping accurate records to protect wellbeing and safety. Known for calm teamwork on shift, clear communication and a consistent, person-centred approach.",
     },
   ];
 
   const skills = {
     heading: "Key skills to include on a Support Worker CV (UK)",
     bullets: [
-      "Person-centred care and supporting independence",
+      "Person-centred care, dignity and choice",
       "Safeguarding awareness and reporting procedures",
-      "Accurate record keeping (care notes, handovers, incident forms)",
-      "Medication support / MAR documentation (where trained)",
-      "Communication, empathy, patience and professionalism",
-      "De-escalation and behaviour support (where applicable)",
-      "Confidentiality, dignity and respect",
-      "Shift work reliability (nights/weekends/bank work)",
-      "Working with families and multi-agency professionals",
-      "Health & safety, infection control, and safe moving/handling (if trained)",
+      "Daily living support and independence-building",
+      "Accurate documentation and clear handovers",
+      "Calm communication and de-escalation",
+      "Medication support (where trained) and safe routines",
+      "Confidentiality and professional boundaries",
+      "Teamwork with colleagues and external professionals",
     ],
   };
 
   const experienceGuide = {
     heading: "Experience bullets that help you rank and convert",
     tips: [
-      "Always mention safeguarding (it’s a key screening keyword for UK care roles).",
-      "Be specific about your setting: supported living, residential care, outreach, mental health, learning disabilities.",
-      "Include documentation: care notes, handovers, incident reporting, MAR charts (if applicable).",
-      "Show outcomes: independence, wellbeing, safety, consistent routines.",
-      "Avoid vague duties only — add how you supported choice, dignity and person-centred plans.",
+      "Always mention safeguarding — it’s non-negotiable in UK care roles.",
+      "State the setting: supported living, residential, outreach, mental health, LD, autism.",
+      "Mention records/handovers and any medication routines (only if trained).",
+      "Show outcomes: independence, wellbeing, safety, reduced incidents, calmer routines.",
     ],
     exampleBullets: [
-      "Supported daily living routines while promoting independence, dignity and choice.",
-      "Recorded clear care notes and delivered accurate shift handovers to maintain consistent support.",
-      "Followed safeguarding procedures and escalated concerns appropriately to protect service users.",
-      "Used calm communication and de-escalation to reduce incidents and support wellbeing.",
+      "Recorded accurate care notes and completed clear handovers to maintain consistent support.",
+      "Followed safeguarding procedures and escalated concerns promptly with correct documentation.",
+      "Supported daily routines and independence goals, including cooking, budgeting and community access.",
+      "Used calm communication and de-escalation techniques during distressed situations to protect wellbeing.",
     ],
   };
+
+  const internalLinks = [
+    { href: "/cv", label: "Build your CV with CVCraft", note: "Use templates and export when ready." },
+    { href: "/cv-examples-uk", label: "Browse all CV Examples UK", note: "Your main hub page." },
+    { href: "/cv-template-uk", label: "Free UK CV Template (Copy + paste)", note: "Quick template page for fast wins." },
+    { href: "/cv-examples/care-assistant-cv-example-uk", label: "Care Assistant CV Example (UK)", note: "Very similar intent." },
+    { href: "/cv-examples/teaching-assistant-cv-example-uk", label: "Teaching Assistant CV Example (UK)", note: "Another support-focused role." },
+  ];
 
   const faqItems = [
     {
       q: "What skills should I put on a support worker CV?",
-      a: "Include person-centred care, safeguarding awareness, daily living support, medication assistance (if trained), communication, de-escalation, teamwork, and accurate record keeping (care notes and handovers).",
+      a: "Include person-centred care, safeguarding awareness, daily living support, calm communication/de-escalation, teamwork, and accurate record keeping/handovers. Add medication support only if trained.",
     },
     {
       q: "Do you need qualifications to be a support worker in the UK?",
-      a: "Not always. Many employers provide training. The Care Certificate and a Level 2/3 Health & Social Care qualification can help with progression. An enhanced DBS check is typically required.",
+      a: "Not always. Many employers provide training. The Care Certificate and Level 2/3 Health & Social Care can help progression. An enhanced DBS is typically required.",
     },
     {
       q: "How do I write a support worker CV with no experience?",
-      a: "Focus on transferable skills (empathy, patience, communication, reliability). Include volunteering, community work, or caring responsibilities if appropriate. Show willingness to complete training and clearly mention safeguarding awareness and DBS readiness.",
+      a: "Focus on transferable skills: empathy, patience, reliability, communication and calmness. Include volunteering, caring responsibilities, or any role where you supported others. Show willingness to complete training and DBS checks.",
     },
     {
-      q: "Should I include DBS status on my support worker CV?",
-      a: "Yes. If you have an Enhanced DBS (or it is in progress / on the update service), state it clearly. It reassures employers and can speed up hiring.",
+      q: "Should I include DBS status on my CV?",
+      a: "Yes. If you have an Enhanced DBS (or it’s in progress), state it clearly. It reassures employers and speeds up hiring decisions.",
     },
     {
-      q: "What are common support worker CV mistakes?",
-      a: "Being vague about the setting, missing safeguarding keywords, not mentioning documentation/handovers, forgetting DBS/training, and using long paragraphs instead of clear bullets.",
-    },
-  ];
-
-  const internalLinks = [
-    {
-      href: "/cv",
-      label: "Build your CV with CVCraft",
-      note: "Create a clean UK CV quickly.",
-    },
-    {
-      href: "/cover-letter",
-      label: "Free cover letter generator",
-      note: "Add a matching letter in minutes.",
-    },
-    {
-      href: "/cv-examples-uk",
-      label: "Browse all CV Examples UK",
-      note: "Your hub page.",
-    },
-    {
-      href: "/cv-template-uk",
-      label: "Free UK CV Template",
-      note: "Copy-paste template page.",
-    },
-    {
-      href: "/cv-examples/care-assistant-cv-example-uk",
-      label: "Care Assistant CV Example (UK)",
-      note: "Closest related intent.",
-    },
-    {
-      href: "/cv-examples/teaching-assistant-cv-example-uk",
-      label: "Teaching Assistant CV Example (UK)",
-      note: "Another people-support role.",
-    },
-    {
-      href: "/cv-examples/security-guard-cv-example-uk",
-      label: "Security Guard CV Example (UK)",
-      note: "Safety + incident awareness overlap.",
-    },
-    {
-      href: "/cv-examples/cleaner-cv-example-uk",
-      label: "Cleaner CV Example (UK)",
-      note: "High-volume job intent.",
+      q: "How long should a support worker CV be?",
+      a: "1 page is ideal for most candidates. 2 pages is fine if you have several relevant roles, training and certifications to include.",
     },
   ];
 

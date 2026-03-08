@@ -1,356 +1,191 @@
 // src/pages/cv-examples/warehouse-operative-cv-example-uk.js
-import Head from "next/head";
-import Link from "next/link";
+import CvExamplePage from "../../components/CvExamplePage";
 
 export default function WarehouseOperativeCvExampleUk() {
   const title =
-    "Warehouse Operative CV Example UK (2026) | Free Template + Skills | CVCraft Classroom";
+    "Warehouse Operative CV Example UK (2026) | Free Sample + Skills & Template | CVCraft Classroom";
+
   const description =
-    "A full Warehouse Operative CV example for the UK with skills, duties, and a copy-paste template. Built for warehouse, picker/packer, and logistics roles in 2026.";
+    "A full Warehouse Operative CV example for the UK with copy-ready personal statement, skills, and strong bullet points for picking, packing, goods-in/out and RF scanning. Includes a free template for 2026.";
+
   const canonical =
     "https://www.cvcraftclassroom.com/cv-examples/warehouse-operative-cv-example-uk";
-  const ogImage = "https://www.cvcraftclassroom.com/og/og-default.png";
+
+  const hero = {
+    eyebrow: "CV Examples UK • Warehouse & Logistics",
+    heading: "Warehouse Operative CV Example (UK)",
+    subheading:
+      "A UK-ready warehouse CV example for picker/packer, goods-in/out and logistics roles — plus simple tips to tailor it to your shift, site and targets.",
+  };
+
+  const quickFacts = [
+    { label: "Best for", value: "Warehouse operative, picker/packer, logistics" },
+    { label: "Format", value: "UK CV (not résumé)" },
+    { label: "Length", value: "1 page (2 max if experienced)" },
+    { label: "Tip", value: "Use numbers: pick accuracy, orders/shift, attendance" },
+  ];
+
+  const tableOfContents = [
+    { id: "cv-example", label: "Copyable CV example" },
+    { id: "personal-statement", label: "Personal statement (3 options)" },
+    { id: "skills", label: "Key warehouse skills" },
+    { id: "experience", label: "Warehouse bullets that get interviews" },
+    { id: "education", label: "Training & certificates" },
+    { id: "faq", label: "FAQ" },
+  ];
+
+  const cv = {
+    name: "Liam Johnson",
+    locationLine: "Leeds, UK • 07xxx xxx xxx • liam.johnson@email.com",
+    linksLine: "LinkedIn: linkedin.com/in/liamjohnson (optional)",
+    profile:
+      "Reliable and safety-focused Warehouse Operative with 3+ years’ experience in fast-paced picking, packing and goods-in operations. Confident using RF scanners, following SOPs, and working to daily KPIs while maintaining high accuracy and tidy work areas. Known for strong timekeeping, shift flexibility and teamwork during peak periods, with a consistent focus on safe manual handling and on-time dispatch.",
+    coreSkills: [
+      "Picking & packing (single/multi-order, batch, zone)",
+      "RF scanning and label accuracy",
+      "Goods-in / goods-out and put-away",
+      "Replenishment and pick-face restocking",
+      "Stock checks and cycle counts",
+      "Quality checks, damage reporting, returns handling",
+      "Manual handling, PPE and safe working practices",
+      "Working to targets/KPIs and dispatch deadlines",
+      "Housekeeping / clean-as-you-go standards",
+      "Teamwork, communication and reliable attendance",
+    ],
+    experience: [
+      {
+        role: "Warehouse Operative (Picker/Packer)",
+        company: "Distribution Hub, Leeds",
+        dates: "2023 – Present",
+        bullets: [
+          "Picked and packed customer orders using RF scanners, ensuring correct items, quantities and labels before dispatch.",
+          "Worked to daily KPIs for pick rate and accuracy while maintaining tidy, safe workstations and clear aisles.",
+          "Completed quality checks and flagged damaged/missing items quickly to reduce errors and returns.",
+          "Supported loading/unloading and dispatch prep during peak periods, helping meet cut-off times.",
+          "Followed SOPs and health & safety rules including manual handling and PPE requirements.",
+          "Helped train new starters on scanner use, packing standards and safe working practices.",
+        ],
+      },
+      {
+        role: "Warehouse Assistant",
+        company: "Goods-In Site, Bradford",
+        dates: "2021 – 2023",
+        bullets: [
+          "Supported goods-in by checking deliveries, matching paperwork and storing stock correctly.",
+          "Performed basic stock checks/cycle counts and reported discrepancies to supervisors.",
+          "Replenished pick faces and supported returns processing to keep stock moving smoothly.",
+          "Worked closely with team leaders and colleagues to keep workflow steady during busy periods.",
+        ],
+      },
+    ],
+    education: [
+      "GCSEs (including English & Maths) — School Name (Year)",
+      "Manual Handling training — Provider (Year) (optional)",
+      "Health & Safety training — Provider (Year) (optional)",
+      "FLT licence (if applicable) — Counterbalance / Reach — Provider (Year)",
+    ],
+    additional: [
+      "Shift flexibility: days/nights/weekends (edit as needed)",
+      "Right to work in the UK",
+      "References available on request",
+    ],
+  };
+
+  const personalStatementOptions = [
+    {
+      title: "Option 1 (Strong all-rounder)",
+      text:
+        "Reliable warehouse operative with experience in picking, packing and goods-in, confident using RF scanners and working to daily KPIs. I keep accuracy high, follow SOPs and safety rules, and maintain tidy work areas to support smooth dispatch. Known for strong timekeeping, teamwork and consistent performance during peak periods.",
+    },
+    {
+      title: "Option 2 (No experience / entry-level)",
+      text:
+        "Hard-working and reliable candidate seeking a warehouse operative role. I’m comfortable with physical work, repetitive tasks and shift patterns, and I follow instructions carefully to keep accuracy high. I take pride in good timekeeping, safe manual handling and supporting team targets in busy environments.",
+    },
+    {
+      title: "Option 3 (If you’ve done goods-in/out)",
+      text:
+        "Warehouse operative experienced in goods-in/out, put-away and replenishment, with strong attention to detail for labels, locations and stock accuracy. Confident using scanners, completing checks and reporting issues quickly to prevent errors. Reliable on shift with a safety-first approach and calm teamwork under pressure.",
+    },
+  ];
+
+  const skills = {
+    heading: "Key skills to include on a Warehouse Operative CV",
+    bullets: [
+      "Picking and packing with accuracy",
+      "RF scanning, labels and dispatch paperwork",
+      "Goods-in/out, put-away and replenishment",
+      "Stock checks, cycle counts and basic inventory control",
+      "Quality checks and damage reporting",
+      "Manual handling and safe working practices",
+      "Working to KPIs and dispatch cut-offs",
+      "Teamwork, communication and reliable attendance",
+    ],
+  };
+
+  const experienceGuide = {
+    heading: "Experience bullets that help you rank and convert",
+    tips: [
+      "Use ‘task + tool + outcome’ (picked using RF scanner to meet dispatch deadlines).",
+      "Add numbers if you can (orders/shift, accuracy %, peak performance, attendance).",
+      "Mention safety (manual handling, PPE, tidy aisles) — warehouses care about this a lot.",
+      "If you’ve done nights/rotations, say it — it’s a strong employer signal.",
+    ],
+    exampleBullets: [
+      "Picked and packed orders using RF scanners, maintaining high accuracy and correct labelling for dispatch.",
+      "Worked to daily KPIs and cut-off times while keeping work areas tidy and safe.",
+      "Completed quality checks and reported damages promptly to reduce returns and rework.",
+      "Supported goods-in and replenishment to keep pick faces stocked during peak periods.",
+    ],
+  };
+
+  const internalLinks = [
+    { href: "/cv", label: "Build your CV with CVCraft", note: "Use templates and export when ready." },
+    { href: "/cv-examples-uk", label: "Browse all CV Examples UK", note: "Your main hub page." },
+    { href: "/cv-template-uk", label: "Free UK CV Template (Copy + paste)", note: "Quick template page for fast wins." },
+    { href: "/cv-examples/forklift-driver-cv-example-uk", label: "Forklift Driver CV Example UK", note: "Closely related intent." },
+    { href: "/cv-examples/production-operative-cv-example-uk", label: "Production Operative CV Example UK", note: "Another similar job search." },
+  ];
 
   const faqItems = [
     {
       q: "What skills should a Warehouse Operative put on a UK CV?",
-      a: "Focus on picking/packing accuracy, stock control, scanning (RF), goods-in/out, health & safety, manual handling, teamwork, timekeeping, and meeting targets. If relevant, add forklift experience, WMS familiarity, or shift flexibility.",
+      a: "Focus on picking/packing accuracy, RF scanning, goods-in/out, replenishment, stock checks, manual handling, health & safety, teamwork and reliable timekeeping. Add FLT and WMS experience if you have it.",
     },
     {
       q: "Do I need experience to apply for Warehouse Operative jobs?",
-      a: "Not always. Many roles are entry-level. Show reliability, physical stamina, willingness to learn, and any transferable experience such as retail stock work, cleaning, hospitality back-of-house, or production line work.",
+      a: "Not always. Many roles are entry-level. Show reliability, physical stamina, willingness to learn, and transferable experience such as retail stock work, cleaning, hospitality back-of-house or production line work.",
     },
     {
       q: "How long should a Warehouse Operative CV be in the UK?",
-      a: "One page is ideal for most entry-level and junior roles. Two pages can be fine if you have multiple relevant jobs, certifications (e.g., FLT), or measurable achievements.",
+      a: "One page is ideal for most entry-level and junior roles. Two pages can be fine if you have multiple relevant jobs, training, or measurable achievements.",
     },
     {
       q: "Should I include targets and metrics on my CV?",
-      a: "Yes. Warehouse hiring managers like numbers. Add pick rates, accuracy %, pallets moved, orders per shift, zero-error stretches, attendance, or training completed.",
+      a: "Yes. Employers like numbers. Add orders per shift, pick accuracy %, KPIs met, peak performance or strong attendance — even simple metrics help you stand out.",
     },
     {
       q: "What if I’ve had lots of short warehouse jobs?",
-      a: "Keep it honest and tidy. Group agency work (e.g., “Agency Assignments”) and list the key sites/roles briefly, focusing on duties and performance rather than dates taking up space.",
+      a: "Keep it tidy. You can group agency work (e.g., “Agency Assignments”) and focus on consistent duties, tools used, and performance rather than lots of date lines.",
     },
   ];
 
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqItems.map((f) => ({
-      "@type": "Question",
-      name: f.q,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: f.a,
-      },
-    })),
-  };
-
-  // Copy-paste CV example (edit the placeholders)
-  const cvExample = `WAREHOUSE OPERATIVE | PICKER / PACKER
-[Your Name]
-[Town/City] • [Phone] • [Email] • [LinkedIn (optional)]
-
-PERSONAL PROFILE
-Reliable and safety-focused Warehouse Operative with experience in fast-paced picking, packing and goods-in operations. Consistently meets productivity targets while maintaining high accuracy and clean, organised work areas. Comfortable with RF scanners and manual handling, and known for strong timekeeping, teamwork and a “get it done” attitude across day and night shifts.
-
-KEY SKILLS
-• Picking & packing (single/multi-order, batch, zone picking)
-• RF scanning, labels, dispatch documentation
-• Goods-in / goods-out, put-away, replenishment
-• Stock checks, cycle counts, basic inventory control
-• Quality checks, damage reporting, returns handling
-• Health & Safety, manual handling, PPE compliance
-• Working to KPIs, accuracy, speed, attendance
-• Teamwork, shift flexibility, following SOPs
-
-WORK EXPERIENCE
-
-Warehouse Operative (Picker/Packer) — [Company], [Location]
-[Month YYYY] – Present
-• Picked and packed customer orders using RF scanner, ensuring correct items, quantities and labels.
-• Worked to daily KPIs for pick rate and accuracy; maintained a tidy, safe workstation.
-• Completed quality checks and flagged damaged/missing items to team leaders quickly.
-• Assisted with loading/unloading, pallet movement and dispatch prep during peak periods.
-• Followed site SOPs and H&S rules, including manual handling and PPE requirements.
-
-Key achievements (optional):
-• Maintained strong pick accuracy over busy peak periods.
-• Helped train new starters on scanner use and packing standards.
-
-Warehouse Assistant — [Company], [Location]
-[Month YYYY] – [Month YYYY]
-• Supported goods-in: checked deliveries, matched paperwork, and stored stock correctly.
-• Performed stock rotation and basic cycle counts to keep locations accurate.
-• Replenished pick faces and supported returns processing when required.
-• Worked collaboratively with supervisors and colleagues to keep orders flowing.
-
-EDUCATION
-[Qualification] — [School/College], [Town]
-[Year]
-(Examples: GCSEs / NVQ / Functional Skills / Apprenticeship)
-
-CERTIFICATIONS (optional)
-• Manual Handling — [Provider], [Year]
-• Health & Safety — [Provider], [Year]
-• FLT Licence (Counterbalance/Reach) — [Provider], [Year]
-
-ADDITIONAL INFORMATION (optional)
-• Available for shifts: days/nights/weekends • Right to work in the UK
-• References available on request
-`;
-
   return (
-    <>
-      <Head>
-        <title>{title}</title>
-        <meta name="description" content={description} />
-        <link rel="canonical" href={canonical} />
-
-        {/* Open Graph */}
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        <meta property="og:url" content={canonical} />
-        <meta property="og:image" content={ogImage} />
-        <meta property="og:type" content="website" />
-
-        {/* Twitter */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={title} />
-        <meta name="twitter:description" content={description} />
-        <meta name="twitter:image" content={ogImage} />
-
-        {/* FAQ schema */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-        />
-      </Head>
-
-      <main style={{ maxWidth: 920, margin: "0 auto", padding: "28px 16px" }}>
-        {/* Breadcrumb */}
-        <nav style={{ fontSize: 14, marginBottom: 14, opacity: 0.85 }}>
-          <Link href="/" style={{ textDecoration: "underline" }}>
-            Home
-          </Link>{" "}
-          <span style={{ margin: "0 6px" }}>›</span>
-          <Link href="/cv-examples-uk" style={{ textDecoration: "underline" }}>
-            CV Examples UK
-          </Link>{" "}
-          <span style={{ margin: "0 6px" }}>›</span>
-          <span>Warehouse Operative</span>
-        </nav>
-
-        <header style={{ marginBottom: 18 }}>
-          <h1 style={{ fontSize: 34, lineHeight: 1.15, margin: "10px 0" }}>
-            Warehouse Operative CV Example (UK) + Free Copy-Paste Template (2026)
-          </h1>
-          <p style={{ fontSize: 18, lineHeight: 1.6, margin: "10px 0 0" }}>
-            Use this example to build a strong UK warehouse CV fast. It includes a
-            ready-to-copy template, the best skills to list, and tips to help you
-            get interviews for warehouse operative, picker/packer, and logistics
-            roles.
-          </p>
-
-          <div
-            style={{
-              marginTop: 14,
-              display: "flex",
-              gap: 10,
-              flexWrap: "wrap",
-            }}
-          >
-            <Link
-              href="/cv"
-              style={{
-                display: "inline-block",
-                padding: "10px 14px",
-                borderRadius: 10,
-                border: "1px solid rgba(0,0,0,0.15)",
-                textDecoration: "none",
-                fontWeight: 600,
-              }}
-            >
-              Build my CV
-            </Link>
-            <Link
-              href="/cover-letter"
-              style={{
-                display: "inline-block",
-                padding: "10px 14px",
-                borderRadius: 10,
-                border: "1px solid rgba(0,0,0,0.15)",
-                textDecoration: "none",
-                fontWeight: 600,
-              }}
-            >
-              Free cover letter
-            </Link>
-          </div>
-        </header>
-
-        {/* What employers want */}
-        <section style={{ marginTop: 22 }}>
-          <h2 style={{ fontSize: 24, margin: "0 0 8px" }}>
-            What UK warehouse employers look for
-          </h2>
-          <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
-            <li>
-              <strong>Reliability:</strong> timekeeping, attendance, and shift
-              flexibility.
-            </li>
-            <li>
-              <strong>Accuracy:</strong> correct picks, correct labels, low error
-              rate.
-            </li>
-            <li>
-              <strong>Safety:</strong> manual handling, PPE, clean working
-              practices.
-            </li>
-            <li>
-              <strong>Speed:</strong> working to KPIs without cutting corners.
-            </li>
-            <li>
-              <strong>Teamwork:</strong> supporting goods-in/out and helping during
-              peak.
-            </li>
-          </ul>
-        </section>
-
-        {/* CV Example */}
-        <section style={{ marginTop: 24 }}>
-          <h2 style={{ fontSize: 24, margin: "0 0 8px" }}>
-            Warehouse Operative CV example (copy & edit)
-          </h2>
-
-          <div
-            style={{
-              border: "1px solid rgba(0,0,0,0.14)",
-              borderRadius: 12,
-              padding: 14,
-              background: "rgba(0,0,0,0.02)",
-            }}
-          >
-            <pre
-              style={{
-                margin: 0,
-                whiteSpace: "pre-wrap",
-                wordBreak: "break-word",
-                fontSize: 14,
-                lineHeight: 1.6,
-              }}
-            >
-              {cvExample}
-            </pre>
-          </div>
-
-          <p style={{ marginTop: 10, lineHeight: 1.6, opacity: 0.9 }}>
-            Tip: keep your profile to 3–4 lines and add 2–3 measurable results
-            (accuracy %, targets, pick rate, or peak performance).
-          </p>
-        </section>
-
-        {/* Tips */}
-        <section style={{ marginTop: 24 }}>
-          <h2 style={{ fontSize: 24, margin: "0 0 8px" }}>
-            Quick tips to improve your Warehouse Operative CV
-          </h2>
-          <ol style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
-            <li>
-              Put your <strong>most relevant warehouse keywords</strong> near the
-              top: picking, packing, RF scanner, goods-in/out.
-            </li>
-            <li>
-              Add <strong>numbers</strong> where possible: “100+ orders per shift”,
-              “high pick accuracy”, “met daily KPIs”.
-            </li>
-            <li>
-              Keep work history bullet points <strong>task + tool + outcome</strong>{" "}
-              (e.g., “picked using RF scanner to meet dispatch deadlines”).
-            </li>
-            <li>
-              If you’re new, highlight reliability: <strong>timekeeping</strong>,
-              shift flexibility, physical stamina, willingness to learn.
-            </li>
-            <li>
-              Include any training: manual handling, H&S, FLT (if you have it).
-            </li>
-          </ol>
-        </section>
-
-        {/* Internal links */}
-        <section style={{ marginTop: 26 }}>
-          <h2 style={{ fontSize: 22, margin: "0 0 10px" }}>More UK CV examples</h2>
-          <div style={{ display: "grid", gap: 10 }}>
-            <Link href="/cv-examples/order-picker-cv-example-uk">
-              Order Picker CV Example (UK)
-            </Link>
-            <Link href="/cv-examples/construction-labourer-cv-example-uk">
-              Construction Labourer CV Example (UK)
-            </Link>
-            <Link href="/cv-examples/cleaner-cv-example-uk">
-              Cleaner CV Example (UK)
-            </Link>
-            <Link href="/cv-examples-uk">Browse all CV examples</Link>
-          </div>
-        </section>
-
-        {/* FAQ */}
-        <section style={{ marginTop: 30 }}>
-          <h2 style={{ fontSize: 24, margin: "0 0 10px" }}>
-            Warehouse Operative CV FAQs
-          </h2>
-          <div style={{ display: "grid", gap: 12 }}>
-            {faqItems.map((f) => (
-              <details
-                key={f.q}
-                style={{
-                  border: "1px solid rgba(0,0,0,0.14)",
-                  borderRadius: 12,
-                  padding: "12px 14px",
-                  background: "white",
-                }}
-              >
-                <summary style={{ cursor: "pointer", fontWeight: 700 }}>
-                  {f.q}
-                </summary>
-                <p style={{ margin: "10px 0 0", lineHeight: 1.7 }}>{f.a}</p>
-              </details>
-            ))}
-          </div>
-        </section>
-
-        {/* CTA */}
-        <section
-          style={{
-            marginTop: 30,
-            padding: 16,
-            borderRadius: 14,
-            border: "1px solid rgba(0,0,0,0.14)",
-            background: "rgba(0,0,0,0.02)",
-          }}
-        >
-          <h2 style={{ fontSize: 22, margin: "0 0 8px" }}>Build your CV in minutes</h2>
-          <p style={{ margin: "0 0 12px", lineHeight: 1.6 }}>
-            Use the builder to generate a recruiter-ready CV with clean UK
-            formatting.
-          </p>
-          <Link
-            href="/cv"
-            style={{
-              display: "inline-block",
-              padding: "10px 14px",
-              borderRadius: 10,
-              border: "1px solid rgba(0,0,0,0.15)",
-              textDecoration: "none",
-              fontWeight: 700,
-            }}
-          >
-            Open CV Builder
-          </Link>
-        </section>
-      </main>
-    </>
+    <CvExamplePage
+      title={title}
+      description={description}
+      canonical={canonical}
+      hero={hero}
+      quickFacts={quickFacts}
+      tableOfContents={tableOfContents}
+      cv={cv}
+      personalStatementOptions={personalStatementOptions}
+      skills={skills}
+      experienceGuide={experienceGuide}
+      internalLinks={internalLinks}
+      faqItems={faqItems}
+      primaryCta={{ href: "/cv", label: "Build my CV" }}
+      secondaryCta={{ href: "/cover-letter", label: "Free cover letter" }}
+    />
   );
 }

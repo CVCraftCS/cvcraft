@@ -3,10 +3,10 @@ import CvExamplePage from "../../components/CvExamplePage";
 
 export default function HotelCleanerCvExampleUk() {
   const title =
-    "Hotel Cleaner CV Example UK (2026) | Free Sample + Housekeeping Bullet Points | CVCraft Classroom";
+    "Hotel Cleaner CV Example UK (2026) | Free Sample + Housekeeping Skills | CVCraft Classroom";
 
   const description =
-    "Hotel Cleaner CV example for UK hospitality roles. Copy-ready personal statement, skills, and strong housekeeping bullet points for guest rooms and public areas.";
+    "Copy a hotel cleaner CV example for UK hospitality roles. Includes a strong personal statement, housekeeping skills (rooms + public areas), and bullet points that match room attendant and hotel cleaning jobs in 2026.";
 
   const canonical =
     "https://www.cvcraftclassroom.com/cv-examples/hotel-cleaner-cv-example-uk";
@@ -15,16 +15,16 @@ export default function HotelCleanerCvExampleUk() {
     eyebrow: "CV Examples UK • Cleaning & Hospitality",
     heading: "Hotel Cleaner CV Example (UK)",
     subheading:
-      "A copy-ready CV example for hotel cleaner, room attendant, and housekeeping roles — focused on standards, speed, and attention to detail.",
+      "A copy-ready UK hotel cleaner / room attendant CV example focused on standards, speed, hygiene and attention to detail — plus a simple guide to tailor it to your hotel.",
   };
 
   const quickFacts = [
-    { label: "Best for", value: "Hotel cleaner / room attendant / housekeeping" },
+    { label: "Best for", value: "Hotel cleaner, room attendant, housekeeping" },
     { label: "Format", value: "UK CV (not résumé)" },
     { label: "Length", value: "1 page (2 max if experienced)" },
     {
       label: "Tip",
-      value: "Mention checklists, turnarounds, COSHH, and high-touch cleaning",
+      value: "Mention room changeovers, checklists, COSHH and high-touch hygiene",
     },
   ];
 
@@ -33,7 +33,7 @@ export default function HotelCleanerCvExampleUk() {
     { id: "personal-statement", label: "Personal statement (3 options)" },
     { id: "skills", label: "Key hotel cleaner skills" },
     { id: "experience", label: "Housekeeping bullets that get interviews" },
-    { id: "training", label: "Training & hygiene notes" },
+    { id: "education", label: "Training & certificates" },
     { id: "faq", label: "FAQ" },
   ];
 
@@ -42,20 +42,20 @@ export default function HotelCleanerCvExampleUk() {
     locationLine: "Manchester, UK • 07xxx xxx xxx • emily@email.com",
     linksLine: "LinkedIn: linkedin.com/in/emilycarter (optional)",
     profile:
-      "Reliable Hotel Cleaner / Room Attendant with 3+ years’ experience maintaining high cleanliness standards across guest rooms, bathrooms, corridors and public areas in busy UK hotels. Known for working quickly without compromising quality, following brand checklists, and meeting turnaround times during peak occupancy. Confident using cleaning chemicals safely, handling linen and amenities, and reporting maintenance issues clearly. Friendly and discreet around guests, with a strong focus on hygiene, safety, and consistent presentation.",
+      "Reliable Hotel Cleaner / Room Attendant with 3+ years’ experience maintaining high cleanliness standards across guest rooms, bathrooms, corridors and public areas in busy UK hotels. Known for working quickly without compromising quality, following brand checklists, and meeting room turnaround times during peak occupancy. Confident using cleaning chemicals safely (COSHH awareness), handling linen and amenities, and reporting maintenance issues clearly. Friendly and discreet around guests with a strong focus on hygiene, safety and presentation.",
     coreSkills: [
       "Guest room cleaning to brand standards",
       "Bathroom sanitising & deep cleaning",
       "Bed making & linen changeovers",
       "Public area cleaning (lobby, lifts, corridors)",
-      "Turnaround/time management (check-out to check-in)",
-      "Stock replenishment (towels, toiletries, tea/coffee)",
+      "Room changeovers (checkout → check-in)",
+      "Stock replenishment (towels/toiletries/trays)",
       "Safe chemical use (COSHH awareness)",
       "Manual handling & safe lifting",
-      "High-touch point sanitising",
-      "Lost property procedures",
-      "Reporting maintenance issues",
-      "Teamwork and independent working",
+      "Detail checks (smears, dust, limescale)",
+      "High-touch point cleaning (handles/remotes)",
+      "Lost property handling & reporting",
+      "Maintenance reporting & tidy handovers",
     ],
     experience: [
       {
@@ -65,14 +65,13 @@ export default function HotelCleanerCvExampleUk() {
         bullets: [
           "Clean and prepare guest rooms, bathrooms and corridors to brand standards, using checklists to ensure consistent quality.",
           "Complete room changeovers efficiently between check-out and check-in, prioritising high-occupancy floors and early arrivals.",
-          "Make beds to hotel presentation standards, change linen, and restock towels, toiletries and hospitality trays.",
-          "Deep-clean bathrooms (toilets, showers, taps, tiles, mirrors) with a focus on hygiene, limescale removal and streak-free finishing.",
-          "Vacuum, dust and sanitise high-touch points (handles, remotes, switches) to support cleanliness and infection control.",
-          "Replenish and rotate cleaning stock safely, checking labels/dilutions and storing chemicals securely.",
+          "Make beds to presentation standards, change linen, and restock towels, toiletries and hospitality trays.",
+          "Deep-clean bathrooms (toilets, showers, taps, tiles, mirrors) focusing on hygiene, limescale removal and streak-free finishing.",
+          "Vacuum, dust and sanitise high-touch points to support cleanliness and infection control.",
+          "Use cleaning chemicals safely (correct dilution/labels) and store supplies securely in line with site rules.",
           "Report maintenance issues (leaks, broken fittings, damaged furniture) promptly to reduce room downtime.",
-          "Handle guest requests politely (extra towels, bedding, amenities) and escalate issues to supervisors when needed.",
-          "Follow safe working practices for manual handling, sharps awareness and slip/trip prevention.",
-          "Support periodic deep cleans and room refresh tasks, including carpet spotting, skirting boards, and hard-to-reach areas.",
+          "Handle guest requests politely (extra towels/bedding) and escalate issues to supervisors when needed.",
+          "Follow safe working practices for manual handling and slip/trip prevention to keep corridors and service areas safe.",
         ],
       },
       {
@@ -80,14 +79,13 @@ export default function HotelCleanerCvExampleUk() {
         company: "Riverside Inn & Suites, Salford",
         dates: "2021 – 2023",
         bullets: [
-          "Supported housekeeping team with daily cleaning of bedrooms and public areas, maintaining a clean and welcoming environment.",
-          "Prepared rooms for arrivals by changing linen, cleaning surfaces, vacuuming, and restocking bathroom supplies.",
-          "Cleaned public areas including reception, stairs, lifts and corridors, keeping high-footfall areas tidy throughout the day.",
-          "Collected used linen and managed waste disposal safely, maintaining clean/dirty linen routes and separating waste where required.",
-          "Checked rooms for presentation details (dust, marks, missing items) and corrected issues before supervisor inspections.",
-          "Assisted with laundry flow during busy periods, including sorting and organising clean linen deliveries.",
-          "Followed lost property processes, logging items accurately and storing securely.",
-          "Worked flexibly across mornings and weekends, supporting peak periods and last-minute room changes.",
+          "Supported daily cleaning of bedrooms and public areas, maintaining a clean and welcoming environment.",
+          "Prepared rooms for arrivals by cleaning surfaces, vacuuming, changing linen and restocking bathroom supplies.",
+          "Cleaned reception, stairs, lifts and corridors, keeping high footfall areas tidy throughout the day.",
+          "Collected used linen and managed waste disposal safely, keeping service routes clear and organised.",
+          "Checked rooms for presentation details and corrected issues before supervisor inspections.",
+          "Followed clear lost property processes, logging items accurately and storing securely.",
+          "Worked flexibly across mornings, weekends and peak periods, supporting last-minute room changes.",
         ],
       },
       {
@@ -95,17 +93,17 @@ export default function HotelCleanerCvExampleUk() {
         company: "Local Cleaning Services, Manchester",
         dates: "2019 – 2021",
         bullets: [
-          "Delivered reliable cleaning services across homes and small offices, including kitchens, bathrooms and shared spaces.",
-          "Used cleaning products safely and effectively, maintaining high hygiene standards and consistent results.",
-          "Managed time across multiple properties per day, staying organised and communicating delays early.",
+          "Delivered reliable cleaning across homes and small offices including kitchens, bathrooms and shared spaces.",
+          "Used cleaning products safely and effectively, maintaining strong hygiene standards and consistent results.",
+          "Managed time across multiple sites per day, staying organised and communicating any delays early.",
           "Built trust with customers through discretion, reliability and attention to detail.",
         ],
       },
     ],
     education: [
-      "Level 1 Award/Certificate in Cleaning Principles (optional / if applicable)",
-      "Basic Health & Safety / Manual Handling Training — In-house",
-      "GCSEs (including English and Maths) — School Name, Manchester",
+      "Cleaning Principles / Housekeeping training (optional) — Provider (Year)",
+      "Health & Safety / Manual Handling training — In-house",
+      "GCSEs (including English & Maths) — School Name, Manchester",
     ],
     additional: [
       "Availability: Immediate (edit as needed)",
@@ -118,95 +116,65 @@ export default function HotelCleanerCvExampleUk() {
     {
       title: "Option 1 (Strong all-rounder)",
       text:
-        "Reliable hotel cleaner / room attendant with experience cleaning guest rooms and public areas to brand standards. I work quickly without cutting corners, follow checklists, and keep hygiene high on bathrooms and high-touch points. I’m comfortable with busy turnaround periods, safe chemical use, and reporting maintenance issues to keep rooms ready and presentable for guests.",
+        "Reliable hotel cleaner / room attendant with experience cleaning guest rooms and public areas to brand standards. I work quickly without compromising quality, follow checklists, and keep hygiene high across bathrooms and high-touch points. Confident using cleaning chemicals safely, handling linen/amenities and reporting maintenance issues clearly, with strong timekeeping and a calm, discreet approach around guests.",
     },
     {
-      title: "Option 2 (If you’re newer / less experience)",
+      title: "Option 2 (If you’re newer)",
       text:
-        "Hard-working and reliable candidate seeking a hotel cleaner / housekeeping role. I’m comfortable with repetitive tasks, early starts, and following instructions carefully. I take pride in attention to detail, good timekeeping, and keeping rooms and public spaces clean, safe and well-presented for guests.",
+        "Hard-working and reliable candidate seeking a hotel cleaner role in a busy UK hospitality setting. I’m comfortable with repetitive cleaning tasks, early starts, and working to a checklist. I take pride in hygiene, attention to detail and tidy presentation, and I follow instructions carefully to support a clean and welcoming environment for guests.",
     },
     {
-      title: "Option 3 (If you’ve done inspections / high standards)",
+      title: "Option 3 (If you focus on hygiene/standards)",
       text:
-        "Detail-focused hotel cleaner experienced in checklist-led cleaning, deep-cleaning bathrooms, and finishing rooms to inspection standards. Confident managing room changeovers, restocking amenities, and maintaining hygiene on high-touch points. Known for dependable shift attendance, discreet guest interactions, and consistently high presentation.",
+        "Detail-focused hotel cleaner with experience in deep cleaning bathrooms, high-touch point hygiene and fast room changeovers. Confident following brand standards, using chemicals safely (COSHH awareness) and reporting issues quickly to reduce room downtime. Known for consistent quality, strong attendance and reliable teamwork during peak occupancy.",
     },
   ];
 
   const skills = {
-    heading: "Key skills to include on a Hotel Cleaner / Housekeeping CV",
+    heading: "Key skills to include on a Hotel Cleaner / Room Attendant CV",
     bullets: [
-      "Room cleaning to brand standards and checklists",
-      "Bathroom sanitising, deep cleaning, limescale removal",
-      "Bed making, linen changeovers, presentation standards",
-      "Public area cleaning (lobby, lifts, stairs, corridors)",
-      "Turnaround/time management during peak occupancy",
-      "High-touch point cleaning and hygiene focus",
-      "Safe chemical use (COSHH awareness) and PPE",
-      "Lost property procedures and guest discretion",
-      "Reporting maintenance issues to reduce downtime",
-      "Reliable shift attendance, weekend flexibility",
+      "Room changeovers (checkout → check-in) and time management",
+      "Bathroom sanitising and deep cleaning",
+      "Bed making, linen changeovers and presentation standards",
+      "Public area cleaning (lobby, lifts, corridors)",
+      "High-touch point hygiene and infection control habits",
+      "Safe chemical use (COSHH awareness) and correct dilution/labels",
+      "Lost property processes and discreet guest interaction",
+      "Maintenance reporting and tidy handovers",
     ],
   };
 
   const experienceGuide = {
-    heading: "Housekeeping bullets that convert (and help SEO)",
+    heading: "Experience bullets that help you rank and convert",
     tips: [
-      "Use the exact job title from the advert (hotel cleaner, room attendant, housekeeping).",
-      "Mention checklists, standards, and turnaround times (check-out → check-in).",
-      "Include hygiene + safety: COSHH, PPE, manual handling, slip/trip prevention.",
-      "If you can, add numbers: rooms per shift, floors covered, peak occupancy periods.",
+      "Mention checklists/brand standards — hotels love consistency.",
+      "Include room changeovers and working to turnaround times.",
+      "Call out bathroom hygiene and high-touch point cleaning.",
+      "Add outcomes if you can (passed inspections, reduced complaints, supported peak occupancy).",
     ],
     exampleBullets: [
-      "Completed guest room changeovers between check-out and check-in, keeping standards high during peak occupancy.",
-      "Deep-cleaned bathrooms and sanitised high-touch points to support hygiene and presentation standards.",
-      "Restocked towels, toiletries and hospitality trays, ensuring consistent guest experience.",
-      "Reported maintenance issues quickly to reduce room downtime and improve readiness.",
+      "Completed room changeovers between check-out and check-in, prioritising high-occupancy floors and early arrivals.",
+      "Deep-cleaned bathrooms with strong hygiene focus, removing limescale and finishing streak-free.",
+      "Followed brand checklists to keep quality consistent and support supervisor inspections.",
+      "Reported maintenance issues early to reduce room downtime and keep occupancy flowing.",
     ],
   };
-
-  const faqItems = [
-    {
-      q: "What skills should I put on a hotel cleaner CV in the UK?",
-      a: "Include room cleaning to standards, bathroom sanitising/deep cleaning, bed making/linen changes, public area cleaning, time management for turnarounds, safe chemical use (COSHH awareness), and attention to detail. Add lost property handling and reporting maintenance issues.",
-    },
-    {
-      q: "How long should a hotel cleaner CV be?",
-      a: "One page is ideal for most roles. Two pages is fine if you have multiple relevant jobs or training worth including.",
-    },
-    {
-      q: "Do I need qualifications for housekeeping jobs?",
-      a: "Usually not. Employers focus on reliability, experience, hygiene awareness, and your ability to meet standards and room turnaround times. If you have training (manual handling, H&S), include it.",
-    },
-    {
-      q: "What keywords help housekeeping CVs pass screening?",
-      a: "Hotel cleaner, room attendant, housekeeping, brand standards, checklist, turnaround, deep clean, sanitise, COSHH, PPE, public areas, linen, amenities, lost property, maintenance reporting.",
-    },
-    {
-      q: "Should I include guest interaction on my CV?",
-      a: "Yes (briefly). Mention being polite/discreet with guest requests and escalating issues properly — it’s a positive signal in hospitality.",
-    },
-  ];
 
   const internalLinks = [
     {
       href: "/cv",
-      label: "Build your CV",
-      note: "Use the builder and export when you’re ready.",
-    },
-    {
-      href: "/cover-letter",
-      label: "Free cover letter generator",
-      note: "Create a matching letter in minutes.",
+      label: "Build your CV with CVCraft",
+      note: "Use templates and export when ready.",
     },
     {
       href: "/cv-examples-uk",
       label: "Browse all CV Examples UK",
-      note: "Hub page for internal linking.",
+      note: "Your main hub page.",
     },
     {
       href: "/cv-template-uk",
-      label: "UK CV Template",
-      note: "Copy-paste UK template page.",
+      label: "Free UK CV Template (Copy + paste)",
+      note: "Quick template page for fast wins.",
     },
     {
       href: "/cv-examples/cleaner-cv-example-uk",
@@ -214,14 +182,32 @@ export default function HotelCleanerCvExampleUk() {
       note: "Related cleaning intent.",
     },
     {
-      href: "/cv-examples/hotel-housekeeper-cv-example-uk",
-      label: "Hotel Housekeeper CV Example UK",
-      note: "Closely related hotel intent.",
-    },
-    {
       href: "/cv-examples/receptionist-cv-example-uk",
       label: "Receptionist CV Example UK",
-      note: "Same industry intent.",
+      note: "Hospitality-adjacent role.",
+    },
+  ];
+
+  const faqItems = [
+    {
+      q: "How long should a hotel cleaner CV be in the UK?",
+      a: "Keep it to 1 page if possible. Use 2 pages only if you have several relevant roles or useful training to include.",
+    },
+    {
+      q: "What skills do hotels look for in cleaners and room attendants?",
+      a: "Speed with quality, attention to detail, hygiene standards, checklist-driven work, safe chemical use, reliability and strong attendance.",
+    },
+    {
+      q: "Should I mention COSHH on my CV?",
+      a: "Yes if you can. Even “COSHH awareness” signals you understand safe chemical handling and workplace standards.",
+    },
+    {
+      q: "Do I need experience to get a hotel cleaner job?",
+      a: "Not always. Many roles are entry-level. Show reliability, willingness to learn, and any transferable cleaning or fast-paced work experience.",
+    },
+    {
+      q: "Can I use this CV for housekeeping assistant jobs too?",
+      a: "Yes. The duties overlap heavily. Adjust the job title and a few bullet points to match the advert.",
     },
   ];
 
